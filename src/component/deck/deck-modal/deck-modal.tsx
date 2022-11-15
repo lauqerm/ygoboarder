@@ -2,7 +2,7 @@ import { Button, Input } from 'antd';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { CardImageConverter, DROP_TYPE_DECK, DECK_ROW_COUNT, DROP_TYPE_DECK_BEACON, DragTransformStatRegex, DECK_TYPE } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
-import { CountableCard } from '../card';
+import { CountableCard } from '../../card';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { DeckCard, DeckList, DeckListConverter, ModalInstanceConverter, useDeckStore, useModalStore } from 'src/state';
 import { List } from 'immutable';
@@ -12,9 +12,10 @@ import { ExtractProps } from 'src/type';
 import { createPortal } from 'react-dom';
 import { mergeClass } from 'src/util';
 import styled from 'styled-components';
-import { DeckBeacon } from './deck-beacon';
+import { DeckBeacon } from '../deck-beacon';
 import axios from 'axios';
 import { ImgurResponse } from 'src/model/imgur';
+import { DeckImporter } from './deck-import';
 
 const DECK_MODAL_WIDTH = 700;
 const DECK_MODAL_HEIGHT = 400;
@@ -262,35 +263,8 @@ export const DeckModal = ({
                     focus(deckId);
                 }}
             >
-
-                <div className="file-upload">
-                    <Input.TextArea key={onlineInputKey}
-                        placeholder="https://my-online-image..."
-                        onChange={e => {
-                            onlineImageValue.current = e.target.value;
-                        }}
-                        cols={64}
-                        rows={16}
-                    />
-                    <Button onClick={() => {
-                        addToList(
-                            deckId,
-                            (onlineImageValue.current ?? '')
-                                .split('\n')
-                                .filter(entry => typeof entry === 'string' && entry.length > 0)
-                                .map(entry => CardImageConverter({
-                                    _id: uuidv4(),
-                                    type: 'external',
-                                    name: entry,
-                                    dataURL: entry,
-                                    data: '',
-                                })),
-                        );
-                        setOnlineInputKey(cur => cur + 1);
-                    }}>Add</Button>
-                    <Input key={`upload-${uploadCnt}`} type="file" accept="image/*" onChange={onSelectFile} multiple />
-                    <button onClick={() => shuffleList(deckId)}>Shuffle</button>
-                </div>
+                <DeckImporter deckId={deckId} />
+                <button onClick={() => shuffleList(deckId)}>Shuffle</button>
                 <div className="deck-beacon">
                     <DeckBeacon deckId={deckId} zIndex={currentZIndex} actionType="top">Add to top</DeckBeacon>
                     <DeckBeacon deckId={deckId} zIndex={currentZIndex} actionType="shuffle">Add and shuffle</DeckBeacon>

@@ -1,5 +1,5 @@
 import logo from './logo.svg';
-import './app.css';
+import './app.scss';
 import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DECK_TYPE, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex } from './model';
@@ -10,6 +10,7 @@ import { ExtractProps } from './type';
 import { DeckCard, DeckListConverter, useBoardStore, useDeckStore } from './state';
 import debounce from 'lodash.debounce';
 import { List } from 'immutable';
+import 'antd/dist/antd.less';
 
 function App() {
     const currentDeckList = useDeckStore(
