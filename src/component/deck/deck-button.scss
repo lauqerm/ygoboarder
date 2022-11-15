@@ -1,0 +1,9 @@
+.deck-modal-invisible {
+    visibility: hidden;
+    .moveable-control-box {
+        visibility: hidden!important;
+    }
+}
+.deck-modal-visible {
+    visibility: visible;
+}

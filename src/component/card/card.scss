@@ -1,0 +1,29 @@
+.ygo-card {
+    --card-width: 275px;
+    --card-height: 400px;
+    &.ygo-card-size-lg {
+        --card-width: 549px;
+        --card-height: 800px;
+    }
+    &.ygo-card-size-md {
+        --card-width: 275px;
+        --card-height: 400px;
+    }
+    &.ygo-card-size-sm {
+        --card-width: 104px;
+        --card-height: 150px;
+    }
+    display: inline-block;
+    width: var(--card-width);
+    height: var(--card-height);
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    position: relative;
+    .card-image {
+        width: var(--card-width);
+        height: var(--card-height);
+        object-fit: contain;
+    }
+}
