@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CardImage, DECK_TYPE } from 'src/model';
+import { CardImage, DeckType } from 'src/model';
 import { mergeClass } from 'src/util';
 import './card.scss';
 

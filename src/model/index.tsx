@@ -59,6 +59,6 @@ export const DeckType = Object.freeze({
     consistent: 'consistent' as const,
     none: 'none' as const,
 });
-export type DECK_TYPE = keyof typeof DeckType;
+export type DeckType = keyof typeof DeckType;
 
 export * from './imgur';

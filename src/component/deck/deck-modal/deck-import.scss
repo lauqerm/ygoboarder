@@ -1,5 +1,5 @@
 .deck-import-modal {
-    .ant-upload-list {
+    .ant-upload-list:not(:empty) {
         margin-top: var(--spacing-sm);
     }
 }

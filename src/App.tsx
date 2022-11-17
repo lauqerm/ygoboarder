@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './app.scss';
 import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DECK_TYPE, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex } from './model';
+import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';

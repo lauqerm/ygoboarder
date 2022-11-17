@@ -1,7 +1,5 @@
-import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { CardImage, CardImageConverter, DeckType, DECK_TYPE } from 'src/model';
+import { Record as ImmutableRecord, Map } from 'immutable';
 import create from 'zustand';
-import { BaseDeckCard } from './deck-store';
 
 type BaseModalInstance = {
     name: string,
@@ -26,7 +24,6 @@ export const useModalStore = create<ModalState>((set) => ({
     currentFocus: '',
     increase: name => set(state => {
         const nextHighestIndex = state.highestIndex + 1;
-        console.log('🚀 ~ file: modal-store.ts ~ line 29 ~ useModalStore ~ nextHighestIndex', nextHighestIndex);
         if (state.currentFocus === name) return state;
         if (!state.modalMap.has(name)) {
             state.modalMap = state.modalMap.set(name, ModalInstanceConverter({ name, zIndex: nextHighestIndex }));
@@ -46,6 +43,7 @@ export const useModalStore = create<ModalState>((set) => ({
 
         return {
             ...state,
+            currentFocus: '',
             modalMap: state.modalMap.setIn([name, 'zIndex'], 0),
         };
     }),

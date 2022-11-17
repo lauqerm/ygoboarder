@@ -1,10 +1,23 @@
 :root {
-  --spacing-xs: 3px;
-  --spacing-sm: 6px;
-  --spacing-md: 6px;
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 8px;
   --spacing: var(--spacing-md);
 
   --fs-lg: 1.25rem;
+
+  --bdColor: #8a8a8a;
+  --bd: 1px solid #8a8a8a;
+
+  --br-sm: 2px;
+  --br: 4px;
+
+  --main-colorDarker: #000;
+  --main-color: #111;
+  --main-colorLighter: #222;
+
+  --main-danger: #f22;
+  --sub-danger: #f44;
   h2 {
     font-size: var(--fs-lg);
     line-height: 1.5;
@@ -31,4 +44,24 @@
   left: 0;
   width: 0;
   height: 0;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

@@ -3,6 +3,12 @@
     .moveable-control-box {
         visibility: hidden!important;
     }
+    .deck-beacon {
+        visibility: hidden;
+    }
+    .deck-tool-bar button {
+        display: none;
+    }
 }
 .deck-modal-visible {
     visibility: visible;

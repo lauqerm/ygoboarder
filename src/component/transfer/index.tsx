@@ -1,6 +1,6 @@
 import { List } from 'immutable';
 import React from 'react';
-import { DECK_TYPE } from 'src/model';
+import { DeckType } from 'src/model';
 import { useBoardStore, useDeckStore } from 'src/state';
 
 export const ExportButton = () => {
@@ -12,8 +12,8 @@ export const ExportButton = () => {
     );
 
     return <button onClick={() => {
-        let result: Record<string, { type: DECK_TYPE, value: string[] }> = {};
-        let deckTypeMap: Record<string, DECK_TYPE> = {};
+        let result: Record<string, { type: DeckType, value: string[] }> = {};
+        let deckTypeMap: Record<string, DeckType> = {};
 
         allDeckList.forEach(deckList => {
             const type = deckList.get('type');
@@ -44,14 +44,14 @@ export const ExportButton = () => {
     }}>Export</button>;
 };
 
-type TransferableData = Record<string, { type: DECK_TYPE, value: string[] }>;
+type TransferableData = Record<string, { type: DeckType, value: string[] }>;
 export type ImportButton = {
     onImport: (importedData: TransferableData) => void,
 }
 export const ImportButton = ({
     onImport,
 }: ImportButton) => {
-    const value = '{"DECK":{"type":"permanent","value":["","https://i.imgur.com/NM1vrsS.png"]},"TRUNK":{"type":"consistent","value":["https://i.imgur.com/YgaX2lG.png","","https://i.imgur.com/p9Ogumt.png"]},"GY":{"type":"transient","value":["https://i.imgur.com/zYH5QtC.png"]}}';
+    const value = '{"DECK":{"type":"permanent","value":["https://i.imgur.com/NM1vrsS.png"]},"TRUNK":{"type":"consistent","value":["https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png"]},"GY":{"type":"transient","value":["https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png","https://i.imgur.com/NM1vrsS.png","https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/fM4cbNb.png","https://i.imgur.com/Y7rRxaV.png","https://i.imgur.com/q3PxbhU.png","https://i.imgur.com/4ADMrbA.jpg","https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png","https://i.imgur.com/NM1vrsS.png","https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/fM4cbNb.png","https://i.imgur.com/Y7rRxaV.png","https://i.imgur.com/q3PxbhU.png","https://i.imgur.com/4ADMrbA.jpg"]}}';
 
     return <button onClick={() => {
         const importedData = window.prompt('Paste imported data', value);

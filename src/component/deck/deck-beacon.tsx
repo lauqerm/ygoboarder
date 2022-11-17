@@ -1,5 +1,5 @@
 import React from 'react';
-import { BEACON_ACTION, DECK_TYPE, DROP_TYPE_DECK_BEACON } from 'src/model';
+import { BEACON_ACTION, DeckType, DROP_TYPE_DECK_BEACON } from 'src/model';
 import './deck-beacon.scss';
 
 export type DeckBeacon = {
@@ -16,6 +16,7 @@ export const DeckBeacon = ({
     return <div className="deck-beacon"
         data-entity-type={DROP_TYPE_DECK_BEACON}
         data-deck-beacon={`[ID-${deckId}]-[ACTION-${actionType}]`}
+        data-beacon-type={actionType}
         data-beacon-index={zIndex}
         {...rest}
     />;

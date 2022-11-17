@@ -3,12 +3,12 @@ import { DeckModal } from '.';
 import './deck-button.scss';
 import { DeckBeacon } from './deck-beacon';
 import { Droppable } from 'react-beautiful-dnd';
-import { BeaconAction, DECK_TYPE, DROP_TYPE_DECK } from 'src/model';
+import { BeaconAction, DeckType, DROP_TYPE_DECK } from 'src/model';
 import { ModalInstanceConverter, useModalStore } from 'src/state';
 
 export type DeckButton = {
     name: string,
-    type: DECK_TYPE,
+    type: DeckType,
 }
 export const DeckButton = ({
     name,
@@ -40,7 +40,15 @@ export const DeckButton = ({
             setVisible(false);
             hide(name);
         }}>Close Deck</div>
-        <DeckModal deckId={name} type={type} className={isVisible ? 'deck-modal-visible' : 'deck-modal-invisible'} />
+        <DeckModal
+            className={isVisible ? 'deck-modal-visible' : 'deck-modal-invisible'}
+            deckId={name}
+            type={type}
+            onClose={() => {
+                setVisible(false);
+                hide(name);
+            }}
+        />
         <Droppable
             droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${name}]-[ORIGIN-${type}]-[ACTION-${BeaconAction['top']}]`}
             direction="horizontal"

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { BEACON_ACTION, CardImage, DECK_TYPE, DROP_TYPE_DECK, DROP_TYPE_DECK_BEACON, GetBoardRegex, GetDropActionRegex, GetDropIDRegex, GetOriginRegex } from 'src/model';
+import { BEACON_ACTION, CardImage, DeckType, DROP_TYPE_DECK, DROP_TYPE_DECK_BEACON, GetBoardRegex, GetDropActionRegex, GetDropIDRegex, GetOriginRegex } from 'src/model';
 import { mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
@@ -63,20 +63,22 @@ export const MovableCard = ({
                 if (beaconInfo) {
                     const beaconType: BEACON_ACTION | undefined = GetDropActionRegex.exec(beaconInfo)?.[1] as BEACON_ACTION | undefined;
                     const deckId = GetDropIDRegex.exec(beaconInfo)?.[1];
-                    if (deckId && beaconType && !isNaN(beaconIndex)) beaconCoordination.push({
-                        left,
-                        top,
-                        right,
-                        bottom,
-                        id: deckId,
-                        type: beaconType,
-                        element,
-                        zIndex: beaconIndex,
-                    });
+                    if (deckId && beaconType && !isNaN(beaconIndex)) {
+                        element.classList.add('available-to-drop');
+                        beaconCoordination.push({
+                            left,
+                            top,
+                            right,
+                            bottom,
+                            id: deckId,
+                            type: beaconType,
+                            element,
+                            zIndex: beaconIndex,
+                        });
+                    }
                 }
             }
             beaconCoordination = beaconCoordination.sort((l, r) => r.zIndex - l.zIndex);
-            console.log('🚀 ~ file: movable-card.tsx ~ line 56 ~ onMouseDown ~ beaconList', beaconCoordination);
             highlightBeacon = debounce((e: MouseEvent) => {
                 const { clientX, clientY } = e;
                 let found = false;
@@ -112,7 +114,7 @@ export const MovableCard = ({
                         found = true;
                     }
                 }
-                element.classList.remove('ready-to-drop');
+                element.classList.remove('ready-to-drop', 'available-to-drop');
             }
         };
         if (target && once.current === false) {

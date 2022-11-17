@@ -109,12 +109,13 @@ export const DeckImporter = ({
     };
 
     return <>
-        <Button onClick={() => setOpen(true)}>Add</Button>
+        <Button type="primary" onClick={() => setOpen(true)}>Add cards</Button>
         <Modal
             title="Add cards"
             open={isOpened}
             onCancel={() => setOpen(false)}
             onOk={onSubmit}
+            okText={'Add'}
         >
             <div className="deck-import-modal">
                 <h2>Online image links</h2>
@@ -127,6 +128,7 @@ export const DeckImporter = ({
                     rows={12}
                 />
                 <h2>Upload offline images</h2>
+                <i>Offline images will be uploaded to <a target="_blank" href="https://www.imgur.com" rel="noreferrer">imgur.com</a> to store online.</i>
                 <Dragger key={`offline-upload-${offlineInputKey}`}
                     className="deck-import-dragger"
                     type="drag"
