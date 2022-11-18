@@ -16,8 +16,27 @@
   --main-color: #111;
   --main-colorLighter: #222;
 
+  --dim-metal: #223;
+  --main-metal: #334;
+  --sub-metal: #445;
+
   --main-danger: #f22;
   --sub-danger: #f44;
+
+  --card-width: 275px;
+  --card-height: 400px;
+  .ygo-card-size-lg {
+      --card-width: 549px;
+      --card-height: 800px;
+  }
+  .ygo-card-size-md {
+      --card-width: 275px;
+      --card-height: 400px;
+  }
+  .ygo-card-size-sm {
+      --card-width: 104px;
+      --card-height: 150px;
+  }
   h2 {
     font-size: var(--fs-lg);
     line-height: 1.5;

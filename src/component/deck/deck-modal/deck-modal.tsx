@@ -1,5 +1,5 @@
 import Moveable from 'react-moveable';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { CountableCard } from '../../card';
@@ -46,18 +46,21 @@ function getStyle(style: DraggingStyle | NotDraggingStyle | undefined, snapshot:
     };
 }
 
+export type DeckModalRef = {
+    shuffle: () => void,
+};
 export type DeckModal = {
     deckId: string,
     className?: string,
     type: DeckType,
     onClose?: () => void,
 };
-export const DeckModal = ({
+export const DeckModal = React.forwardRef(({
     deckId,
     className,
     type,
     onClose,
-}: DeckModal) => {
+}: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckStore(
@@ -96,6 +99,12 @@ export const DeckModal = ({
         },
     );
     const currentZIndex = modalInstance.get('zIndex');
+
+    useImperativeHandle(ref, () => ({
+        shuffle: () => {
+            shuffleList(deckId);
+        },
+    }));
 
     const onDrag = useCallback(({
         target: handleTarget,
@@ -270,4 +279,4 @@ export const DeckModal = ({
         </>,
         portal,
     );
-};
+});
