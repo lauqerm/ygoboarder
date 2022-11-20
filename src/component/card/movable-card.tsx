@@ -52,7 +52,7 @@ export const MovableCard = ({
         let highlightBeacon = (_e: MouseEvent) => { };
         const onMouseDown = () => {
             if (target) target.style.zIndex = '1001';
-            const beaconList = document.querySelectorAll<HTMLElement>(`[data-entity-type=${DROP_TYPE_DECK_BEACON}]`);
+            const beaconList = document.querySelectorAll<HTMLElement>(`[data-entity-type=${DROP_TYPE_DECK_BEACON}][data-beacon-visibility=true]`);
             beaconCoordination = [];
 
             for (let cnt = 0; cnt < beaconList.length; cnt++) {

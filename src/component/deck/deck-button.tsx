@@ -86,7 +86,8 @@ export const DeckButton = ({
         className: CLASS_BEACON_DECK_BACK,
         style: { zIndex: 1 },
         deckId: name,
-        zIndex: zIndex,
+        zIndex,
+        isVisible: true,
     };
 
     return <DeckButtonContainer className="deck-button" style={{ zIndex: 1 }}>
@@ -134,7 +135,7 @@ export const DeckButton = ({
             {name}
         </div>
         <DeckModal ref={deckModalRef}
-            className={isVisible ? 'deck-modal-visible' : 'deck-modal-invisible'}
+            isVisible={isVisible}
             deckId={name}
             type={type}
             onClose={() => {

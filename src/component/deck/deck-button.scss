@@ -6,16 +6,17 @@
     .deck-tool-bar button {
         display: none;
     }
+    .deck-beacon {
+        visibility: hidden;
+    }
 }
 .deck-modal-visible {
     visibility: visible;
 }
 .app-wrapper-is-dragging {
     .deck-button {
-        .deck-back-beacon-active {
-            .deck-beacon {
-                visibility: visible;
-            }
+        .deck-beacon {
+            visibility: visible;
         }
     }
 }

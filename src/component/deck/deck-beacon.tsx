@@ -7,12 +7,14 @@ export type DeckBeacon = {
     deckId: string,
     actionType: BEACON_ACTION,
     zIndex: number,
+    isVisible?: boolean,
     forceHighlight?: boolean,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const DeckBeacon = ({
     deckId,
     actionType,
     zIndex,
+    isVisible = false,
     forceHighlight,
     className,
     ...rest
@@ -25,6 +27,7 @@ export const DeckBeacon = ({
         )}
         data-entity-type={DROP_TYPE_DECK_BEACON}
         data-deck-origin={deckId}
+        data-beacon-visibility={isVisible}
         data-deck-beacon={`[ID-${deckId}]-[ACTION-${actionType}]`}
         data-beacon-type={actionType}
         data-beacon-index={zIndex}

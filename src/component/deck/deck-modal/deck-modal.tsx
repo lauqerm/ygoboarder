@@ -52,14 +52,16 @@ export type DeckModalRef = {
     shuffle: () => void,
 };
 export type DeckModal = {
-    deckId: string,
     className?: string,
+    deckId: string,
+    isVisible?: boolean,
     type: DeckType,
     onClose?: () => void,
 };
 export const DeckModal = React.forwardRef(({
-    deckId,
     className,
+    deckId,
+    isVisible = false,
     type,
     onClose,
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
@@ -138,12 +140,21 @@ export const DeckModal = React.forwardRef(({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const beaconProps = {
+        deckId,
+        isVisible,
+        zIndex: currentZIndex,
+    };
     if (!portal) return null;
     return createPortal(
         <>
             <DeckModalHandleContainer ref={handleRef => setHandle(handleRef)}
                 style={{ zIndex: currentZIndex }}
-                className={mergeClass('deck-modal-handle', className)}
+                className={mergeClass(
+                    'deck-modal-handle',
+                    isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
+                    className,
+                )}
                 onMouseDown={e => {
                     e.stopPropagation();
                     focus(deckId);
@@ -210,7 +221,11 @@ export const DeckModal = React.forwardRef(({
                     setTarget(targetRef);
                 }}
                 data-entity-type={DROP_TYPE_DECK}
-                className={mergeClass('deck-modal-viewer', className)}
+                className={mergeClass(
+                    'deck-modal-viewer',
+                    isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
+                    className,
+                )}
                 style={{ zIndex: currentZIndex }}
                 onMouseDown={e => {
                     e.stopPropagation();
@@ -218,9 +233,9 @@ export const DeckModal = React.forwardRef(({
                 }}
             >
                 <div className="deck-modal-beacon-list">
-                    <DeckBeacon deckId={deckId} zIndex={currentZIndex} actionType="top">Add to top</DeckBeacon>
-                    <DeckBeacon deckId={deckId} zIndex={currentZIndex} actionType="shuffle">Add and shuffle</DeckBeacon>
-                    <DeckBeacon deckId={deckId} zIndex={currentZIndex} actionType="bottom">Add to bottom</DeckBeacon>
+                    <DeckBeacon {...beaconProps} actionType="top">Add to top</DeckBeacon>
+                    <DeckBeacon {...beaconProps} actionType="shuffle">Add and shuffle</DeckBeacon>
+                    <DeckBeacon {...beaconProps} actionType="bottom">Add to bottom</DeckBeacon>
                 </div>
                 <div className="deck-card-list">
                     {currentDeckList.map((deckRow, rowIndex) => {

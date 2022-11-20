@@ -1,10 +1,6 @@
 .play-board {
     flex: 1;
     position: relative;
-    .play-board-drop-placeholder {
-        position: absolute;
-        background-color: red;
-    }
     .ygo-card {
         position: absolute;
     }
