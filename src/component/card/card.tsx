@@ -34,7 +34,6 @@ export const Card = ({
     return <div
         className={mergeClass('ygo-card', `ygo-card-size-${size}`)}
     >
-        <div>{origin}</div>
         <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />
     </div>;
 };

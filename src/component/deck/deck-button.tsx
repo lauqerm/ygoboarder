@@ -2,7 +2,7 @@ import React, { useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon } from './deck-beacon';
 import { Droppable } from 'react-beautiful-dnd';
-import { BeaconAction, DeckType, DROP_TYPE_DECK } from 'src/model';
+import { BeaconAction, CLASS_BEACON_DECK_BACK, DeckType, DROP_TYPE_DECK } from 'src/model';
 import { ModalInstanceConverter, useModalStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
@@ -43,12 +43,9 @@ const DeckButtonContainer = styled.div`
             position: relative;
             height: var(--card-height);
             width: 0;
-            .deck-back-beacon-container {
+            .deck-beacon {
                 height: calc(var(--card-height) / 3);
                 width: var(--card-width);
-                .deck-beacon {
-                    height: 100%;
-                }
             }
         }
     }
@@ -70,6 +67,7 @@ export const DeckButton = ({
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
+    const beaconListRef = useRef<HTMLDivElement>(null);
     const {
         hide,
         focus,
@@ -84,8 +82,14 @@ export const DeckButton = ({
             && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex'),
     );
     const zIndex = modalInstance.get('zIndex');
+    const commonBeaconProps = {
+        className: CLASS_BEACON_DECK_BACK,
+        style: { zIndex: 1 },
+        deckId: name,
+        zIndex: zIndex,
+    };
 
-    return <DeckButtonContainer>
+    return <DeckButtonContainer className="deck-button" style={{ zIndex: 1 }}>
         <div className="deck-button-toolbar">
             <Tooltip overlay="View">
                 <div
@@ -106,49 +110,24 @@ export const DeckButton = ({
                 </div>
             </Tooltip>
         </div>
-        <div className="deck-back ygo-card-size-sm" onClick={() => {
-            console.log('YES');
-        }}>
-            <div className="deck-back-beacon-list">
-                <Droppable
-                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${name}]-[ORIGIN-${type}]-[ACTION-${BeaconAction['top']}]`}
-                    direction="horizontal"
-                >
-                    {(dropProvided, dropSnapshot) => {
-                        return <div ref={dropProvided.innerRef} className="deck-back-beacon-container">
-                            <DeckBeacon forceHighlight={dropSnapshot.isDraggingOver} deckId={name} zIndex={zIndex} actionType={BeaconAction['top']}>
-                                Add to top
-                            </DeckBeacon>
-                            <span style={{ display: 'none' }}>{dropProvided.placeholder}</span>
-                        </div>;
-                    }}
-                </Droppable>
-                <Droppable
-                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${name}]-[ORIGIN-${type}]-[ACTION-${BeaconAction['shuffle']}]`}
-                    direction="horizontal"
-                >
-                    {(dropProvided, dropSnapshot) => {
-                        return <div ref={dropProvided.innerRef} className="deck-back-beacon-container">
-                            <DeckBeacon forceHighlight={dropSnapshot.isDraggingOver} deckId={name} zIndex={zIndex} actionType={BeaconAction['shuffle']}>
-                                Add to shuffle
-                            </DeckBeacon>
-                            <span style={{ display: 'none' }}>{dropProvided.placeholder}</span>
-                        </div>;
-                    }}
-                </Droppable>
-                <Droppable
-                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${name}]-[ORIGIN-${type}]-[ACTION-${BeaconAction['bottom']}]`}
-                    direction="horizontal"
-                >
-                    {(dropProvided, dropSnapshot) => {
-                        return <div ref={dropProvided.innerRef} className="deck-back-beacon-container">
-                            <DeckBeacon forceHighlight={dropSnapshot.isDraggingOver} deckId={name} zIndex={zIndex} actionType={BeaconAction['bottom']}>
-                                Add to bottom
-                            </DeckBeacon>
-                            <span style={{ display: 'none' }}>{dropProvided.placeholder}</span>
-                        </div>;
-                    }}
-                </Droppable>
+        <div className="deck-back ygo-card-size-sm" style={{ zIndex: 1 }}
+            onMouseOver={() => {
+                beaconListRef.current?.classList.add('deck-back-beacon-active');
+            }}
+            onMouseLeave={() => {
+                beaconListRef.current?.classList.remove('deck-back-beacon-active');
+            }}
+        >
+            <div ref={beaconListRef} className="deck-back-beacon-list">
+                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['top']}>
+                    Add to top
+                </DeckBeacon>
+                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['shuffle']}>
+                    Add to shuffle
+                </DeckBeacon>
+                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['bottom']}>
+                    Add to bottom
+                </DeckBeacon>
             </div>
         </div>
         <div className="deck-button-info">

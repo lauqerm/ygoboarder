@@ -15,40 +15,52 @@ export const BoardCardConverter = ImmutableRecord<BaseBoardCard>({
     initialY: 0,
 });
 
-export type BoardList = List<BoardCard>;
+export type BaseBoardEntry = {
+    boardName: string,
+    boardCardList: List<BoardCard>,
+};
+export type BoardEntry = ImmutableRecord<BaseBoardEntry>;
+export const BoardEntryConverter = ImmutableRecord<BaseBoardEntry>({
+    boardName: '',
+    boardCardList: List(),
+});
 export type BoardState = {
-    boardList: Map<string, BoardList>,
-    add: (boardId: string, cardList: { card: CardImage, initialX: number, initialY: number, origin: string }[]) => void,
-    delete: (boardId: string, idList: string[]) => void,
+    boardMap: Map<string, BoardEntry>,
+    add: (boardName: string, cardList: { card: CardImage, initialX: number, initialY: number, origin: string }[]) => void,
+    delete: (boardName: string, idList: string[]) => void,
     reset: () => void,
 }
 export const useBoardStore = create<BoardState>((set) => ({
-    boardList: Map(),
-    add: (boardId, cardList) => set(state => {
-        console.log('ADD TO BOARD');
-        let newList = state.boardList.get(boardId, List<BoardCard>());
-        if (newList) cardList.forEach(card => {
-            newList = newList.push(BoardCardConverter({ ...card }));
-        });
+    boardMap: Map(),
+    add: (boardName, cardList) => set(state => {
+        let newEntry = state.boardMap.get(boardName, BoardEntryConverter());
+        let newList = newEntry.get('boardCardList', List<BoardCard>());
+        if (newList) {
+            cardList.forEach(card => {
+                newList = newList.push(BoardCardConverter({ ...card }));
+            });
+        }
+        newEntry = newEntry.set('boardCardList', newList);
 
         return {
             ...state,
-            boardList: state.boardList.set(boardId, newList),
+            boardMap: state.boardMap.set(boardName, newEntry),
         };
     }),
-    delete: (deckId, idList) => set(state => {
-        let newList = state.boardList.get(deckId, List<BoardCard>());
-        
+    delete: (boardName, idList) => set(state => {
+        let newEntry = state.boardMap.get(boardName, BoardEntryConverter());
+        let newList = newEntry.get('boardCardList', List<BoardCard>());
         if (newList) {
             idList.forEach(id => { newList = newList.filter(value => value.get('card').get('_id') !== id) });
         }
+        newEntry = newEntry.set('boardCardList', newList);
 
         return {
             ...state,
-            boardList: state.boardList.set(deckId, newList),
+            boardMap: state.boardMap.set(boardName, newEntry),
         };
     }),
     reset: () => set(state => {
-        return { ...state, boardList: Map() };
+        return { ...state, boardMap: Map() };
     }),
 }));

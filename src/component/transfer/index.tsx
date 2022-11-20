@@ -8,7 +8,7 @@ export const ExportButton = () => {
         state => state.deckMap,
     );
     const allBoard = useBoardStore(
-        state => state.boardList,
+        state => state.boardMap,
     );
 
     return <button onClick={() => {
@@ -28,7 +28,7 @@ export const ExportButton = () => {
             });
         });
         allBoard.forEach(boardList => {
-            boardList.forEach(card => {
+            boardList.get('boardCardList').forEach(card => {
                 const origin = card.get('origin');
                 const originType = deckTypeMap[origin] ?? 'vanish';
                 if (!result[origin]) {

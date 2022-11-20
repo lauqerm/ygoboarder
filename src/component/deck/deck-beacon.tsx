@@ -1,5 +1,5 @@
 import React from 'react';
-import { BEACON_ACTION, DeckType, DROP_TYPE_DECK_BEACON } from 'src/model';
+import { BEACON_ACTION, DROP_TYPE_DECK_BEACON } from 'src/model';
 import { mergeClass } from 'src/util';
 import './deck-beacon.scss';
 
@@ -14,14 +14,17 @@ export const DeckBeacon = ({
     actionType,
     zIndex,
     forceHighlight,
+    className,
     ...rest
 }: DeckBeacon) => {
     return <div
         className={mergeClass(
             'deck-beacon',
             forceHighlight ? 'available-to-drop ready-to-drop' : '',
+            className,
         )}
         data-entity-type={DROP_TYPE_DECK_BEACON}
+        data-deck-origin={deckId}
         data-deck-beacon={`[ID-${deckId}]-[ACTION-${actionType}]`}
         data-beacon-type={actionType}
         data-beacon-index={zIndex}

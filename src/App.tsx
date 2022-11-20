@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './app.scss';
 import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex } from './model';
+import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
@@ -13,6 +13,7 @@ import { List } from 'immutable';
 import 'antd/dist/antd.less';
 
 function App() {
+    const appRef = useRef<HTMLDivElement>(null);
     const currentDeckList = useDeckStore(
         state => state.deckMap,
         (oldState, newState) => oldState.equals(newState),
@@ -55,6 +56,7 @@ function App() {
     const onBeforeDragStart = (initial: DragStart) => {
         const { draggableId } = initial;
         /*...*/
+        appRef.current?.classList.add('app-wrapper-is-dragging');
     };
 
     const onDragStart = () => {
@@ -64,9 +66,92 @@ function App() {
         /*...*/
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
+        appRef.current?.classList.remove('app-wrapper-is-dragging');
         const { destination, source, draggableId } = result;
 
-        if (!destination) return;
+        /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
+        if (destination == null) {
+            const backBeaconList = document.querySelectorAll<HTMLElement>(`.${CLASS_BEACON_DECK_BACK}`);
+            let highestBeaconIndex = 0;
+            let highestBeaconTarget: HTMLElement | null = null;
+
+            for (let cnt = 0; cnt < backBeaconList.length; cnt++) {
+                const target = backBeaconList[cnt];
+                const zIndex = parseInt(target.style.zIndex ?? '0');
+                if (!isNaN(zIndex) && zIndex >= highestBeaconIndex) {
+                    const { top, left, right, bottom } = target.getBoundingClientRect();
+                    const { x, y } = mousePosition.current;
+
+                    if (x >= left && x <= right && y >= top && y <= bottom) {
+                        highestBeaconIndex = zIndex;
+                        highestBeaconTarget = target;
+                    }
+                }
+            }
+
+            if (highestBeaconTarget) {
+                /** Drag vào Deck thông qua beacon từ Deck Back */
+                const dropType = highestBeaconTarget.getAttribute('data-beacon-type') as BEACON_ACTION | null;
+                const beaconOrigin = highestBeaconTarget.getAttribute('data-deck-origin');
+                const sourceDeckID = GetDropIDRegex.exec(source.droppableId)?.[1];
+                if (dropType && beaconOrigin && sourceDeckID) {
+                    const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(source.index);
+
+                    if (targetDeckCard) {
+                        deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
+                        addToDeck(
+                            beaconOrigin,
+                            [targetDeckCard.get('card')],
+                            dropType,
+                        );
+                    }
+                }
+            } else {
+                /** Drag vào board */
+                const playBoardList = document.querySelectorAll<HTMLElement>(`.${CLASS_BOARD}`);
+                let highestBoardIndex = 0;
+                let highestBoardTarget: HTMLElement | null = null;
+    
+                for (let cnt = 0; cnt < playBoardList.length; cnt++) {
+                    const target = playBoardList[cnt];
+                    const zIndex = parseInt(target.style.zIndex ?? '0');
+                    if (!isNaN(zIndex) && zIndex >= highestBoardIndex) {
+                        const { top, left, right, bottom } = target.getBoundingClientRect();
+                        const { x, y } = mousePosition.current;
+    
+                        if (x >= left && x <= right && y >= top && y <= bottom) {
+                            highestBoardIndex = zIndex;
+                            highestBoardTarget = target;
+                        }
+                    }
+                }
+
+                if (highestBoardTarget) {
+                    const deckID = GetDropIDRegex.exec(source.droppableId)?.[1];
+                    const boardName = highestBoardTarget.getAttribute('data-board-name');
+                    if (deckID && boardName) {
+                        const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(source.index);
+                        const targetBoard = document.querySelector(`[data-board-name="${boardName}"]`);
+    
+                        if (deckID && cardInDeck && targetBoard) {
+                            console.log('TO BOARD', deckID, boardName);
+                            const { top: boardTop, left: boardLeft } = targetBoard.getBoundingClientRect();
+                            const { x, y } = mousePosition.current;
+                            const { x: offsetX, y: offsetY } = dragCardOffset.current;
+                            const targetCard = cardInDeck.get('card');
+                            deleteFromDeck(deckID, [targetCard.get('_id')]);
+                            addToBoard(boardName, [{
+                                card: targetCard,
+                                initialX: x - boardLeft - offsetX,
+                                initialY: y - boardTop - offsetY,
+                                origin: deckID,
+                            }]);
+                        }
+                    }
+                }
+            }
+            return;
+        }
         if (destination.droppableId === source.droppableId && destination.index === source.index) return;
         const sourceType = GetDropTypeRegex.exec(source.droppableId)?.[1];
         const destinationType = GetDropTypeRegex.exec(destination.droppableId)?.[1];
@@ -105,29 +190,6 @@ function App() {
                 }
             }
         }
-        /** Drag từ Deck ra Board */
-        if (sourceType === DROP_TYPE_DECK && destinationType === DROP_TYPE_BOARD) {
-            const deckID = GetDropIDRegex.exec(source.droppableId)?.[1];
-            const boardID = GetDropIDRegex.exec(destination.droppableId)?.[1];
-            if (deckID && boardID) {
-                const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(source.index);
-                const targetBoard = document.querySelector(`[data-board-id="${boardID}"]`);
-
-                if (deckID && cardInDeck && targetBoard) {
-                    const { top: boardTop, left: boardLeft } = targetBoard.getBoundingClientRect();
-                    const { x, y } = mousePosition.current;
-                    const { x: offsetX, y: offsetY } = dragCardOffset.current;
-                    const targetCard = cardInDeck.get('card');
-                    addToBoard(boardID, [{
-                        card: targetCard,
-                        initialX: x - boardLeft - offsetX,
-                        initialY: y - boardTop - offsetY,
-                        origin: deckID,
-                    }]);
-                    deleteFromDeck(deckID, [targetCard.get('_id')]);
-                }
-            }
-        }
     };
 
     useEffect(() => {
@@ -152,7 +214,7 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
-            <div key={`board-${hardResetCnt}`} className="app-wrapper">
+            <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
                 <ExportButton />
                 <ImportButton onImport={importedData => {
                     resetDeck();
@@ -170,7 +232,7 @@ function App() {
                 <DeckButton type="permanent" name="DECK" />
                 <DeckButton type="consistent" name="TRUNK" />
                 <DeckButton type="transient" name="GY" />
-                <Board />
+                <Board boardName="main-board" />
             </div>
         </DragDropContext>
     );

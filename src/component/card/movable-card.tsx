@@ -49,7 +49,7 @@ export const MovableCard = ({
             element: HTMLElement,
             zIndex: number,
         }[] = [];
-        let highlightBeacon = (e: MouseEvent) => { };
+        let highlightBeacon = (_e: MouseEvent) => { };
         const onMouseDown = () => {
             if (target) target.style.zIndex = '1001';
             const beaconList = document.querySelectorAll<HTMLElement>(`[data-entity-type=${DROP_TYPE_DECK_BEACON}]`);

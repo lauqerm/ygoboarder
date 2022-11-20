@@ -2,7 +2,7 @@ import Moveable from 'react-moveable';
 import React, { useCallback, useEffect, useImperativeHandle, useState } from 'react';
 import { Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
-import { CountableCard } from '../../card';
+import { DraggableCard } from '../../card';
 import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType } from 'src/model';
 import { DeckBeacon } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ModalInstanceConverter, useCountStore, useDeckStore, useModalStore } from 'src/state';
@@ -35,15 +35,17 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
 };
 
 function getStyle(style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined {
-    if (!snapshot.isDropAnimating || !snapshot.dropAnimation) return style;
-    const { curve } = snapshot.dropAnimation;
+    if (snapshot.isDropAnimating && snapshot.dropAnimation) {
+        const { curve } = snapshot.dropAnimation;
 
-    return {
-        ...style,
-        visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
-        /** Skip hết mức transition để giảm giật layout */
-        transition: `all ${curve} 0.001s, visibility 0.001s`,
-    };
+        return {
+            ...style,
+            visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
+            /** Skip hết mức transition để giảm giật layout */
+            transition: `all ${curve} 0.001s, visibility 0s`,
+        };
+    }
+    return style;
 }
 
 export type DeckModalRef = {
@@ -95,7 +97,7 @@ export const DeckModal = React.forwardRef(({
         }),
         (prev, next) => {
             return prev.modalInstance.get('name') === next.modalInstance.get('name')
-            && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex');
+                && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex');
         },
     );
     const currentZIndex = modalInstance.get('zIndex');
@@ -133,7 +135,7 @@ export const DeckModal = React.forwardRef(({
 
     useEffect(() => {
         register(deckId, type);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     if (!portal) return null;
@@ -240,11 +242,11 @@ export const DeckModal = React.forwardRef(({
                                         const cardId = `${deckId}-${_id}`;
 
                                         return <Draggable key={cardId}
-                                            draggableId={cardId}
                                             index={index}
+                                            draggableId={cardId}
                                         >
                                             {(dragProvided, snapshot) => {
-                                                return <CountableCard ref={dragProvided.innerRef}
+                                                return <DraggableCard ref={dragProvided.innerRef}
                                                     uniqueId={cardId}
                                                     image={card}
                                                     origin={origin}
@@ -254,8 +256,8 @@ export const DeckModal = React.forwardRef(({
                                                     onDuplicate={() => {
                                                         duplicateInList(deckId, [deckCard]);
                                                     }}
-                                                    {...dragProvided.draggableProps}
                                                     {...dragProvided.dragHandleProps}
+                                                    {...dragProvided.draggableProps}
                                                     style={getStyle(dragProvided.draggableProps.style, snapshot)}
                                                 />;
                                             }}

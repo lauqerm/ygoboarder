@@ -21,6 +21,9 @@ export const DROP_TYPE_DECK_BEACON = 'DECK_BEACON';
 export const DROP_TYPE_BOARD = 'BOARD';
 export const DECK_ROW_COUNT = 5;
 
+export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
+export const CLASS_BOARD = 'js-board';
+
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
 export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;
 export const GetDropActionRegex = /\[ACTION-([\w-]*)\]/m;
