@@ -1,14 +1,13 @@
 import React, { useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon } from './deck-beacon';
-import { Droppable } from 'react-beautiful-dnd';
-import { BeaconAction, CLASS_BEACON_DECK_BACK, DeckType, DROP_TYPE_DECK } from 'src/model';
+import { BeaconAction, CLASS_BEACON_DECK_BACK, DeckType } from 'src/model';
 import { ModalInstanceConverter, useModalStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
-import './deck-button.scss';
 import { Tooltip } from 'antd';
 import { DeckModalRef } from './deck-modal/deck-modal';
+import './deck-button.scss';
 
 const DeckButtonContainer = styled.div`
     border: var(--bd);

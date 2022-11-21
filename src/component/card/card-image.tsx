@@ -41,7 +41,8 @@ const createImageSourceQueue = () => {
                 const { source, resolved } = sourceMap[name] ?? {};
 
                 if (source) {
-                    if (resolved) return source;
+                    /** Chỉ delay với source từ ygoprodeck */
+                    if (resolved || source.indexOf('images.ygoprodeck.com') < 0) return source;
                     else {
                         let upcomingQueue;
                         do {

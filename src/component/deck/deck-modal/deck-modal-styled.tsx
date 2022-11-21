@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 
-export const DECK_MODAL_WIDTH = 700;
+export const DECK_MODAL_WIDTH = 660;
 export const DECK_MODAL_HEIGHT = 520;
 
 export const DeckModalHandleContainer = styled.div`
@@ -42,10 +42,14 @@ export const ModalContainer = styled.div`
     border: var(--bd);
     border-radius: 0 0 var(--br) var(--br);
     overflow: hidden;
+    .deck-result {
+        width: calc(${DECK_MODAL_WIDTH}px + 104px);
+    }
     .deck-card-list {
         padding: var(--spacing);
         height: var(--content-height);
-        overflow: auto;
+        overflow-y: auto;
+        overflow-x: hidden;
     }
     .deck-tool-bar {
         display: grid;

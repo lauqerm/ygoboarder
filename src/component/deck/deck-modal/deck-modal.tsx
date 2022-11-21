@@ -133,6 +133,7 @@ export const DeckModal = React.forwardRef(({
     }, [target, handle]);
 
     const currentDeckList = distributeDeckRow(currentFullDeckList);
+    console.log('🚀 ~ file: deck-modal.tsx ~ line 136 ~ currentDeckList', currentDeckList);
     const portal = document.getElementById('modal-wrapper');
 
     useEffect(() => {
@@ -238,10 +239,54 @@ export const DeckModal = React.forwardRef(({
                     <DeckBeacon {...beaconProps} actionType="bottom">Add to bottom</DeckBeacon>
                 </div>
                 <div className="deck-card-list">
+                    {/* <Droppable
+                        droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]`}
+                        direction="horizontal"
+                    >
+                        {dropProvided => {
+                            return <div
+                                ref={dropProvided.innerRef}
+                                className="deck-result"
+                                {...dropProvided.droppableProps}
+                            >
+                                {currentFullDeckList.map((deckCard, index) => {
+                                    // const { card: deckCard, index } = entry;
+                                    const card = deckCard.get('card');
+                                    const origin = deckCard.get('origin');
+                                    const _id = card.get('_id');
+                                    const cardId = `${deckId}-${_id}`;
+
+                                    return <Draggable key={cardId}
+                                        index={index}
+                                        draggableId={cardId}
+                                    >
+                                        {(dragProvided, snapshot) => {
+                                            return <DraggableCard ref={dragProvided.innerRef}
+                                                uniqueId={cardId}
+                                                image={card}
+                                                origin={origin}
+                                                onDelete={() => {
+                                                    deleteFromList(deckId, [_id]);
+                                                }}
+                                                onDuplicate={() => {
+                                                    duplicateInList(deckId, [deckCard]);
+                                                }}
+                                                {...dragProvided.dragHandleProps}
+                                                {...dragProvided.draggableProps}
+                                                style={getStyle(dragProvided.draggableProps.style, snapshot)}
+                                            />;
+                                        }}
+                                    </Draggable>;
+                                })}
+                                {dropProvided.placeholder}
+                            </div>;
+                        }}
+                    </Droppable> */}
                     {currentDeckList.map((deckRow, rowIndex) => {
                         return <Droppable key={rowIndex}
                             droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]-[ROW-${rowIndex}]`}
                             direction="horizontal"
+                            isDropDisabled={!isVisible}
                         >
                             {dropProvided => {
                                 return <div

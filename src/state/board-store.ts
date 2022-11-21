@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { CardImage, CardImageConverter, DeckType } from 'src/model';
+import { CardImage, CardImageConverter } from 'src/model';
 import create from 'zustand';
 import { BaseDeckCard } from './deck-store';
 
