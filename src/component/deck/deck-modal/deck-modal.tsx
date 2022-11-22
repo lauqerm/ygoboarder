@@ -34,19 +34,30 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
     return processedDeckRow;
 };
 
-function getStyle(style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined {
+const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): string => {
+    /** Indicator để giúp user nhận biết vị trí sẽ drag */
+    if (!snapshot.isDragging && (style?.transform ?? '').length > 0) return 'affected-by-dragging';
+    if (snapshot.isDragging) return 'is-dragging';
+    return '';
+};
+const getDraggingStyle = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined => {
+    /** Skip việc transform lúc move dragging để giảm giật layout */
+    if (!snapshot.isDragging) return {
+        ...style,
+        transform: '',
+    };
+    /** Skip hết mức transition lúc drop để giảm giật layout */
     if (snapshot.isDropAnimating && snapshot.dropAnimation) {
         const { curve } = snapshot.dropAnimation;
 
         return {
             ...style,
             visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
-            /** Skip hết mức transition để giảm giật layout */
             transition: `all ${curve} 0.001s, visibility 0s`,
         };
     }
     return style;
-}
+};
 
 export type DeckModalRef = {
     shuffle: () => void,
@@ -133,7 +144,6 @@ export const DeckModal = React.forwardRef(({
     }, [target, handle]);
 
     const currentDeckList = distributeDeckRow(currentFullDeckList);
-    console.log('🚀 ~ file: deck-modal.tsx ~ line 136 ~ currentDeckList', currentDeckList);
     const portal = document.getElementById('modal-wrapper');
 
     useEffect(() => {
@@ -273,7 +283,7 @@ export const DeckModal = React.forwardRef(({
                                                 }}
                                                 {...dragProvided.dragHandleProps}
                                                 {...dragProvided.draggableProps}
-                                                style={getStyle(dragProvided.draggableProps.style, snapshot)}
+                                                style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
                                             />;
                                         }}
                                     </Draggable>;
@@ -318,12 +328,13 @@ export const DeckModal = React.forwardRef(({
                                                     }}
                                                     {...dragProvided.dragHandleProps}
                                                     {...dragProvided.draggableProps}
-                                                    style={getStyle(dragProvided.draggableProps.style, snapshot)}
+                                                    className={getDraggingClass(dragProvided.draggableProps.style, snapshot)}
+                                                    style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
                                                 />;
                                             }}
                                         </Draggable>;
                                     })}
-                                    {dropProvided.placeholder}
+                                    <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
                                 </div>;
                             }}
                         </Droppable>;

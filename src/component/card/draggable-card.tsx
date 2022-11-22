@@ -6,6 +6,11 @@ import './draggable-card.scss';
 
 const DraggableCardContainer = styled.div`
     position: relative;
+    border-left: 2px solid transparent;
+    border-right: 2px solid transparent;
+    padding: var(--spacing-xxs) 0;
+    margin: var(--spacing-xxs);
+    display: inline-block;
 `;
 
 export type DraggableCard = {
@@ -25,7 +30,7 @@ export const DraggableCard = React.forwardRef<HTMLDivElement, DraggableCard>(({
 }: DraggableCard, externalRef) => {
     return <DraggableCardContainer ref={externalRef}
         data-countable-card-id={uniqueId}
-        className={mergeClass('ygo-card', 'ygo-draggable-card', `ygo-card-size-${size}`, className)}
+        className={mergeClass('ygo-card-wrapper', 'ygo-draggable-card', `ygo-card-size-${size}`, className)}
         {...rest}
         onContextMenu={e => {
             e.preventDefault();
