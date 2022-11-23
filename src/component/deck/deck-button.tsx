@@ -49,7 +49,7 @@ const DeckButtonContainer = styled.div`
         }
     }
     .deck-button-info {
-        background: var(--main-colorLighter);
+        background: var(--main-primaryLighter);
         font-weight: bold;
         text-align: center;
         border-top: var(--bd);

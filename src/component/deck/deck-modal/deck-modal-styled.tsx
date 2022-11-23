@@ -9,7 +9,7 @@ export const DECK_MODAL_HEIGHT = 520;
 export const DeckModalHandleContainer = styled.div`
     position: absolute;
     width: ${DECK_MODAL_WIDTH}px;
-    background-color: var(--main-colorLighter);
+    background-color: var(--main-primaryLighter);
     border: var(--bd);
     border-bottom: 0;
     border-radius: var(--br) var(--br) 0 0;
@@ -41,7 +41,7 @@ export const ModalContainer = styled.div`
     width: ${DECK_MODAL_WIDTH}px;
     display: grid;
     grid-template-columns: 0 1fr;
-    background: var(--main-color);
+    background: var(--main-primary);
     border: var(--bd);
     border-radius: 0 0 var(--br) var(--br);
     overflow: hidden;
@@ -60,7 +60,7 @@ export const ModalContainer = styled.div`
         align-items: center;
         column-gap: var(--spacing);
         padding: var(--spacing);
-        background: var(--main-colorLighter);
+        background: var(--main-primaryLighter);
         border-top: var(--bd);
     }
     .deck-modal-beacon-list {

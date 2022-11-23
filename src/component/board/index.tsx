@@ -1,13 +1,14 @@
-import { CLASS_BOARD } from 'src/model';
-import { BoardCard, BoardEntryConverter, useBoardStore } from 'src/state';
-import { MovableCard } from '../card';
-import { List } from 'immutable';
-import { mergeClass } from 'src/util';
 import styled from 'styled-components';
+import { BoardCard, BoardEntryConverter, useBoardStore } from 'src/state';
+import { BoardDrawing } from './board-drawing';
+import { CLASS_BOARD } from 'src/model';
+import { List } from 'immutable';
+import { MovableCard } from '../card';
+import { mergeClass } from 'src/util';
 import './play-board.scss';
 
 const BoardContainer = styled.div`
-    background-color: var(--main-colorLighter);
+    background-color: var(--main-primaryLighter);
     border: var(--bd);
 `;
 
@@ -27,6 +28,7 @@ export const Board = ({
         style={{ zIndex: 1 }}
         className={mergeClass('play-board', CLASS_BOARD)}
     >
+        <BoardDrawing />
         {currentBoardList.map(boardCard => {
             const cardId = `[BOARD-${boardName}]-[ID-${boardCard.get('card').get('_id')}]`;
 

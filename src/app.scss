@@ -7,15 +7,18 @@
 
   --fs-lg: 1.25rem;
 
-  --bdColor: #8a8a8a;
-  --bd: 1px solid #8a8a8a;
-
   --br-sm: 2px;
   --br: 4px;
 
-  --main-colorDarker: #000;
-  --main-color: #111;
-  --main-colorLighter: #222;
+  --main-contrast: #fff;
+
+  --main-primaryDarker: #000;
+  --main-primary: #111;
+  --main-primaryLighter: #222;
+
+  --main-secondaryDarker: #1a1a1a;
+  --main-secondary: #2a2a2a;
+  --main-secondaryLighter: #3a3a3a;
 
   --dim-metal: #223;
   --main-metal: #334;
@@ -24,19 +27,27 @@
   --main-danger: #f22;
   --sub-danger: #f44;
 
-  --card-width: 275px;
-  --card-height: 400px;
+  --bdColor: #8a8a8a;
+  --bd: 1px solid var(--bdColor);
+  --bd-contrast: 1px solid var(--main-contrast);
+
+  --card-width-lg: 549px;
+  --card-height-lg: 800px;
+  --card-width-md: 275px;
+  --card-height-md: 400px;
+  --card-width-sm: 104px;
+  --card-height-sm: 150px;
   .ygo-card-size-lg {
-      --card-width: 549px;
-      --card-height: 800px;
+    --card-width: var(--card-width-lg);
+    --card-height: var(--card-height-lg);
   }
   .ygo-card-size-md {
-      --card-width: 275px;
-      --card-height: 400px;
+    --card-width: var(--card-width-md);
+    --card-height: var(--card-height-md);
   }
   .ygo-card-size-sm {
-      --card-width: 104px;
-      --card-height: 150px;
+    --card-width: var(--card-width-sm);
+    --card-height: var(--card-height-sm);
   }
   h2 {
     font-size: var(--fs-lg);
