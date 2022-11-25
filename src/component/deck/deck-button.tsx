@@ -10,20 +10,24 @@ import { DeckModalRef } from './deck-modal/deck-modal';
 import './deck-button.scss';
 
 const DeckButtonContainer = styled.div`
-    border: var(--bd);
-    border-radius: var(--br);
-    overflow: hidden;
+    text-align: center;
+    position: relative;
+    display: inline-block;
     .deck-button-toolbar {
-        display: flex;
-        column-gap: 1px;
-        background-color: var(--bdColor);
-        border-bottom: var(--bd);
+        display: none;
+        column-gap: var(--spacing-xs);
+        padding: var(--spacing-xs);
+        position: absolute;
+        width: 100%;
+        transform: translateY(-100%);
         .deck-button-tool {
             flex: 1;
             padding: var(--spacing-xs);
             line-height: 1;
             text-align: center;
             background-color: var(--main-metal);
+            border: var(--bd);
+            border-radius: var(--br);
             cursor: pointer;
             &:hover {
                 background-color: var(--dim-metal);
@@ -49,10 +53,22 @@ const DeckButtonContainer = styled.div`
         }
     }
     .deck-button-info {
+        display: inline-block;
+        position: absolute;
         background: var(--main-primaryLighter);
         font-weight: bold;
         text-align: center;
-        border-top: var(--bd);
+        border: var(--bd);
+        border-radius: var(--br);
+        padding: 0 var(--spacing-sm);
+        margin-top: var(--spacing-xs);
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    &:hover {
+        .deck-button-toolbar {
+            display: flex;
+        }
     }
 `;
 
@@ -90,7 +106,7 @@ export const DeckButton = ({
     };
 
     return <DeckButtonContainer className="deck-button" style={{ zIndex: 1 }}>
-        <div className="deck-button-toolbar">
+        <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
             <Tooltip overlay="View">
                 <div
                     className="deck-button-tool deck-button-tool-view" onClick={() => {
@@ -130,7 +146,7 @@ export const DeckButton = ({
                 </DeckBeacon>
             </div>
         </div>
-        <div className="deck-button-info">
+        <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
             {name}
         </div>
         <DeckModal ref={deckModalRef}

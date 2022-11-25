@@ -1,9 +1,10 @@
 :root {
-  --spacing-xxs: 2px;
-  --spacing-xs: 4px;
-  --spacing-sm: 8px;
+  --spacing-xxs: 1px;
+  --spacing-xs: 2px;
+  --spacing-sm: 4px;
   --spacing-md: 8px;
   --spacing: var(--spacing-md);
+  --spacing-lg: 12px;
 
   --fs-lg: 1.25rem;
 
@@ -35,8 +36,8 @@
   --card-height-lg: 800px;
   --card-width-md: 275px;
   --card-height-md: 400px;
-  --card-width-sm: 104px;
-  --card-height-sm: 150px;
+  --card-width-sm: 86px;
+  --card-height-sm: 125px;
   .ygo-card-size-lg {
     --card-width: var(--card-width-lg);
     --card-height: var(--card-height-lg);
@@ -67,6 +68,10 @@
 
 .app-wrapper {
   display: flex;
+}
+
+.padding {
+  flex: 1;
 }
 
 .modal-wrapper {

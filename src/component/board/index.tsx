@@ -10,13 +10,17 @@ import './play-board.scss';
 const BoardContainer = styled.div`
     background-color: var(--main-primaryLighter);
     border: var(--bd);
+    position: relative;
+    display: inline-block;
 `;
 
 export type Board = {
     boardName: string,
+    children: React.ReactNode,
 }
 export const Board = ({
     boardName,
+    children,
 }: Board) => {
     const currentBoardList = useBoardStore(
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
@@ -29,6 +33,7 @@ export const Board = ({
         className={mergeClass('play-board', CLASS_BOARD)}
     >
         <BoardDrawing />
+        {children}
         {currentBoardList.map(boardCard => {
             const cardId = `[BOARD-${boardName}]-[ID-${boardCard.get('card').get('_id')}]`;
 

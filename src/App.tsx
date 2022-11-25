@@ -229,10 +229,12 @@ function App() {
                     });
                     setHardReset(cnt => cnt + 1);
                 }} />
-                <DeckButton type="permanent" name="DECK" />
-                <DeckButton type="consistent" name="TRUNK" />
-                <DeckButton type="transient" name="GY" />
-                <Board boardName="main-board" />
+                <Board boardName="main-board">
+                    <DeckButton type="permanent" name="DECK" />
+                    <DeckButton type="consistent" name="TRUNK" />
+                    <DeckButton type="transient" name="GY" />
+                </Board>
+                <div className="padding" />
             </div>
         </DragDropContext>
     );
