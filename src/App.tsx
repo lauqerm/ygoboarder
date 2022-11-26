@@ -4,7 +4,7 @@ import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, Card, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
+import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import { DeckCard, DeckListConverter, useBoardStore, useDeckStore } from './state';
@@ -66,7 +66,6 @@ function App() {
         /*...*/
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
-        appRef.current?.classList.remove('app-wrapper-is-dragging');
         const { destination, source, draggableId } = result;
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
@@ -134,7 +133,6 @@ function App() {
                         const targetBoard = document.querySelector(`[data-board-name="${boardName}"]`);
     
                         if (deckID && cardInDeck && targetBoard) {
-                            console.log('TO BOARD', deckID, boardName);
                             const { top: boardTop, left: boardLeft } = targetBoard.getBoundingClientRect();
                             const { x, y } = mousePosition.current;
                             const { x: offsetX, y: offsetY } = dragCardOffset.current;
@@ -150,6 +148,7 @@ function App() {
                     }
                 }
             }
+            appRef.current?.classList.remove('app-wrapper-is-dragging');
             return;
         }
         if (destination.droppableId === source.droppableId && destination.index === source.index) return;
@@ -190,6 +189,7 @@ function App() {
                 }
             }
         }
+        appRef.current?.classList.remove('app-wrapper-is-dragging');
     };
 
     useEffect(() => {
@@ -229,13 +229,10 @@ function App() {
                     });
                     setHardReset(cnt => cnt + 1);
                 }} />
-                <Board boardName="main-board">
-                    <DeckButton type="permanent" name="DECK" />
-                    <DeckButton type="consistent" name="TRUNK" />
-                    <DeckButton type="transient" name="GY" />
-                </Board>
+                <Board boardName="main-board" />
                 <div className="padding" />
             </div>
+            <CardBoard boardName="main-board" />
         </DragDropContext>
     );
 }

@@ -18,8 +18,9 @@ export const CardImageConverter = ImmutableRecord<BaseCardImage>({
 
 export const DROP_TYPE_DECK = 'DECK';
 export const DROP_TYPE_DECK_BEACON = 'DECK_BEACON';
+export const DROP_TYPE_DECK_BEACON_LIST = 'DECK_BEACON_LIST';
 export const DROP_TYPE_BOARD = 'BOARD';
-export const DECK_ROW_COUNT = 6;
+export const DECK_ROW_COUNT = 7;
 
 export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
 export const CLASS_BOARD = 'js-board';

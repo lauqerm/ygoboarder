@@ -1,25 +1,27 @@
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { DeckModal } from '.';
-import { DeckBeacon } from './deck-beacon';
+import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
 import { BeaconAction, CLASS_BEACON_DECK_BACK, DeckType } from 'src/model';
-import { ModalInstanceConverter, useModalStore } from 'src/state';
+import { DeckListConverter, ModalInstanceConverter, useDeckStore, useModalStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import { DeckModalRef } from './deck-modal/deck-modal';
+import { List } from 'immutable';
 import './deck-button.scss';
 
-const DeckButtonContainer = styled.div`
+type CardPreset = 'normal' | 'opp';
+const DeckButtonContainer = styled.div<{ $preset: CardPreset }>`
     text-align: center;
     position: relative;
     display: inline-block;
+    line-height: 0;
     .deck-button-toolbar {
         display: none;
         column-gap: var(--spacing-xs);
         padding: var(--spacing-xs);
         position: absolute;
         width: 100%;
-        transform: translateY(-100%);
         .deck-button-tool {
             flex: 1;
             padding: var(--spacing-xs);
@@ -38,7 +40,6 @@ const DeckButtonContainer = styled.div`
     .deck-back {
         height: var(--card-height);
         width: var(--card-width);
-        background-image: url('./asset/img/ygo-card-back.png');
         background-size: contain;
         background-repeat: no-repeat;
         position: relative;
@@ -46,10 +47,22 @@ const DeckButtonContainer = styled.div`
             position: relative;
             height: var(--card-height);
             width: 0;
+            display: inline-block;
             .deck-beacon {
                 height: calc(var(--card-height) / 3);
                 width: var(--card-width);
             }
+        }
+    }
+    .top-card {
+        display: inline-block;
+        height: var(--card-height);
+        width: var(--card-width);
+        vertical-align: bottom;
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
         }
     }
     .deck-button-info {
@@ -74,11 +87,15 @@ const DeckButtonContainer = styled.div`
 
 export type DeckButton = {
     name: string,
+    displayName?: string,
     type: DeckType,
+    preset?: CardPreset,
 }
 export const DeckButton = ({
     name,
+    displayName = name,
     type,
+    preset = 'normal',
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
@@ -96,16 +113,18 @@ export const DeckButton = ({
         (prev, next) => prev.modalInstance.get('name') === next.modalInstance.get('name')
             && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex'),
     );
+    const deckList = useDeckStore(
+        state => state.deckMap.get(name, DeckListConverter()).get('cardList', List()),
+        (oldState, newState) => oldState.equals(newState),
+    );
     const zIndex = modalInstance.get('zIndex');
     const commonBeaconProps = {
         className: CLASS_BEACON_DECK_BACK,
         style: { zIndex: 1 },
         deckId: name,
-        zIndex,
-        isVisible: true,
     };
 
-    return <DeckButtonContainer className="deck-button" style={{ zIndex: 1 }}>
+    return <DeckButtonContainer className="deck-button" $preset={preset} style={{ zIndex: 1 }}>
         <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
             <Tooltip overlay="View">
                 <div
@@ -126,32 +145,40 @@ export const DeckButton = ({
                 </div>
             </Tooltip>
         </div>
-        <div className="deck-back ygo-card-size-sm" style={{ zIndex: 1 }}
+        <DeckBeaconWrapper
+            className="deck-back ygo-card-size-sm"
+            style={{ zIndex: 1 }}
             onMouseOver={() => {
                 beaconListRef.current?.classList.add('deck-back-beacon-active');
             }}
             onMouseLeave={() => {
                 beaconListRef.current?.classList.remove('deck-back-beacon-active');
             }}
+            zIndex={zIndex}
+            isVisible={true}
         >
             <div ref={beaconListRef} className="deck-back-beacon-list">
                 <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['top']}>
-                    Add to top
+                    To top
                 </DeckBeacon>
                 <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['shuffle']}>
-                    Add to shuffle
+                    Shuffle
                 </DeckBeacon>
                 <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['bottom']}>
-                    Add to bottom
+                    To bottom
                 </DeckBeacon>
             </div>
-        </div>
-        <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
-            {name}
-        </div>
+            <div className="top-card">
+                {deckList.size > 0 && <img src={`./asset/img/ygo-card-back-${preset}.png`} alt="top-card-back" />}
+            </div>
+        </DeckBeaconWrapper>
+        {/* <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
+            {displayName}
+        </div> */}
         <DeckModal ref={deckModalRef}
             isVisible={isVisible}
             deckId={name}
+            displayName={displayName}
             type={type}
             onClose={() => {
                 setVisible(false);

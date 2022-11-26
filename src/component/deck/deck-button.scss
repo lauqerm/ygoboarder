@@ -14,7 +14,7 @@
     visibility: visible;
 }
 .app-wrapper-is-dragging {
-    .deck-button {
+    .deck-button:hover {
         .deck-beacon {
             visibility: visible;
         }

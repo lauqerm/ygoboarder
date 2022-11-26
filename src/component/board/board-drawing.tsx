@@ -1,12 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
-import { DeckButton } from '../deck';
 
 const BoardContainer = styled.div`
     display: flex;
     flex-direction: column;
     .opponent-field {
         transform: rotate(180deg);
+        .deck-button {
+            transform: rotate(180deg);
+        }
     }
 `;
 const FieldContainer = styled.div`
@@ -69,12 +71,26 @@ const FieldContainer = styled.div`
         }
     }
 `;
-const FieldDrawing = (props: React.HTMLAttributes<HTMLDivElement>) => {
-    return <FieldContainer {...props}>
+type FieldDeckMap = {
+    deck: React.ReactNode,
+    extraDeck: React.ReactNode,
+    gy: React.ReactNode,
+    banishedPile: React.ReactNode,
+    trunk: React.ReactNode,
+};
+const FieldDrawing = ({
+    banishedPile,
+    deck,
+    extraDeck,
+    gy,
+    trunk,
+    ...rest
+}: React.HTMLAttributes<HTMLDivElement> & FieldDeckMap) => {
+    return <FieldContainer {...rest}>
         <div className="field-col">
-            <div className="vertical-zone hidden-zone"></div>
+            <div className="vertical-zone">{trunk}</div>
             <div className="vertical-zone"></div>
-            <div className="vertical-zone"></div>
+            <div className="vertical-zone">{extraDeck}</div>
         </div>
         <div className="half-col">
             <div className="empty-zone left-extra-section"></div>
@@ -84,9 +100,9 @@ const FieldDrawing = (props: React.HTMLAttributes<HTMLDivElement>) => {
             <div className="empty-zone right-extra-section"></div>
         </div>
         <div className="right-col">
-            <div className="vertical-zone"></div>
-            <div className="vertical-zone"></div>
-            <div className="vertical-zone"></div>
+            <div className="vertical-zone">{banishedPile}</div>
+            <div className="vertical-zone">{gy}</div>
+            <div className="vertical-zone">{deck}</div>
         </div>
         <div className="main-col">
             <div className="square-zone"></div>
@@ -103,9 +119,17 @@ const FieldDrawing = (props: React.HTMLAttributes<HTMLDivElement>) => {
         <div className="hand-col"></div>
     </FieldContainer>;
 };
-export const BoardDrawing = () => {
+
+export type BoardDrawing = {
+    opponentDeckMap: FieldDeckMap,
+    yourDeckMap: FieldDeckMap,
+}
+export const BoardDrawing = ({
+    opponentDeckMap,
+    yourDeckMap,
+}: BoardDrawing) => {
     return <BoardContainer>
-        <FieldDrawing className="opponent-field" />
-        <FieldDrawing className="your-field" />
+        <FieldDrawing className="opponent-field" {...opponentDeckMap} />
+        <FieldDrawing className="your-field" {...yourDeckMap} />
     </BoardContainer>;
 };

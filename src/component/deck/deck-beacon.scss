@@ -10,18 +10,22 @@
     align-items: center;
     justify-content: center;
     user-select: none;
-    &.ready-to-drop {
-        border-color: transparent;
-        background: #e1e1e1ff;
-        color: #ffffff;
-    }
-    &.available-to-drop {
-        visibility: visible;
-    }
     &:hover {
         border-color: transparent;
         background: #e1e1e1ff;
         color: #ffffff;
         visibility: visible;
+    }
+}
+.deck-beacon-wrapper {
+    &.available-to-drop {
+        .deck-beacon {
+            visibility: visible;
+            &.ready-to-drop {
+                border-color: transparent;
+                background: #e1e1e1ff;
+                color: #ffffff;
+            }
+        }
     }
 }

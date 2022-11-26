@@ -1,4 +1,12 @@
 .ygo-card.ygo-movable-card {
     position: absolute;
     transform: none !important;
+    .moveable-control-box {
+        visibility: hidden!important;
+    }
+    &.card-is-dragging {
+        .moveable-control-box {
+            visibility: visible!important;
+        }
+    }
 }
