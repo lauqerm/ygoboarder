@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
-import { BeaconAction, CLASS_BEACON_DECK_BACK, DeckType } from 'src/model';
+import { BeaconAction, BeaconActionLabel, BEACON_ACTION, CLASS_BEACON_DECK_BACK, DeckType } from 'src/model';
 import { DeckListConverter, ModalInstanceConverter, useDeckStore, useModalStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
@@ -11,7 +11,7 @@ import { List } from 'immutable';
 import './deck-button.scss';
 
 type CardPreset = 'normal' | 'opp';
-const DeckButtonContainer = styled.div<{ $preset: CardPreset }>`
+const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number }>`
     text-align: center;
     position: relative;
     display: inline-block;
@@ -49,7 +49,7 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset }>`
             width: 0;
             display: inline-block;
             .deck-beacon {
-                height: calc(var(--card-height) / 3);
+                height: ${props => `calc(var(--card-height) / ${props.$beaconCount})`};
                 width: var(--card-width);
             }
         }
@@ -90,12 +90,14 @@ export type DeckButton = {
     displayName?: string,
     type: DeckType,
     preset?: CardPreset,
+    beaconList?: BEACON_ACTION[],
 }
 export const DeckButton = ({
     name,
     displayName = name,
     type,
     preset = 'normal',
+    beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
@@ -124,7 +126,7 @@ export const DeckButton = ({
         deckId: name,
     };
 
-    return <DeckButtonContainer className="deck-button" $preset={preset} style={{ zIndex: 1 }}>
+    return <DeckButtonContainer className="deck-button" $preset={preset} style={{ zIndex: 1 }} $beaconCount={beaconList.length}>
         <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
             <Tooltip overlay="View">
                 <div
@@ -158,15 +160,11 @@ export const DeckButton = ({
             isVisible={true}
         >
             <div ref={beaconListRef} className="deck-back-beacon-list">
-                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['top']}>
-                    To top
-                </DeckBeacon>
-                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['shuffle']}>
-                    Shuffle
-                </DeckBeacon>
-                <DeckBeacon {...commonBeaconProps} actionType={BeaconAction['bottom']}>
-                    To bottom
-                </DeckBeacon>
+                {beaconList.map(beaconAction => {
+                    return <DeckBeacon key={beaconAction} {...commonBeaconProps} actionType={beaconAction}>
+                        {BeaconActionLabel[beaconAction].shortLabel}
+                    </DeckBeacon>;
+                })}
             </div>
             <div className="top-card">
                 {deckList.size > 0 && <img src={`./asset/img/ygo-card-back-${preset}.png`} alt="top-card-back" />}

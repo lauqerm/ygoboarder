@@ -39,6 +39,11 @@ export const BeaconAction = Object.freeze({
     shuffle: 'shuffle' as const,
 });
 export type BEACON_ACTION = keyof typeof BeaconAction;
+export const BeaconActionLabel: Readonly<Record<BEACON_ACTION, { label: string, shortLabel: string }>> = Object.freeze({
+    top: { label: 'To top', shortLabel: 'Top' },
+    bottom: { label: 'To bottom', shortLabel: 'Bottom' },
+    shuffle: { label: 'Add and shuffle', shortLabel: 'Shuffle' },
+});
 export const DeckType = Object.freeze({
     /** Ví dụ Trunk
      * * Move ra board: Mất origin (có cảnh báo) - Tạo copy

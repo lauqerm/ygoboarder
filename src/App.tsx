@@ -130,18 +130,16 @@ function App() {
                     const boardName = highestBoardTarget.getAttribute('data-board-name');
                     if (deckID && boardName) {
                         const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(source.index);
-                        const targetBoard = document.querySelector(`[data-board-name="${boardName}"]`);
     
-                        if (deckID && cardInDeck && targetBoard) {
-                            const { top: boardTop, left: boardLeft } = targetBoard.getBoundingClientRect();
+                        if (deckID && cardInDeck) {
                             const { x, y } = mousePosition.current;
                             const { x: offsetX, y: offsetY } = dragCardOffset.current;
                             const targetCard = cardInDeck.get('card');
                             deleteFromDeck(deckID, [targetCard.get('_id')]);
                             addToBoard(boardName, [{
                                 card: targetCard,
-                                initialX: x - boardLeft - offsetX,
-                                initialY: y - boardTop - offsetY,
+                                initialX: x - 0 - offsetX,
+                                initialY: y - 0 - offsetY,
                                 origin: deckID,
                             }]);
                         }
