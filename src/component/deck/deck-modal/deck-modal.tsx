@@ -193,23 +193,23 @@ export const DeckModal = React.forwardRef(({
                         let translateY = Number(rawTranslateY);
                         if (handleTarget && target) {
                             const { x, y, right, height: handleHeight, width: handleWidth } = handleTarget.getBoundingClientRect();
-                            // const { height, width } = target.getBoundingClientRect();
+                            const handlePadding = 50; /** Có một khoản du di nhỏ để đảm bảo người dùng đủ chỗ cầm vào được handle */
                             /**
                              * Nếu modal bị tràn khỏi màn hình, ta ép nó vào lại viewport để đảm bảo khả năng tương tác
                              * 
                              * Ta check đáy trước, để nếu cả đáy và đỉnh đều tràn thì ưu tiên đỉnh
                              */
-                            if (right > window.innerWidth) {
-                                handleTarget.style.left = `${window.innerWidth - handleWidth}px`;
-                                target.style.left = `${window.innerWidth - handleWidth}px`;
+                            if (x + handlePadding > window.innerWidth) {
+                                handleTarget.style.left = `${window.innerWidth - handlePadding}px`;
+                                target.style.left = `${window.innerWidth - handlePadding}px`;
                             }
                             if (y > window.innerHeight) {
                                 handleTarget.style.top = `${window.innerHeight - handleHeight}px`;
                                 target.style.top = `${window.innerHeight - handleHeight}px`;
                             }
-                            if (x < 0) {
-                                handleTarget.style.left = '0px';
-                                target.style.left = '0px';
+                            if (right - handlePadding < 0) {
+                                handleTarget.style.left = `${-handleWidth + handlePadding}px`;
+                                target.style.left = `${-handleWidth + handlePadding}px`;
                             }
                             if (y < 0) {
                                 handleTarget.style.top = '0px';
@@ -253,49 +253,6 @@ export const DeckModal = React.forwardRef(({
                         <DeckBeacon {...beaconProps} actionType="bottom">Add to bottom</DeckBeacon>
                     </div>
                     <div className="deck-card-list">
-                        {/* <Droppable
-                        droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]`}
-                        direction="horizontal"
-                    >
-                        {dropProvided => {
-                            return <div
-                                ref={dropProvided.innerRef}
-                                className="deck-result"
-                                {...dropProvided.droppableProps}
-                            >
-                                {currentFullDeckList.map((deckCard, index) => {
-                                    // const { card: deckCard, index } = entry;
-                                    const card = deckCard.get('card');
-                                    const origin = deckCard.get('origin');
-                                    const _id = card.get('_id');
-                                    const cardId = `${deckId}-${_id}`;
-
-                                    return <Draggable key={cardId}
-                                        index={index}
-                                        draggableId={cardId}
-                                    >
-                                        {(dragProvided, snapshot) => {
-                                            return <DraggableCard ref={dragProvided.innerRef}
-                                                uniqueId={cardId}
-                                                image={card}
-                                                origin={origin}
-                                                onDelete={() => {
-                                                    deleteFromList(deckId, [_id]);
-                                                }}
-                                                onDuplicate={() => {
-                                                    duplicateInList(deckId, [deckCard]);
-                                                }}
-                                                {...dragProvided.dragHandleProps}
-                                                {...dragProvided.draggableProps}
-                                                style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
-                                            />;
-                                        }}
-                                    </Draggable>;
-                                })}
-                                {dropProvided.placeholder}
-                            </div>;
-                        }}
-                    </Droppable> */}
                         {currentDeckList.map((deckRow, rowIndex) => {
                             return <Droppable key={rowIndex}
                                 droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]-[ROW-${rowIndex}]`}
