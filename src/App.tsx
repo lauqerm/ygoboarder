@@ -2,7 +2,7 @@ import logo from './logo.svg';
 import './app.scss';
 import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD } from './model';
+import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD, CLASS_BOARD_ACTIVE } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
@@ -55,17 +55,21 @@ function App() {
 
     const onBeforeDragStart = (initial: DragStart) => {
         const { draggableId } = initial;
+        console.log('🚀 ~ file: App.tsx:58 ~ onBeforeDragStart ~ draggableId');
         /*...*/
         appRef.current?.classList.add('app-wrapper-is-dragging');
     };
 
     const onDragStart = () => {
+        console.log('🚀 ~ file: App.tsx:42 ~ onBeforeCapture ~ onDragStart');
         /*...*/
     };
     const onDragUpdate = () => {
+        console.log('🚀 ~ file: App.tsx:42 ~ onBeforeCapture ~ onDragUpdate');
         /*...*/
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
+        console.log('🚀 ~ file: App.tsx:42 ~ onBeforeCapture ~ onDragEnd');
         const { destination, source, draggableId } = result;
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
@@ -107,7 +111,7 @@ function App() {
                 }
             } else {
                 /** Drag vào board */
-                const playBoardList = document.querySelectorAll<HTMLElement>(`.${CLASS_BOARD}`);
+                const playBoardList = document.querySelectorAll<HTMLElement>(`.${CLASS_BOARD}.${CLASS_BOARD_ACTIVE}`);
                 let highestBoardIndex = 0;
                 let highestBoardTarget: HTMLElement | null = null;
     
@@ -149,7 +153,10 @@ function App() {
             appRef.current?.classList.remove('app-wrapper-is-dragging');
             return;
         }
-        if (destination.droppableId === source.droppableId && destination.index === source.index) return;
+        if (destination.droppableId === source.droppableId && destination.index === source.index) {
+            appRef.current?.classList.remove('app-wrapper-is-dragging');
+            return;
+        }
         const sourceType = GetDropTypeRegex.exec(source.droppableId)?.[1];
         const destinationType = GetDropTypeRegex.exec(destination.droppableId)?.[1];
 

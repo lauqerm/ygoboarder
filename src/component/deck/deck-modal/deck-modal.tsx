@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useImperativeHandle, useState } from 're
 import { Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { DraggableCard } from '../../card';
-import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType } from 'src/model';
+import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BEACON_ACTION, BeaconAction, BeaconActionLabel } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ModalInstanceConverter, useCountStore, useDeckStore, useModalStore } from 'src/state';
 import { DeckImporter } from './deck-import';
@@ -34,9 +34,12 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
     return processedDeckRow;
 };
 
-const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): string => {
+const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot, index: number): string => {
     /** Indicator để giúp user nhận biết vị trí sẽ drag */
-    if (!snapshot.isDragging && (style?.transform ?? '').length > 0) return 'affected-by-dragging';
+    if (!snapshot.isDragging && (style?.transform ?? '').length > 0) {
+        console.log('🚀 ~ file: deck-modal.tsx:40 ~ getDraggingClass ~ style', style?.transform, index);
+        return 'affected-by-dragging';
+    }
     if (snapshot.isDragging) return 'is-dragging';
     return '';
 };
@@ -69,6 +72,7 @@ export type DeckModal = {
     isVisible?: boolean,
     type: DeckType,
     onClose?: () => void,
+    beaconList?: BEACON_ACTION[],
 };
 export const DeckModal = React.forwardRef(({
     className,
@@ -77,7 +81,9 @@ export const DeckModal = React.forwardRef(({
     isVisible = false,
     type,
     onClose,
+    beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
+    const [isFocused, setFocused] = useState(false);
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckStore(
@@ -170,6 +176,8 @@ export const DeckModal = React.forwardRef(({
                     e.stopPropagation();
                     focus(deckId);
                 }}
+                onMouseOver={e => e.stopPropagation()}
+                onMouseOut={e => e.stopPropagation()}
             >
                 <div className="deck-modal-content">
                     <div>{displayName}</div>
@@ -193,7 +201,7 @@ export const DeckModal = React.forwardRef(({
                         let translateY = Number(rawTranslateY);
                         if (handleTarget && target) {
                             const { x, y, right, height: handleHeight, width: handleWidth } = handleTarget.getBoundingClientRect();
-                            const handlePadding = 50; /** Có một khoản du di nhỏ để đảm bảo người dùng đủ chỗ cầm vào được handle */
+                            const handlePadding = 50; /** Có một khoản thừa nhỏ để đảm bảo người dùng đủ chỗ cầm vào được handle */
                             /**
                              * Nếu modal bị tràn khỏi màn hình, ta ép nó vào lại viewport để đảm bảo khả năng tương tác
                              * 
@@ -242,22 +250,27 @@ export const DeckModal = React.forwardRef(({
                     e.stopPropagation();
                     focus(deckId);
                 }}
+                onMouseEnter={() => setFocused(true)}
+                onMouseLeave={() => setFocused(false)}
+                onMouseOver={e => e.stopPropagation()}
+                onMouseOut={e => e.stopPropagation()}
+                $beaconCount={beaconList?.length}
             >
                 <DeckBeaconWrapper
                     isVisible={isVisible}
                     zIndex={currentZIndex}
                 >
                     <div className="deck-modal-beacon-list">
-                        <DeckBeacon {...beaconProps} actionType="top">Add to top</DeckBeacon>
-                        <DeckBeacon {...beaconProps} actionType="shuffle">Add and shuffle</DeckBeacon>
-                        <DeckBeacon {...beaconProps} actionType="bottom">Add to bottom</DeckBeacon>
+                        {beaconList.map(beaconType => {
+                            return <DeckBeacon key={beaconType} {...beaconProps} actionType={beaconType}>{BeaconActionLabel[beaconType].label}</DeckBeacon>;
+                        })}
                     </div>
                     <div className="deck-card-list">
                         {currentDeckList.map((deckRow, rowIndex) => {
                             return <Droppable key={rowIndex}
                                 droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]-[ROW-${rowIndex}]`}
                                 direction="horizontal"
-                                isDropDisabled={!isVisible}
+                                isDropDisabled={!isVisible || !isFocused}
                             >
                                 {dropProvided => {
                                     return <div
@@ -265,6 +278,7 @@ export const DeckModal = React.forwardRef(({
                                         className="deck-result"
                                         {...dropProvided.droppableProps}
                                     >
+                                        <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
                                         {deckRow.map(entry => {
                                             const { card: deckCard, index } = entry;
                                             const card = deckCard.get('card');
@@ -289,13 +303,12 @@ export const DeckModal = React.forwardRef(({
                                                         }}
                                                         {...dragProvided.dragHandleProps}
                                                         {...dragProvided.draggableProps}
-                                                        className={getDraggingClass(dragProvided.draggableProps.style, snapshot)}
+                                                        className={getDraggingClass(dragProvided.draggableProps.style, snapshot, index)}
                                                         style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
                                                     />;
                                                 }}
                                             </Draggable>;
                                         })}
-                                        <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
                                     </div>;
                                 }}
                             </Droppable>;

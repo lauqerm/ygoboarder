@@ -28,9 +28,11 @@
   --main-danger: #f22;
   --sub-danger: #f44;
 
+  --bdSize: 1px;
+
   --bdColor: #8a8a8a;
-  --bd: 1px solid var(--bdColor);
-  --bd-contrast: 1px solid var(--main-contrast);
+  --bd: var(--bdSize) solid var(--bdColor);
+  --bd-contrast: var(--bdSize) solid var(--main-contrast);
 
   --card-width-lg: 549px;
   --card-height-lg: 800px;

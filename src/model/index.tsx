@@ -23,6 +23,7 @@ export const DROP_TYPE_BOARD = 'BOARD';
 export const DECK_ROW_COUNT = 7;
 
 export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
+export const CLASS_BOARD_ACTIVE = 'js-deck-board-ready-to-drop';
 export const CLASS_BOARD = 'js-board';
 
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
@@ -71,3 +72,4 @@ export const DeckType = Object.freeze({
 export type DeckType = keyof typeof DeckType;
 
 export * from './imgur';
+export * from './field';

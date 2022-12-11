@@ -35,7 +35,7 @@ export const DeckModalHandleContainer = styled.div`
     }
 `;
 
-export const ModalContainer = styled.div`
+export const ModalContainer = styled.div<{ $beaconCount: number }>`
     --row-height: 135px;
     --content-height: calc(var(--row-height) * 4 + var(--spacing) * 2);
     width: ${DECK_MODAL_WIDTH}px;
@@ -71,28 +71,34 @@ export const ModalContainer = styled.div`
         grid-row: 1 / span 2;
         .deck-beacon {
             position: absolute;
-            height: calc(var(--content-height) / 3);
+            height: ${props => `calc(var(--content-height) / ${props.$beaconCount})`};
             width: ${DECK_MODAL_WIDTH}px;
             font-size: calc(var(--content-height) / 9);
             left: -1px;
             &:nth-child(1) {
-                top: calc(var(--content-height) * 0);
+                top: ${props => `calc(var(--content-height) * 0 / ${props.$beaconCount})`};
             }
             &:nth-child(2) {
-                top: calc(var(--content-height) * 1 / 3);
+                top: ${props => `calc(var(--content-height) * 1 / ${props.$beaconCount})`};
             }
             &:nth-child(3) {
-                top: calc(var(--content-height) * 2 / 3);
+                top: ${props => `calc(var(--content-height) * 2 / ${props.$beaconCount})`};
             }
         }
     }
-    .affected-by-dragging {
-        border-left: 2px solid limegreen;
-        + .affected-by-dragging {
-            border-left-color: transparent;
+    .ygo-draggable-card {
+        border-left: 2px solid transparent;
+        border-right: 2px solid transparent;
+        padding: var(--spacing-xxs) 0;
+        margin: var(--spacing-xxs);
+        &.affected-by-dragging {
+            border-left: 2px solid limegreen;
+            + .affected-by-dragging {
+                border-left-color: transparent;
+            }
         }
-    }
-    .is-dragging + * {
-        border-left-color: greenyellow;
+        &.is-dragging + * {
+            border-left-color: greenyellow;
+        }
     }
 `;

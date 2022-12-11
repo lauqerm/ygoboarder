@@ -1,23 +1,70 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { FieldComponentKeyMap, FieldDeckCoordinateMap, FieldKey, FieldKeyMap } from 'src/model';
 import styled from 'styled-components';
 
 const BoardContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    .opponent-field {
-        transform: rotate(180deg);
-        .deck-button {
-            transform: rotate(180deg);
+    --field-card-height-sm: calc(var(--card-height-sm) + 2px);
+    --field-card-width-sm: calc(var(--card-width-sm) + 2px);
+
+    display: inline-grid;
+    grid-template-columns: max-content max-content max-content;
+    column-gap: var(--spacing-lg);
+    padding: var(--spacing-lg);
+    .side-col {
+        display: inline-grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: min-content 1fr min-content;
+        .side-col-component {
+            display: inline-grid;
+            grid-template-columns: 1fr;
+            row-gap: var(--spacing-lg);
         }
+    }
+    .main-col {
+        display: inline-grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: 100px min-content min-content min-content 100px;
+        .main-col-field,
+        .main-col-center {
+            background-color: var(--main-contrast);
+            border: var(--bd-contrast);
+            column-gap: var(--bdSize);
+            display: inline-flex;
+            flex-wrap: wrap;
+            row-gap: var(--bdSize);
+            width: calc(var(--field-card-height-sm) * 5 + var(--bdSize) * 4 + var(--bdSize) * 2);
+        }
+        .main-col-center {
+            border-top: none;
+            border-bottom: none;
+            border-left-color: var(--main-primaryLighter);
+            border-right-color: var(--main-primaryLighter);
+        }
+    }
+    .square-zone {
+        width: var(--field-card-height-sm);
+        height: var(--field-card-height-sm);
+        background-color: var(--main-secondaryLighter);
+    }
+    .vertical-zone {
+        width: var(--field-card-width-sm);
+        height: var(--field-card-height-sm);
+        background-color: var(--main-secondaryLighter);
+        border: var(--bd-contrast);
+        &.hidden-zone {
+            visibility: hidden;
+        }
+    }
+    .empty-zone {
+        width: var(--field-card-height-sm);
+        background-color: var(--main-primaryLighter);
     }
 `;
 const FieldContainer = styled.div`
-    --field-card-height-sm: calc(var(--card-height-sm) + 2px);
-    --field-card-width-sm: calc(var(--card-width-sm) + 2px);
     display: grid;
     grid-template-columns: max-content min-content max-content;
     grid-template-rows: max-content max-content 1fr;
-    .field-col {
+    .side-col {
         grid-row: span 3;
         padding: var(--spacing-lg);
     }
@@ -40,96 +87,172 @@ const FieldContainer = styled.div`
         row-gap: 1px;
         width: calc(var(--field-card-height-sm) * 5 + 1px * 4 + 1px * 2);
     }
-    .right-col {
-        grid-row: span 3;
-        padding: var(--spacing-lg);
-    }
-    .square-zone {
-        width: var(--field-card-height-sm);
-        height: var(--field-card-height-sm);
-        background-color: var(--main-secondaryLighter);
-    }
     .half-zone {
         width: var(--field-card-height-sm);
         height: calc(var(--field-card-height-sm) / 2);
         background-color: var(--main-secondaryLighter);
     }
-    .empty-zone {
-        width: var(--field-card-height-sm);
-        background-color: var(--main-primaryLighter);
-    }
-    .vertical-zone {
-        width: var(--field-card-width-sm);
-        height: var(--field-card-height-sm);
-        background-color: var(--main-secondaryLighter);
-        border: var(--bd-contrast);
-        + .vertical-zone {
-            margin-top: var(--spacing-lg);
-        }
-        &.hidden-zone {
-            visibility: hidden;
-        }
-    }
 `;
-type FieldDeckMap = {
-    deck: React.ReactNode,
-    extraDeck: React.ReactNode,
-    gy: React.ReactNode,
-    banishedPile: React.ReactNode,
-    trunk: React.ReactNode,
-};
+
 const FieldDrawing = ({
-    banishedPile,
-    deck,
-    extraDeck,
-    gy,
-    trunk,
+    onMount,
     ...rest
-}: React.HTMLAttributes<HTMLDivElement> & FieldDeckMap) => {
+}: React.HTMLAttributes<HTMLDivElement> & {
+    onMount: (coordinateMap: FieldDeckCoordinateMap) => void,
+}) => {
+    const trunkRef = useRef<HTMLDivElement>(null);
+    const extraDeckRef = useRef<HTMLDivElement>(null);
+    const banishedPileRef = useRef<HTMLDivElement>(null);
+    const gyRef = useRef<HTMLDivElement>(null);
+    const deckRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        onMount({
+            [FieldComponentKeyMap.deck]: deckRef.current?.getBoundingClientRect(),
+            [FieldComponentKeyMap.extraDeck]: extraDeckRef.current?.getBoundingClientRect(),
+            [FieldComponentKeyMap.trunk]: trunkRef.current?.getBoundingClientRect(),
+            [FieldComponentKeyMap.gy]: gyRef.current?.getBoundingClientRect(),
+            [FieldComponentKeyMap.banishedPile]: banishedPileRef.current?.getBoundingClientRect(),
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return <FieldContainer {...rest}>
-        <div className="field-col">
-            <div className="vertical-zone">{trunk}</div>
-            <div className="vertical-zone"></div>
-            <div className="vertical-zone">{extraDeck}</div>
-        </div>
-        <div className="half-col">
-            <div className="empty-zone left-extra-section"></div>
-            <div className="half-zone"></div>
-            <div className="empty-zone middle-extra-section"></div>
-            <div className="half-zone"></div>
-            <div className="empty-zone right-extra-section"></div>
-        </div>
-        <div className="right-col">
-            <div className="vertical-zone">{banishedPile}</div>
-            <div className="vertical-zone">{gy}</div>
-            <div className="vertical-zone">{deck}</div>
+        <div className="side-col">
+            <div ref={trunkRef} className="vertical-zone" />
+            <div className="vertical-zone" />
+            <div ref={extraDeckRef} className="vertical-zone" />
         </div>
         <div className="main-col">
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
-            <div className="square-zone"></div>
+
         </div>
-        <div className="hand-col"></div>
+        <div className="half-col">
+            <div className="empty-zone left-extra-section" />
+            <div className="half-zone" />
+            <div className="empty-zone main-extra-section" />
+            <div className="half-zone" />
+            <div className="empty-zone right-extra-section" />
+        </div>
+        <div className="side-col">
+            <div ref={banishedPileRef} className="vertical-zone" />
+            <div ref={gyRef} className="vertical-zone" />
+            <div ref={deckRef} className="vertical-zone" />
+        </div>
+        <div className="main-col">
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+            <div className="square-zone" />
+        </div>
+        <div className="hand-col" />
     </FieldContainer>;
 };
 
 export type BoardDrawing = {
-    opponentDeckMap: FieldDeckMap,
-    yourDeckMap: FieldDeckMap,
+    onMount: (boardCoordinateMap: Record<FieldKey, FieldDeckCoordinateMap | undefined>) => void,
 }
 export const BoardDrawing = ({
-    opponentDeckMap,
-    yourDeckMap,
+    onMount,
 }: BoardDrawing) => {
+    const oppTrunkRef = useRef<HTMLDivElement>(null);
+    const oppExtraDeckRef = useRef<HTMLDivElement>(null);
+    const oppBanishedPileRef = useRef<HTMLDivElement>(null);
+    const oppGYRef = useRef<HTMLDivElement>(null);
+    const oppDeckRef = useRef<HTMLDivElement>(null);
+
+    const yourTrunkRef = useRef<HTMLDivElement>(null);
+    const yourExtraDeckRef = useRef<HTMLDivElement>(null);
+    const yourBanishedPileRef = useRef<HTMLDivElement>(null);
+    const yourGYRef = useRef<HTMLDivElement>(null);
+    const yourDeckRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        onMount({
+            [FieldKeyMap.your]: {
+                [FieldComponentKeyMap.deck]: yourDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.gy]: yourGYRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
+            },
+            [FieldKeyMap.opponent]: {
+                [FieldComponentKeyMap.deck]: oppDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.gy]: oppGYRef.current?.getBoundingClientRect(),
+                [FieldComponentKeyMap.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
+            },
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     return <BoardContainer>
-        <FieldDrawing className="opponent-field" {...opponentDeckMap} />
-        <FieldDrawing className="your-field" {...yourDeckMap} />
+        <div className="side-col">
+            <div className="side-col-component side-col-top">
+                <div ref={oppDeckRef} className="vertical-zone" />
+                <div ref={oppGYRef} className="vertical-zone" />
+                <div ref={oppBanishedPileRef} className="vertical-zone" />
+            </div>
+            <div className="padding" />
+            <div className="side-col-component side-col-bot">
+                <div ref={oppTrunkRef} className="vertical-zone" />
+                <div className="vertical-zone" />
+                <div ref={oppExtraDeckRef} className="vertical-zone" />
+            </div>
+        </div>
+        <div className="main-col">
+            <div className="main-col-component main-col-hand main-col-hand-top" />
+            <div className="main-col-component main-col-field main-col-field-top">
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+            </div>
+            <div className="main-col-component main-col-center">
+                <div className="empty-zone left-extra-section" />
+                <div className="square-zone" />
+                <div className="empty-zone main-extra-section" />
+                <div className="square-zone" />
+                <div className="empty-zone right-extra-section" />
+            </div>
+            <div className="main-col-component main-col-field main-col-field-bot">
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+                <div className="square-zone" />
+            </div>
+            <div className="main-col-component main-col-hand main-col-hand-bot" />
+        </div>
+        <div className="side-col">
+            <div className="side-col-component side-col-top">
+                <div ref={oppExtraDeckRef} className="vertical-zone" />
+                <div className="vertical-zone" />
+                <div ref={oppTrunkRef} className="vertical-zone" />
+            </div>
+            <div className="padding" />
+            <div className="side-col-component side-col-bot">
+                <div ref={yourBanishedPileRef} className="vertical-zone" />
+                <div ref={yourGYRef} className="vertical-zone" />
+                <div ref={yourDeckRef} className="vertical-zone" />
+            </div>
+        </div>
     </BoardContainer>;
 };

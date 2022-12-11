@@ -1,7 +1,7 @@
 .play-board {
     flex: 1;
     position: relative;
-    .ygo-card {
+    .ygo-movable-card.ygo-card {
         position: absolute;
     }
 }

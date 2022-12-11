@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
-import { BeaconAction, BeaconActionLabel, BEACON_ACTION, CLASS_BEACON_DECK_BACK, DeckType } from 'src/model';
+import { BeaconAction, BeaconActionLabel, BEACON_ACTION, CLASS_BEACON_DECK_BACK, DeckType, DROP_TYPE_DECK } from 'src/model';
 import { DeckListConverter, ModalInstanceConverter, useDeckStore, useModalStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
@@ -9,12 +9,65 @@ import { Tooltip } from 'antd';
 import { DeckModalRef } from './deck-modal/deck-modal';
 import { List } from 'immutable';
 import './deck-button.scss';
+import { Draggable, DraggableStateSnapshot, DraggingStyle, Droppable, NotDraggingStyle } from 'react-beautiful-dnd';
+import { DraggableCard } from '../card';
 
+const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): string => {
+    /** Indicator để giúp user nhận biết vị trí sẽ drag */
+    if (!snapshot.isDragging && (style?.transform ?? '').length > 0) return 'affected-by-dragging';
+    if (snapshot.isDragging) return 'is-dragging';
+    return '';
+};
+const getDraggingStyle = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined => {
+    // if (snapshot.isDragging) {
+    //     const { curve } = snapshot.dropAnimation ?? {};
+    //     console.log('🚀 ~ file: deck-button.tsx:22', {
+    //         ...style,
+    //         top: '',
+    //         left: '',
+    //         transform: `${style?.transform ?? ''} translate(calc(0px - var(--card-width-sm) / 2))`,
+    //         visibility: (snapshot.isDropAnimating || !style?.transform) ? 'hidden' : 'visible',
+    //         /** Skip hết mức transition lúc drop để giảm giật layout */
+    //         transition: (snapshot.isDropAnimating && snapshot.dropAnimation)
+    //             ? `all ${curve} 0.001s, visibility 0s`
+    //             : 'all ease 5s',
+    //     });
+
+    //     return {
+    //         ...style,
+    //         top: '',
+    //         left: '',
+    //         transform: `${style?.transform ?? ''} translate(calc(0px - var(--card-width-sm) / 2))`,
+    //         visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
+    //         /** Skip hết mức transition lúc drop để giảm giật layout */
+    //         transition: (snapshot.isDropAnimating && snapshot.dropAnimation)
+    //             ? `all ${curve} 0.001s, visibility 0s`
+    //             : 'all cubic-bezier(.2,1,.1,1) 0.001s, visibility 0s',
+    //     };
+    // }
+    // /** Skip việc transform lúc move dragging để giảm giật layout */
+    // if (!snapshot.isDragging) return {
+    //     ...style,
+    //     transform: '',
+    // };
+    if (snapshot.isDropAnimating && snapshot.dropAnimation) {
+        const { curve } = snapshot.dropAnimation;
+
+        return {
+            ...style,
+            visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
+            transition: `all ${curve} 0.001s, visibility 0s`,
+        };
+    }
+    return style;
+};
 type CardPreset = 'normal' | 'opp';
-const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number }>`
+const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number, $top?: number, $left?: number }>`
     text-align: center;
-    position: relative;
-    display: inline-block;
+    position: absolute;
+    top: ${props => `${props.$top}px`};
+    left: ${props => `${props.$left}px`};
+    display: ${props => typeof props.$left === 'number' && typeof props.$top === 'number' ? 'inline-block' : 'none'};
     line-height: 0;
     .deck-button-toolbar {
         display: none;
@@ -30,6 +83,7 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: numb
             background-color: var(--main-metal);
             border: var(--bd);
             border-radius: var(--br);
+            user-select: none;
             cursor: pointer;
             &:hover {
                 background-color: var(--dim-metal);
@@ -90,13 +144,15 @@ export type DeckButton = {
     displayName?: string,
     type: DeckType,
     preset?: CardPreset,
-    beaconList?: BEACON_ACTION[],
-}
+    top?: number,
+    left?: number,
+} & Pick<DeckModal, 'beaconList'>;
 export const DeckButton = ({
     name,
     displayName = name,
     type,
     preset = 'normal',
+    top, left,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
@@ -119,6 +175,7 @@ export const DeckButton = ({
         state => state.deckMap.get(name, DeckListConverter()).get('cardList', List()),
         (oldState, newState) => oldState.equals(newState),
     );
+    const topDeckCard = deckList.get(0);
     const zIndex = modalInstance.get('zIndex');
     const commonBeaconProps = {
         className: CLASS_BEACON_DECK_BACK,
@@ -126,7 +183,13 @@ export const DeckButton = ({
         deckId: name,
     };
 
-    return <DeckButtonContainer className="deck-button" $preset={preset} style={{ zIndex: 1 }} $beaconCount={beaconList.length}>
+    return <DeckButtonContainer className="deck-button"
+        $preset={preset}
+        $beaconCount={beaconList.length}
+        $top={top}
+        $left={left}
+        style={{ zIndex: 1 }}
+    >
         <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
             <Tooltip overlay="View">
                 <div
@@ -150,7 +213,7 @@ export const DeckButton = ({
         <DeckBeaconWrapper
             className="deck-back ygo-card-size-sm"
             style={{ zIndex: 1 }}
-            onMouseOver={() => {
+            onMouseEnter={() => {
                 beaconListRef.current?.classList.add('deck-back-beacon-active');
             }}
             onMouseLeave={() => {
@@ -167,7 +230,43 @@ export const DeckButton = ({
                 })}
             </div>
             <div className="top-card">
-                {deckList.size > 0 && <img src={`./asset/img/ygo-card-back-${preset}.png`} alt="top-card-back" />}
+                {topDeckCard && <Droppable
+                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${name}]-[ORIGIN-${type}]-[VARIANT-DeckButton]`}
+                    direction="horizontal"
+                    // isDropDisabled={true}
+                >
+                    {dropProvided => {
+                        const card = topDeckCard.get('card');
+                        const origin = topDeckCard.get('origin');
+                        const _id = card.get('_id');
+                        const cardId = `DeckButton-${name}-${_id}`;
+
+                        return <div
+                            ref={dropProvided.innerRef}
+                            className="deck-result"
+                            {...dropProvided.droppableProps}
+                        >
+                            <Draggable key={cardId}
+                                index={0}
+                                draggableId={cardId}
+                            >
+                                {(dragProvided, snapshot) => {
+                                    return <DraggableCard ref={dragProvided.innerRef}
+                                        uniqueId={cardId}
+                                        image={card}
+                                        origin={origin}
+                                        {...dragProvided.dragHandleProps}
+                                        {...dragProvided.draggableProps}
+                                        className={getDraggingClass(dragProvided.draggableProps.style, snapshot)}
+                                        style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
+                                    />;
+                                }}
+                            </Draggable>
+                            <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
+                        </div>;
+                    }}
+                </Droppable>}
+                {/* {deckList.size > 0 && <img src={`./asset/img/ygo-card-back-${preset}.png`} alt="top-card-back" />} */}
             </div>
         </DeckBeaconWrapper>
         {/* <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
@@ -178,6 +277,7 @@ export const DeckButton = ({
             deckId={name}
             displayName={displayName}
             type={type}
+            beaconList={beaconList}
             onClose={() => {
                 setVisible(false);
                 hide(name);
