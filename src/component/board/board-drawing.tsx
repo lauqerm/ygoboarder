@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { FieldComponentKeyMap, FieldDeckCoordinateMap, FieldKey, FieldKeyMap } from 'src/model';
 import styled from 'styled-components';
 
@@ -60,99 +60,6 @@ const BoardContainer = styled.div`
         background-color: var(--main-primaryLighter);
     }
 `;
-const FieldContainer = styled.div`
-    display: grid;
-    grid-template-columns: max-content min-content max-content;
-    grid-template-rows: max-content max-content 1fr;
-    .side-col {
-        grid-row: span 3;
-        padding: var(--spacing-lg);
-    }
-    .main-col {
-        background-color: var(--main-contrast);
-        border: var(--bd-contrast);
-        column-gap: 1px;
-        display: inline-flex;
-        flex-wrap: wrap;
-        row-gap: 1px;
-        width: calc(var(--field-card-height-sm) * 5 + 1px * 4 + 1px * 2);
-    }
-    .half-col {
-        background-color: var(--main-contrast);
-        border-left: 1px solid var(--main-primaryLighter);
-        border-right: 1px solid var(--main-primaryLighter);
-        column-gap: 1px;
-        display: inline-flex;
-        flex-wrap: wrap;
-        row-gap: 1px;
-        width: calc(var(--field-card-height-sm) * 5 + 1px * 4 + 1px * 2);
-    }
-    .half-zone {
-        width: var(--field-card-height-sm);
-        height: calc(var(--field-card-height-sm) / 2);
-        background-color: var(--main-secondaryLighter);
-    }
-`;
-
-const FieldDrawing = ({
-    onMount,
-    ...rest
-}: React.HTMLAttributes<HTMLDivElement> & {
-    onMount: (coordinateMap: FieldDeckCoordinateMap) => void,
-}) => {
-    const trunkRef = useRef<HTMLDivElement>(null);
-    const extraDeckRef = useRef<HTMLDivElement>(null);
-    const banishedPileRef = useRef<HTMLDivElement>(null);
-    const gyRef = useRef<HTMLDivElement>(null);
-    const deckRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        onMount({
-            [FieldComponentKeyMap.deck]: deckRef.current?.getBoundingClientRect(),
-            [FieldComponentKeyMap.extraDeck]: extraDeckRef.current?.getBoundingClientRect(),
-            [FieldComponentKeyMap.trunk]: trunkRef.current?.getBoundingClientRect(),
-            [FieldComponentKeyMap.gy]: gyRef.current?.getBoundingClientRect(),
-            [FieldComponentKeyMap.banishedPile]: banishedPileRef.current?.getBoundingClientRect(),
-        });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    return <FieldContainer {...rest}>
-        <div className="side-col">
-            <div ref={trunkRef} className="vertical-zone" />
-            <div className="vertical-zone" />
-            <div ref={extraDeckRef} className="vertical-zone" />
-        </div>
-        <div className="main-col">
-
-        </div>
-        <div className="half-col">
-            <div className="empty-zone left-extra-section" />
-            <div className="half-zone" />
-            <div className="empty-zone main-extra-section" />
-            <div className="half-zone" />
-            <div className="empty-zone right-extra-section" />
-        </div>
-        <div className="side-col">
-            <div ref={banishedPileRef} className="vertical-zone" />
-            <div ref={gyRef} className="vertical-zone" />
-            <div ref={deckRef} className="vertical-zone" />
-        </div>
-        <div className="main-col">
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-            <div className="square-zone" />
-        </div>
-        <div className="hand-col" />
-    </FieldContainer>;
-};
 
 export type BoardDrawing = {
     onMount: (boardCoordinateMap: Record<FieldKey, FieldDeckCoordinateMap | undefined>) => void,

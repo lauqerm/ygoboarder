@@ -54,9 +54,16 @@ function App() {
     };
 
     const onBeforeDragStart = (initial: DragStart) => {
-        const { draggableId } = initial;
-        console.log('🚀 ~ file: App.tsx:58 ~ onBeforeDragStart ~ draggableId');
-        /*...*/
+        const { draggableId, source } = initial;
+        console.log('🚀 ~ file: App.tsx:58 ~ onBeforeDragStart ~ draggableId', source);
+        /**
+         * Side-effect cho DeckButton
+        */
+        appRef.current
+            ?.querySelector(`[data-rbd-droppable-id="${source.droppableId}"]`)
+            ?.closest('.deck-beacon-wrapper')
+            ?.querySelector('.deck-back-beacon-list')
+            ?.classList.add('deck-back-beacon-suppress');
         appRef.current?.classList.add('app-wrapper-is-dragging');
     };
 
@@ -71,6 +78,10 @@ function App() {
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
         console.log('🚀 ~ file: App.tsx:42 ~ onBeforeCapture ~ onDragEnd');
         const { destination, source, draggableId } = result;
+        const cleanUpEffects = () => {
+            appRef.current?.classList.remove('app-wrapper-is-dragging');
+            document.querySelectorAll('.deck-back-beacon-active').forEach(element => element.classList.remove('deck-back-beacon-active'));
+        };
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
         if (destination == null) {
@@ -150,11 +161,11 @@ function App() {
                     }
                 }
             }
-            appRef.current?.classList.remove('app-wrapper-is-dragging');
+            cleanUpEffects();
             return;
         }
         if (destination.droppableId === source.droppableId && destination.index === source.index) {
-            appRef.current?.classList.remove('app-wrapper-is-dragging');
+            cleanUpEffects();
             return;
         }
         const sourceType = GetDropTypeRegex.exec(source.droppableId)?.[1];
@@ -194,7 +205,7 @@ function App() {
                 }
             }
         }
-        appRef.current?.classList.remove('app-wrapper-is-dragging');
+        cleanUpEffects();
     };
 
     useEffect(() => {

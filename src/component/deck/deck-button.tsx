@@ -50,6 +50,10 @@ const getDraggingStyle = (style: DraggingStyle | NotDraggingStyle | undefined, s
     //     ...style,
     //     transform: '',
     // };
+    if (!snapshot.isDragging) return {
+        ...style,
+        transform: '',
+    };
     if (snapshot.isDropAnimating && snapshot.dropAnimation) {
         const { curve } = snapshot.dropAnimation;
 
@@ -102,6 +106,7 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: numb
             height: var(--card-height);
             width: 0;
             display: inline-block;
+            z-index: 1;
             .deck-beacon {
                 height: ${props => `calc(var(--card-height) / ${props.$beaconCount})`};
                 width: var(--card-width);
@@ -217,11 +222,16 @@ export const DeckButton = ({
                 beaconListRef.current?.classList.add('deck-back-beacon-active');
             }}
             onMouseLeave={() => {
-                beaconListRef.current?.classList.remove('deck-back-beacon-active');
+                beaconListRef.current?.classList.remove('deck-back-beacon-active', 'deck-back-beacon-suppress');
             }}
             zIndex={zIndex}
             isVisible={true}
         >
+            {/**
+             * Có một side-effect được trigger từ drag-n-drop
+             * 
+             * Ta muốn card nằm trên beacon khi kéo nó ra, nhưng lại muốn beacon nằm trên khi kéo sang deck khác, vậy nên ta để mặc định beacon ở trên card, và chèn class bằng side-effect để đẩy beacon xuống dưới khi chuẩn bị diễn ra việc drag. Việc này chỉ diễn ra 1 lần duy nhất.
+             */}
             <div ref={beaconListRef} className="deck-back-beacon-list">
                 {beaconList.map(beaconAction => {
                     return <DeckBeacon key={beaconAction} {...commonBeaconProps} actionType={beaconAction}>
