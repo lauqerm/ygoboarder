@@ -7,7 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { DeckCard, DeckListConverter, useBoardStore, useDeckStore } from './state';
+import { cardIndexQueue, DeckCard, DeckListConverter, useBoardStore, useDeckStore } from './state';
 import debounce from 'lodash.debounce';
 import { List } from 'immutable';
 import 'antd/dist/antd.less';
@@ -230,6 +230,12 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
+            <div>Test queue
+                <button onClick={() => cardIndexQueue.toTop('A')}>A top top</button>
+                <button onClick={() => cardIndexQueue.toTop('B')}>B top top</button>
+                <button onClick={() => cardIndexQueue.toTop('C')}>C top top</button>
+                <button onClick={() => cardIndexQueue.toTop('D')}>D top top</button>
+            </div>
             <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
                 <ExportButton />
                 <ImportButton onImport={importedData => {

@@ -24,3 +24,5 @@ export const shuffleDeck = (currentDeckList: List<DeckCard>) => {
 
     return currentDeckList.map((_value, key) => nativeDeckList[key]);
 };
+
+export { createIndexQueue } from './index-queue';

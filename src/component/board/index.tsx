@@ -148,7 +148,6 @@ export const Board = ({
         <BoardDrawing onMount={setCoordinateMap} />
         {BoardMapping.fieldList.map(fieldKey => {
             const { top: absoluteTop = 0, left: absoluteLeft = 0 } = boardDrawingRef.current?.getBoundingClientRect() ?? {};
-            console.log('🚀 ~ file: index.tsx:151 ~ absoluteLeft', absoluteLeft);
             return BoardMapping[fieldKey].componentList.map(fieldComponentKey => {
                 const { deckType, ...deckButtonProps } = BoardMapping[fieldKey].componentMap[fieldComponentKey];
                 const { top = 0, left = 0 } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};

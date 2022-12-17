@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
 import { BeaconAction, BeaconActionLabel, BEACON_ACTION, CLASS_BEACON_DECK_BACK, DeckType, DROP_TYPE_DECK } from 'src/model';
-import { DeckListConverter, ModalInstanceConverter, useDeckStore, useModalStore } from 'src/state';
+import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
@@ -167,11 +167,11 @@ export const DeckButton = ({
         hide,
         focus,
         modalInstance,
-    } = useModalStore(
+    } = useZIndexState(
         state => ({
-            modalInstance: state.modalMap.get(name, ModalInstanceConverter()),
+            modalInstance: state.categoryMap['modal'].queueMap.get(name, ZIndexInstanceConverter()),
             hide: state.reset,
-            focus: state.increase,
+            focus: state.toTop,
         }),
         (prev, next) => prev.modalInstance.get('name') === next.modalInstance.get('name')
             && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex'),
@@ -194,13 +194,14 @@ export const DeckButton = ({
         $top={top}
         $left={left}
         style={{ zIndex: 1 }}
+        data-deck-button-name={name}
     >
         <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
             <Tooltip overlay="View">
                 <div
                     className="deck-button-tool deck-button-tool-view" onClick={() => {
                         setVisible(true);
-                        focus(name);
+                        focus('modal', name);
                     }}
                 >
                     <EyeOutlined />
@@ -290,7 +291,7 @@ export const DeckButton = ({
             beaconList={beaconList}
             onClose={() => {
                 setVisible(false);
-                hide(name);
+                hide('modal', name);
             }}
         />
     </DeckButtonContainer>;

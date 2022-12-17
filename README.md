@@ -1,3 +1,20 @@
+Zindex queue
+Queue: sparse array
+maxI = 0
+click => {
+    maxI += 1
+    move oldI => maxI
+}
+if (maxI === max array l) {
+    // prune
+    for array
+        if not-empty && curI
+            put it to curI
+            curI++
+        else
+            set curI
+}
+
 https://i.imgur.com/YgaX2lG.png
 https://i.imgur.com/p9Ogumt.png
 https://i.imgur.com/NM1vrsS.png

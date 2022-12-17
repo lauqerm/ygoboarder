@@ -71,5 +71,10 @@ export const DeckType = Object.freeze({
 });
 export type DeckType = keyof typeof DeckType;
 
+/** Ta không bắt đầu từ 0 vì một vài component dùng index 0 là signal để xử lý vấn đề khác */
+export const MIN_CARD_INDEX = 10;
+export const MIN_MODAL_INDEX = 610;
+export const MIN_ABSOLUTE_INDEX = 620;
+
 export * from './imgur';
 export * from './field';

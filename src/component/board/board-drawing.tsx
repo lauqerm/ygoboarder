@@ -108,9 +108,9 @@ export const BoardDrawing = ({
             </div>
             <div className="padding" />
             <div className="side-col-component side-col-bot">
-                <div ref={oppTrunkRef} className="vertical-zone" />
+                <div ref={yourTrunkRef} className="vertical-zone" />
                 <div className="vertical-zone" />
-                <div ref={oppExtraDeckRef} className="vertical-zone" />
+                <div ref={yourExtraDeckRef} className="vertical-zone" />
             </div>
         </div>
         <div className="main-col">

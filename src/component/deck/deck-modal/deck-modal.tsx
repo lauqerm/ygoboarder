@@ -5,7 +5,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { DraggableCard } from '../../card';
 import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BEACON_ACTION, BeaconAction, BeaconActionLabel } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
-import { DeckCard, DeckListConverter, ModalInstanceConverter, useCountStore, useDeckStore, useModalStore } from 'src/state';
+import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState } from 'src/state';
 import { DeckImporter } from './deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
@@ -111,10 +111,10 @@ export const DeckModal = React.forwardRef(({
     const {
         modalInstance,
         focus,
-    } = useModalStore(
+    } = useZIndexState(
         state => ({
-            modalInstance: state.modalMap.get(deckId, ModalInstanceConverter()),
-            focus: state.increase,
+            modalInstance: state.categoryMap['modal'].queueMap.get(deckId, ZIndexInstanceConverter()),
+            focus: state.toTop,
         }),
         (prev, next) => {
             return prev.modalInstance.get('name') === next.modalInstance.get('name')
@@ -174,7 +174,7 @@ export const DeckModal = React.forwardRef(({
                 )}
                 onMouseDown={e => {
                     e.stopPropagation();
-                    focus(deckId);
+                    focus('modal', deckId);
                 }}
                 onMouseOver={e => e.stopPropagation()}
                 onMouseOut={e => e.stopPropagation()}
@@ -248,7 +248,7 @@ export const DeckModal = React.forwardRef(({
                 style={{ zIndex: currentZIndex }}
                 onMouseDown={e => {
                     e.stopPropagation();
-                    focus(deckId);
+                    focus('modal', deckId);
                 }}
                 onMouseEnter={() => setFocused(true)}
                 onMouseLeave={() => setFocused(false)}
