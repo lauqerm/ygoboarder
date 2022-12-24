@@ -2,15 +2,16 @@ import logo from './logo.svg';
 import './app.scss';
 import { Input, Upload } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { BEACON_ACTION, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD, CLASS_BOARD_ACTIVE } from './model';
+import { BeaconAction, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD, CLASS_BOARD_ACTIVE, PROP_BEACON_DECK_ORIGIN, PROP_BEACON_ACTION_TYPE } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckCard, DeckListConverter, useBoardStore, useDeckStore } from './state';
+import { cardIndexQueue, DeckCard, DeckListConverter, useBoardStore, useCardEventStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
 import debounce from 'lodash.debounce';
 import { List } from 'immutable';
 import 'antd/dist/antd.less';
+import { deactivateAllBeacon } from './service';
 
 function App() {
     const appRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,12 @@ function App() {
     const registerDeck = useDeckStore(state => state.register);
     const resetDeck = useDeckStore(state => state.reset);
     const resetBoard = useBoardStore(state => state.reset);
+    const cardDraggedFromDeckButtonToBoard = useCardEventStore(
+        state => state.dragFromDeckButtonToBoardData,
+        (prev, next) => prev._index === next._index,
+    );
+    const zIndexChange = useZIndexState(state => state.updateCount);
+    const recalculate = useDOMEntityStateStore(state => state.recalculate);
     const [hardResetCnt, setHardReset] = useState(0);
     const mousePosition = useRef({ x: 0, y: 0 });
     /**
@@ -80,7 +87,7 @@ function App() {
         const { destination, source, draggableId } = result;
         const cleanUpEffects = () => {
             appRef.current?.classList.remove('app-wrapper-is-dragging');
-            document.querySelectorAll('.deck-back-beacon-active').forEach(element => element.classList.remove('deck-back-beacon-active'));
+            deactivateAllBeacon();
         };
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
@@ -105,8 +112,8 @@ function App() {
 
             if (highestBeaconTarget) {
                 /** Drag vào Deck thông qua beacon từ Deck Back */
-                const dropType = highestBeaconTarget.getAttribute('data-beacon-type') as BEACON_ACTION | null;
-                const beaconOrigin = highestBeaconTarget.getAttribute('data-deck-origin');
+                const dropType = highestBeaconTarget.getAttribute(PROP_BEACON_ACTION_TYPE) as BeaconAction | null;
+                const beaconOrigin = highestBeaconTarget.getAttribute(PROP_BEACON_DECK_ORIGIN);
                 const sourceDeckID = GetDropIDRegex.exec(source.droppableId)?.[1];
                 if (dropType && beaconOrigin && sourceDeckID) {
                     const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(source.index);
@@ -191,7 +198,7 @@ function App() {
                             addToDeck(
                                 destinationDeckID,
                                 [targetDeckCard.get('card')],
-                                dropActionType as BEACON_ACTION,
+                                dropActionType as BeaconAction,
                             );
                         } else {
                             /** Drag từ Deck này sang Deck khác bằng thao tác trực tiếp */
@@ -208,6 +215,78 @@ function App() {
         cleanUpEffects();
     };
 
+    const getDroppedBeacon = () => {
+        const backBeaconList = document.querySelectorAll<HTMLElement>(`.${CLASS_BEACON_DECK_BACK}`);
+        let highestBeaconIndex = 0;
+        let highestBeaconTarget: HTMLElement | null = null;
+
+        for (let cnt = 0; cnt < backBeaconList.length; cnt++) {
+            const target = backBeaconList[cnt];
+            const zIndex = parseInt(target.style.zIndex ?? '0');
+            if (!isNaN(zIndex) && zIndex >= highestBeaconIndex) {
+                const { top, left, right, bottom } = target.getBoundingClientRect();
+                const { x, y } = mousePosition.current;
+
+                if (x >= left && x <= right && y >= top && y <= bottom) {
+                    highestBeaconIndex = zIndex;
+                    highestBeaconTarget = target;
+                }
+            }
+        }
+
+        return highestBeaconTarget;
+    };
+    const onDragFromDeckButtonToBoard = () => {
+        if (cardDraggedFromDeckButtonToBoard._index >= 0 && getDroppedBeacon() === null) {
+            /** Drag vào board */
+            const playBoardList = document.querySelectorAll<HTMLElement>(`.${CLASS_BOARD}.${CLASS_BOARD_ACTIVE}`);
+            let highestBoardIndex = 0;
+            let highestBoardTarget: HTMLElement | null = null;
+
+            for (let cnt = 0; cnt < playBoardList.length; cnt++) {
+                const target = playBoardList[cnt];
+                const zIndex = parseInt(target.style.zIndex ?? '0');
+                if (!isNaN(zIndex) && zIndex >= highestBoardIndex) {
+                    const { top, left, right, bottom } = target.getBoundingClientRect();
+                    const { x, y } = mousePosition.current;
+
+                    if (x >= left && x <= right && y >= top && y <= bottom) {
+                        highestBoardIndex = zIndex;
+                        highestBoardTarget = target;
+                    }
+                }
+            }
+
+            if (highestBoardTarget) {
+                const { cardIndex, deckID } = cardDraggedFromDeckButtonToBoard;
+                const boardName = highestBoardTarget.getAttribute('data-board-name');
+                if (deckID && boardName) {
+                    const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(cardIndex);
+
+                    if (deckID && cardInDeck) {
+                        console.log('🚀 ~ file: App.tsx:265 ~ onDragFromDeckButtonToBoard', deckID, cardInDeck);
+                        const { x, y } = mousePosition.current;
+                        const { x: offsetX, y: offsetY } = dragCardOffset.current;
+                        const targetCard = cardInDeck.get('card');
+                        deleteFromDeck(deckID, [targetCard.get('_id')]);
+                        addToBoard(boardName, [{
+                            card: targetCard,
+                            initialX: x - 0 - offsetX,
+                            initialY: y - 0 - offsetY,
+                            origin: deckID,
+                        }]);
+                    }
+                }
+            }
+        }
+        deactivateAllBeacon();
+    };
+
+    useEffect(() => {
+        onDragFromDeckButtonToBoard();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [cardDraggedFromDeckButtonToBoard._index]);
+
     useEffect(() => {
         const getMousePosition = (e: MouseEvent) => {
             mousePosition.current = {
@@ -216,11 +295,18 @@ function App() {
             };
         };
         document.addEventListener('mousemove', getMousePosition);
+        setTimeout(() => {
+            recalculate();
+        }, 100);
 
         return () => {
             document.removeEventListener('mousemove', getMousePosition);
         };
-    });
+    }, [recalculate]);
+
+    useEffect(() => {
+        recalculate();
+    }, [zIndexChange, recalculate]);
 
     return (
         <DragDropContext

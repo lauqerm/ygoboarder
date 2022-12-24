@@ -1,8 +1,5 @@
 .deck-modal-invisible {
     visibility: hidden;
-    .moveable-control-box {
-        visibility: hidden!important;
-    }
     .deck-tool-bar button {
         display: none;
     }
@@ -14,6 +11,9 @@
     visibility: visible;
 }
 .app-wrapper-is-dragging {
+    .deck-button {
+        z-index: 1000;
+    }
     .deck-button:hover {
         .deck-beacon {
             visibility: visible;

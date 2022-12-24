@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BEACON_ACTION, CardImage, CardImageConverter, DeckType } from 'src/model';
+import { BeaconAction, CardImage, CardImageConverter, DeckType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/service';
@@ -28,7 +28,7 @@ export const DeckListConverter = ImmutableRecord<BaseDeckList>({
 export type DeckState = {
     deckMap: Map<string, DeckList>,
     register: (deckId: string, type: DeckType) => void,
-    add: (deckId: string, cardList: CardImage[], position?: BEACON_ACTION) => void,
+    add: (deckId: string, cardList: CardImage[], position?: BeaconAction) => void,
     addToPosition: (deckId: string, cardWithPositionList: { position: number, card: DeckCard }[]) => void,
     delete: (deckId: string, idList: string[]) => void,
     duplicate: (deckId: string, cardList: DeckCard[]) => void,

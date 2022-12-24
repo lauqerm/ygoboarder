@@ -25,4 +25,8 @@ export const shuffleDeck = (currentDeckList: List<DeckCard>) => {
     return currentDeckList.map((_value, key) => nativeDeckList[key]);
 };
 
+export const deactivateAllBeacon = () => {
+    document.querySelectorAll('.deck-back-beacon-active').forEach(element => element.classList.remove('deck-back-beacon-active'));
+};
+
 export { createIndexQueue } from './index-queue';

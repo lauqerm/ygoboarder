@@ -1,5 +1,5 @@
 import React, { ForwardedRef } from 'react';
-import { BEACON_ACTION, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST } from 'src/model';
+import { BeaconAction, BEACON_CLASS, CLASS_BEACON_WRAPPER, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, PROP_BEACON_ACTION_TYPE, PROP_BEACON_DECK_ORIGIN } from 'src/model';
 import { mergeClass } from 'src/util';
 import './deck-beacon.scss';
 
@@ -16,6 +16,7 @@ export const DeckBeaconWrapper = React.forwardRef(({
     return <div ref={ref}
         className={mergeClass(
             'deck-beacon-wrapper',
+            CLASS_BEACON_WRAPPER,
             className,
         )}
         data-entity-type={DROP_TYPE_DECK_BEACON_LIST}
@@ -27,7 +28,7 @@ export const DeckBeaconWrapper = React.forwardRef(({
 
 export type DeckBeacon = {
     deckId: string,
-    actionType: BEACON_ACTION,
+    actionType: BeaconAction,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const DeckBeacon = ({
     deckId,
@@ -38,12 +39,15 @@ export const DeckBeacon = ({
     return <div
         className={mergeClass(
             'deck-beacon',
+            BEACON_CLASS,
             className,
         )}
         data-entity-type={DROP_TYPE_DECK_BEACON}
-        data-deck-origin={deckId}
         data-deck-beacon={`[ID-${deckId}]-[ACTION-${actionType}]`}
-        data-beacon-type={actionType}
         {...rest}
+        {...{
+            [PROP_BEACON_DECK_ORIGIN]: deckId,
+            [PROP_BEACON_ACTION_TYPE]: actionType,
+        }}
     />;
 };

@@ -18,7 +18,8 @@ export const ZIndexInstanceConverter = ImmutableRecord<BaseZIndexInstance>({
 type IndexCategoryData = {
     topIndex: number,
     currentFocus: string,
-    baseZIndex: number,
+    posToZIndex: (pos: number) => number,
+    zIndexToPos: (zIndex: number) => number,
     queueLength: number,
     queueMap: Map<string, ZIndexInstance>,
     queueList: (BaseZIndexInstance | undefined)[],
@@ -29,7 +30,7 @@ type IndexCategoryData = {
  * => [1, 2, 3, 4, 5, 6, x, x, x, x, x, x]
  */
 const prune = (category: IndexCategoryData): IndexCategoryData => {
-    const { baseZIndex, queueLength, queueList } = category;
+    const { posToZIndex, queueLength, queueList } = category;
     let newEntryMap: Map<string, ZIndexInstance> = Map();
     let newEntryQueue: (BaseZIndexInstance | undefined)[] = [];
     let existCount = 0;
@@ -38,9 +39,8 @@ const prune = (category: IndexCategoryData): IndexCategoryData => {
         const target = queueList[cnt];
         /** Nếu là phần tử có tồn tại, ta dồn nó vào đầu array mới, nếu không ta dồn nó ra sau */
         if (target !== undefined) {
-            newEntryQueue[existCount] = { name: target.name, zIndex: existCount + baseZIndex };
-            newEntryMap = newEntryMap.set(target.name, ZIndexInstanceConverter({ name: target.name, zIndex: existCount + baseZIndex }));
-            console.log('🚀 ~ file: zIndex-queue', newEntryQueue.map(entry => `${entry?.name ?? ''}-${entry?.zIndex ?? ''}`), newEntryMap);
+            newEntryQueue[existCount] = { name: target.name, zIndex: posToZIndex(existCount) };
+            newEntryMap = newEntryMap.set(target.name, ZIndexInstanceConverter({ name: target.name, zIndex: posToZIndex(existCount) }));
             existCount += 1;
         } else {
             newEntryQueue[queueLength - 1 - nonExistCount] = undefined;
@@ -48,7 +48,6 @@ const prune = (category: IndexCategoryData): IndexCategoryData => {
         }
     }
 
-    console.log('🚀 ~ file: zIndex-queue', newEntryMap, newEntryQueue, existCount);
     return {
         ...category,
         queueList: newEntryQueue,
@@ -60,16 +59,19 @@ const prune = (category: IndexCategoryData): IndexCategoryData => {
 type IndexCategory = 'modal' | 'card';
 
 export type ZIndexState = {
+    updateCount: number,
     categoryMap: Record<IndexCategory, IndexCategoryData>,
     toTop: (type: IndexCategory, name: string) => void,
     reset: (type: IndexCategory, name: string) => void,
 }
 export const useZIndexState = create<ZIndexState>((set) => ({
+    updateCount: 0,
     categoryMap: {
         card: {
             currentFocus: '',
             topIndex: 0,
-            baseZIndex: MIN_CARD_INDEX,
+            posToZIndex: pos => pos + MIN_CARD_INDEX,
+            zIndexToPos: zIndex => zIndex - MIN_CARD_INDEX,
             queueLength: MIN_MODAL_INDEX - MIN_CARD_INDEX - 5,
             queueMap: Map(),
             queueList: Array(MIN_MODAL_INDEX - MIN_CARD_INDEX - 10).fill(undefined),
@@ -77,7 +79,8 @@ export const useZIndexState = create<ZIndexState>((set) => ({
         modal: {
             currentFocus: '',
             topIndex: 0,
-            baseZIndex: MIN_MODAL_INDEX,
+            posToZIndex: pos => pos * 2 + MIN_MODAL_INDEX,
+            zIndexToPos: zIndex => (zIndex - MIN_MODAL_INDEX) / 2,
             queueLength: MIN_ABSOLUTE_INDEX - MIN_MODAL_INDEX - 5,
             queueMap: Map(),
             queueList: Array(MIN_ABSOLUTE_INDEX - MIN_MODAL_INDEX - 10).fill(undefined),
@@ -92,21 +95,22 @@ export const useZIndexState = create<ZIndexState>((set) => ({
         if (targetCategory.topIndex === targetCategory.queueLength) {
             updatedCategory = prune(targetCategory);
         }
-        const { queueList, queueMap, topIndex, baseZIndex } = updatedCategory;
-        const targetIndex = queueMap.get(name, ZIndexInstanceConverter()).get('zIndex') - baseZIndex;
+        const { queueList, queueMap, topIndex, posToZIndex, zIndexToPos } = updatedCategory;
+        const targetIndex = zIndexToPos(queueMap.get(name, ZIndexInstanceConverter()).get('zIndex'));
         const newIndex = topIndex;
 
-        if (targetIndex >= 0) {
-            queueList[targetIndex] = undefined;
-        }
-        queueList[newIndex] = { name, zIndex: newIndex + baseZIndex };
-        updatedCategory.queueMap = queueMap.set(name, ZIndexInstanceConverter({ name, zIndex: newIndex + baseZIndex }));
+        /**
+         * Nếu phần tử lên top đã ở sẵn trong queue, ta remove nó ra rồi thêm lại ở vị trí top queue
+         */
+        if (targetIndex >= 0) queueList[targetIndex] = undefined;
+        queueList[newIndex] = { name, zIndex: posToZIndex(newIndex) };
+        updatedCategory.queueMap = queueMap.set(name, ZIndexInstanceConverter({ name, zIndex: posToZIndex(newIndex) }));
         updatedCategory.topIndex += 1;
         updatedCategory.currentFocus = name;
-        console.log('🚀 ~ file: z-index-store.ts:106 ~ useZIndexState ~ updatedCategory', updatedCategory);
 
         return {
             ...state,
+            updateCount: state.updateCount + 1,
             categoryMap: {
                 ...state.categoryMap,
                 [type]: updatedCategory,
@@ -116,8 +120,8 @@ export const useZIndexState = create<ZIndexState>((set) => ({
     reset: (type, name) => set(state => {
         const targetCategory = state.categoryMap[type];
         const updatedCategory = { ...targetCategory };
-        const { queueList, queueMap, baseZIndex } = updatedCategory;
-        const targetIndex = queueMap.get(name, ZIndexInstanceConverter()).get('zIndex') - baseZIndex;
+        const { queueList, queueMap, zIndexToPos } = updatedCategory;
+        const targetIndex = zIndexToPos(queueMap.get(name, ZIndexInstanceConverter()).get('zIndex'));
 
         if (targetIndex >= 0) {
             queueList[targetIndex] = undefined;
@@ -126,6 +130,7 @@ export const useZIndexState = create<ZIndexState>((set) => ({
 
         return {
             ...state,
+            updateCount: state.updateCount + 1,
             categoryMap: {
                 ...state.categoryMap,
                 [type]: updatedCategory,

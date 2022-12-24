@@ -1,19 +1,20 @@
-Zindex queue
-Queue: sparse array
-maxI = 0
-click => {
-    maxI += 1
-    move oldI => maxI
-}
-if (maxI === max array l) {
-    // prune
-    for array
-        if not-empty && curI
-            put it to curI
-            curI++
-        else
-            set curI
-}
+Entity queue
+
+Board
+DeckButton
+    => Beacon
+    : Move Card to Board
+    : Move Card to DeckButton : Beacon
+    : Move Card to DeckModal : Beacon
+Card
+    : Move Card around Board
+    : Move Card to DeckButton : Beacon
+    : Move Card to DeckModal : Beacon
+DeckModal
+    => Beacon
+    : Drag Card to Board
+    : Drag Card to DeckButton : Beacon
+    : Drag Card to DeckModal
 
 https://i.imgur.com/YgaX2lG.png
 https://i.imgur.com/p9Ogumt.png

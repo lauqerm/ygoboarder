@@ -11,7 +11,6 @@ export const DeckModalHandleContainer = styled.div`
     width: ${DECK_MODAL_WIDTH}px;
     background-color: var(--main-primaryLighter);
     border: var(--bd);
-    border-bottom: 0;
     border-radius: var(--br) var(--br) 0 0;
     padding: var(--spacing);
     line-height: 1;
@@ -39,13 +38,18 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
     --row-height: 135px;
     --content-height: calc(var(--row-height) * 4 + var(--spacing) * 2);
     width: ${DECK_MODAL_WIDTH}px;
-    background: var(--main-primary);
     border: var(--bd);
-    border-radius: 0 0 var(--br) var(--br);
+    border-radius: var(--br);
     overflow: hidden;
+    position: absolute;
+    .deck-modal-header-padding {
+        height: 37px;
+        pointer-events: none;
+    }
     .deck-beacon-wrapper {
         display: grid;
         grid-template-columns: 0 1fr;
+        background: var(--main-primary);
     }
     .deck-result {
         width: calc(${DECK_MODAL_WIDTH}px - 10px);

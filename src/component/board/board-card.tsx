@@ -4,13 +4,12 @@ import { List } from 'immutable';
 import { MovableCard } from '../card';
 import './play-board.scss';
 
-const BoardCardContainer = styled.div<{ $isDraggingBoardCard: boolean }>`
+const BoardCardContainer = styled.div`
     top: 0;
     left: 0;
     width: 0;
     height: 0;
     position: fixed;
-    ${props => props.$isDraggingBoardCard ? 'z-index: 2' : 'z-index: 1'};
 `;
 
 export type CardBoard = {
@@ -19,7 +18,6 @@ export type CardBoard = {
 export const CardBoard = ({
     boardName,
 }: CardBoard) => {
-    const isDraggingBoardCard = useCardEventStore(state => state.isDraggingBoardCard);
     const currentBoardList = useBoardStore(
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
         (oldState, newState) => oldState.equals(newState),
@@ -27,7 +25,6 @@ export const CardBoard = ({
 
     return <BoardCardContainer
         data-card-board-name={boardName}
-        $isDraggingBoardCard={isDraggingBoardCard}
         className="play-card-board"
     >
         {currentBoardList.map(boardCard => {

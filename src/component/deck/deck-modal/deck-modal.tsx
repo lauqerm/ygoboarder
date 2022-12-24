@@ -3,9 +3,9 @@ import React, { useCallback, useEffect, useImperativeHandle, useState } from 're
 import { Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { DraggableCard } from '../../card';
-import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BEACON_ACTION, BeaconAction, BeaconActionLabel } from 'src/model';
+import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BeaconAction, BeaconActionLabel, PropDOMEntityName, DOMEntityTypeClass, DOM_ENTITY_CLASS, DOMEntityType, PropDOMEntityType } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
-import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState } from 'src/state';
+import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
 import { DeckImporter } from './deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
@@ -72,7 +72,7 @@ export type DeckModal = {
     isVisible?: boolean,
     type: DeckType,
     onClose?: () => void,
-    beaconList?: BEACON_ACTION[],
+    beaconList?: BeaconAction[],
 };
 export const DeckModal = React.forwardRef(({
     className,
@@ -92,6 +92,7 @@ export const DeckModal = React.forwardRef(({
     );
     const currentFullDeckList = deckData.get('cardList');
     const deckCount = useCountStore(state => state.countMap[deckId]);
+    const recalculateDOMEntity = useDOMEntityStateStore(state => state.recalculate);
 
     const {
         register,
@@ -166,7 +167,7 @@ export const DeckModal = React.forwardRef(({
     return createPortal(
         <>
             <DeckModalHandleContainer ref={handleRef => setHandle(handleRef)}
-                style={{ zIndex: currentZIndex }}
+                style={{ zIndex: currentZIndex + 1 }}
                 className={mergeClass(
                     'deck-modal-handle',
                     isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
@@ -228,10 +229,7 @@ export const DeckModal = React.forwardRef(({
                         if (isNaN(translateX) || translateX < 0) translateX = 0;
                         if (isNaN(translateY) || translateY < 0) translateY = 0;
 
-                        // target!.style.left = `${translateX}px`;
-                        // target!.style.top = `${translateY}px`;
-                        // handleTarget!.style.left = `${translateX}px`;
-                        // handleTarget!.style.top = `${translateY}px`;
+                        recalculateDOMEntity();
                     }}
                 />
             </DeckModalHandleContainer>
@@ -243,6 +241,7 @@ export const DeckModal = React.forwardRef(({
                 className={mergeClass(
                     'deck-modal-viewer',
                     isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
+                    DOM_ENTITY_CLASS, DOMEntityTypeClass['deckModal'],
                     className,
                 )}
                 style={{ zIndex: currentZIndex }}
@@ -255,7 +254,12 @@ export const DeckModal = React.forwardRef(({
                 onMouseOver={e => e.stopPropagation()}
                 onMouseOut={e => e.stopPropagation()}
                 $beaconCount={beaconList?.length}
+                {...{
+                    [PropDOMEntityName]: deckId,
+                    [PropDOMEntityType]: DOMEntityType['deckModal'],
+                }}
             >
+                <div className="deck-modal-header-padding" />
                 <DeckBeaconWrapper
                     isVisible={isVisible}
                     zIndex={currentZIndex}

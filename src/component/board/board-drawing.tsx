@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { FieldComponentKeyMap, FieldDeckCoordinateMap, FieldKey, FieldKeyMap } from 'src/model';
+import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey } from 'src/model';
 import styled from 'styled-components';
 
 const BoardContainer = styled.div`
@@ -81,19 +81,19 @@ export const BoardDrawing = ({
 
     useEffect(() => {
         onMount({
-            [FieldKeyMap.your]: {
-                [FieldComponentKeyMap.deck]: yourDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.gy]: yourGYRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
+            [FieldKey.your]: {
+                [FieldComponentKey.deck]: yourDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.gy]: yourGYRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
             },
-            [FieldKeyMap.opponent]: {
-                [FieldComponentKeyMap.deck]: oppDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.gy]: oppGYRef.current?.getBoundingClientRect(),
-                [FieldComponentKeyMap.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
+            [FieldKey.opponent]: {
+                [FieldComponentKey.deck]: oppDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.gy]: oppGYRef.current?.getBoundingClientRect(),
+                [FieldComponentKey.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
             },
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
