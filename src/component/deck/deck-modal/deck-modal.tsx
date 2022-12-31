@@ -37,7 +37,6 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
 const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot, index: number): string => {
     /** Indicator để giúp user nhận biết vị trí sẽ drag */
     if (!snapshot.isDragging && (style?.transform ?? '').length > 0) {
-        console.log('🚀 ~ file: deck-modal.tsx:40 ~ getDraggingClass ~ style', style?.transform, index);
         return 'affected-by-dragging';
     }
     if (snapshot.isDragging) return 'is-dragging';

@@ -32,7 +32,7 @@ type DOMEntity = {
 }
 export type DOMEntityState = {
     DOMEntityMap: Record<DOMEntityType, Record<string, DOMEntity>>,
-    DOMEntityList: { type: DOMEntityType, name: string }[],
+    DOMEntityList: DOMEntity[],
     DOMEntityListTypeMap: Record<DOMEntityType, string[]>,
 
     recalculateCount: number,
@@ -62,6 +62,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             const type = (element.getAttribute(PropDOMEntityType) ?? 'Default') as DOMEntityType;
             const zIndex = parseInt(element.style.zIndex);
             const { left, top, right, bottom } = element.getBoundingClientRect();
+
             if (!isNaN(zIndex)) {
                 const nextDOMEntityBeaconList: typeof DOMEntityInfoList[0] = {
                     name, type,
@@ -83,6 +84,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
 
                         if (deckId && beaconType) {
                             const { left, top, right, bottom } = beaconElement.getBoundingClientRect();
+
                             nextDOMEntityBeaconList.beaconList.push({
                                 id: deckId,
                                 type: beaconType,
@@ -107,21 +109,16 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             [DOMEntityType['deckButton']]: [],
             [DOMEntityType['deckModal']]: [],
         };
-        DOMEntityInfoList
-            .sort((l, r) => r.zIndex - l.zIndex)
-            .forEach(entry => {
-                const { type, name } = entry;
+        const sortedDOMEntityInfoList = DOMEntityInfoList.sort((l, r) => r.zIndex - l.zIndex);
 
-                nextDOMEntityList.push({ type, name });
-                nextDOMEntityListTypeMap[type].push(name);
-                nextDOMEntityMap[type][name] = entry;
-            });
+        for (const DOMEntityInfo of sortedDOMEntityInfoList) {
+            const { type, name } = DOMEntityInfo;
 
-        console.log('🚀 ~ file: dom-entity-store.ts:121 ~ useDOMEntityStateStore ~ nextDOMEntityMap',
-            nextDOMEntityMap,
-            nextDOMEntityListTypeMap,
-            nextDOMEntityList,
-        );
+            nextDOMEntityList.push(DOMEntityInfo);
+            nextDOMEntityListTypeMap[type].push(name);
+            nextDOMEntityMap[type][name] = DOMEntityInfo;
+        }
+
         return {
             ...state,
             recalculateCount: state.recalculateCount + 1,

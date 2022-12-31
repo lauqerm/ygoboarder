@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { BoardDrawing } from './board-drawing';
-import { BeaconAction, BoardMapping, CLASS_BOARD, CLASS_BOARD_ACTIVE, DOM_ENTITY_CLASS, DOMEntityType, DOMEntityTypeClass, FieldComponentKey, FieldDeckCoordinateMap, FieldKey, PropDOMEntityName, PropDOMEntityType, BOARD_INDEX } from 'src/model';
+import { BeaconAction, BoardMapping, CLASS_BOARD, CLASS_BOARD_ACTIVE, DOM_ENTITY_CLASS, DOMEntityType, DOMEntityTypeClass, FieldComponentKey, FieldDeckCoordinateMap, FieldKey, PropDOMEntityName, PropDOMEntityType, BOARD_INDEX, BoardComponentList } from 'src/model';
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
 import './play-board.scss';
@@ -29,7 +29,6 @@ export const Board = ({
 
     return <BoardContainer ref={boardDrawingRef}
         onMouseOver={() => {
-            console.log('🚀 ~ file: index.tsx:137 ~ onMouseOver');
             if (!boardDrawingRef.current?.classList.contains(CLASS_BOARD_ACTIVE)) {
                 boardDrawingRef.current?.classList.add(CLASS_BOARD_ACTIVE);
             }
@@ -50,21 +49,19 @@ export const Board = ({
         }}
     >
         <BoardDrawing onMount={setCoordinateMap} />
-        {BoardMapping.fieldList.map(fieldKey => {
+        {BoardComponentList.map(boardComponent => {
             const { top: absoluteTop = 0, left: absoluteLeft = 0 } = boardDrawingRef.current?.getBoundingClientRect() ?? {};
-            return BoardMapping[fieldKey].componentList.map(fieldComponentKey => {
-                const { deckType, ...deckButtonProps } = BoardMapping[fieldKey].componentMap[fieldComponentKey];
-                const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
+            const { fieldComponentKey, fieldKey, ...deckButtonProps } = boardComponent;
+            const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
 
-                if (top == null || left == null) return null;
-                return <DeckButton key={fieldComponentKey}
-                    {...deckButtonProps}
-                    absoluteTop={absoluteTop}
-                    absoluteLeft={absoluteLeft}
-                    offsetTop={top}
-                    offsetLeft={left}
-                />;
-            });
+            if (top == null || left == null) return null;
+            return <DeckButton key={fieldComponentKey}
+                {...deckButtonProps}
+                absoluteTop={absoluteTop}
+                absoluteLeft={absoluteLeft}
+                offsetTop={top}
+                offsetLeft={left}
+            />;
         })}
     </BoardContainer>;
 };

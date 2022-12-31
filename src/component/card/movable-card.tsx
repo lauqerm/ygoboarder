@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { BeaconAction, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, GetBoardRegex, GetDropActionRegex, GetDropIDRegex } from 'src/model';
-import { mergeClass } from 'src/util';
+import { BeaconAction, DOMEntityType, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, GetBoardRegex, GetDropActionRegex, GetDropIDRegex } from 'src/model';
+import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
@@ -12,7 +12,8 @@ export type MovableCard = {
     uniqueId: string,
     initialX?: number,
     initialY?: number,
-    onStaticBreak?: (id: string, origin: string) => void,
+    originEntity?: DOMEntityType,
+    onDragToBoard?: (id: string, origin: string) => void,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
 export const MovableCard = ({
     uniqueId,
@@ -22,8 +23,9 @@ export const MovableCard = ({
     initialY = 0,
     className,
     origin,
+    originEntity,
     style,
-    onStaticBreak,
+    onDragToBoard,
     ...rest
 }: MovableCard) => {
     const addToDeck = useDeckStore(state => state.add);
@@ -76,23 +78,22 @@ export const MovableCard = ({
             highlightBeacon = (e: MouseEvent) => {
                 const { clientX, clientY } = e;
                 let foundWrapper = false;
-                for (let cnt = 0; cnt < DOMEntityList.length; cnt++) {
-                    const { name, type } = DOMEntityList[cnt];
-                    const { left, top, right, bottom, element, beaconList } = DOMEntityMap[type][name];
+                for (const DOMEntity of DOMEntityList) {
+                    const { type, element, beaconList } = DOMEntity;
                     element.classList.remove('available-to-drop');
+
                     if (foundWrapper === false
-                        && type === 'deckButton'
-                        && (clientX >= left) && (clientX <= right) && (clientY >= top) && (clientY <= bottom)
+                        && type === DOMEntityType['deckButton']
+                        && isLieInside({ x: clientX, y: clientY }, DOMEntity)
                     ) {
                         foundWrapper = true;
                         let foundBeacon = false;
-                        for (let innerCnt = 0; innerCnt < beaconList.length; innerCnt++) {
-                            const { left, top, right, bottom, beaconElement } = beaconList[innerCnt];
-                            beaconElement.classList.remove('ready-to-drop');
-                            if (foundBeacon === false && (clientX >= left) && (clientX <= right) && (clientY >= top) && (clientY <= bottom)) {
-                                console.log('🚀 ~ file: movable-card.tsx:104 ~ onMouseDown ~ type', beaconElement);
+                        for (const beacon of beaconList) {
+                            beacon.beaconElement.classList.remove('ready-to-drop');
+                            if (foundBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
+                                // console.log('🚀 ~ file: movable-card.tsx:84 ~ onMouseDown ~ element', beacon);
                                 foundBeacon = true;
-                                beaconElement.classList.add('ready-to-drop');
+                                beacon.beaconElement.classList.add('ready-to-drop');
                             }
                         }
                         element.classList.add('available-to-drop');
@@ -100,32 +101,31 @@ export const MovableCard = ({
                 }
             };
             document.addEventListener('mousemove', highlightBeacon);
+            console.log('MOUSE UP DOWN!');
         };
         const onMouseUp = (e: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon);
             const { clientX, clientY } = e;
-
             let found = false;
-            for (let cnt = 0; cnt < DOMEntityList.length; cnt++) {
-                const { name, type } = DOMEntityList[cnt];
-                const { left, top, right, bottom, element, beaconList } = DOMEntityMap[type][name];
+            for (const DOMEntity of DOMEntityList) {
+                const { type, element, beaconList } = DOMEntity;
 
                 /**
                  * Nếu vị trí thả card nằm bên trong một beacon wrapper nào đó
                  */
                 if (found === false
-                    && type === 'deckButton'
-                    && (clientX >= left) && (clientX <= right) && (clientY >= top) && (clientY <= bottom)
+                    && type === DOMEntityType['deckButton']
+                    && isLieInside({ x: clientX, y: clientY }, DOMEntity)
                 ) {
                     found = true;
                     let beaconFound = false;
-                    for (let innerCnt = 0; innerCnt < beaconList.length; innerCnt++) {
-                        const { left, top, right, bottom, id, type, beaconElement } = beaconList[innerCnt];
+                    for (const beacon of beaconList) {
+                        const { id, type, beaconElement } = beacon;
 
                         /**
                          * Nếu vị trí thả card nằm bên trong một beacon nào đó
                          */
-                        if (beaconFound === false && (clientX >= left) && (clientX <= right) && (clientY >= top) && (clientY <= bottom)) {
+                        if (beaconFound === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
                             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                             if (type && id && boardId) {
                                 addToDeck(id, [image], type);
@@ -138,12 +138,12 @@ export const MovableCard = ({
                 }
                 element.classList.remove('available-to-drop');
             }
+            console.log('MOUSE UP!');
         };
         if (target && once.current === false) {
             once.current = true;
             target.style.left = `${initialX}px`;
             target.style.top = `${initialY}px`;
-            console.log('🚀 ~ file: movable-card.tsx:27 ~ initialX', initialX, initialY);
         }
         if (target) {
             target.addEventListener('mousedown', onMouseDown);
@@ -160,7 +160,6 @@ export const MovableCard = ({
     }, [target]);
 
     const portal = document.getElementById('modal-wrapper');
-    console.log('🚀 ~ file: movable-card.tsx:27 ~ initialX', initialX, initialY);
 
     if (!portal) return null;
 
@@ -186,21 +185,24 @@ export const MovableCard = ({
                 throttleDrag={0}
                 onDragStart={() => {
                     target!.classList.add('card-is-dragging');
-                    const { top, left } = target?.getBoundingClientRect() ?? {};
-                    beforeDragCoordination.current = { top, left };
+                    // const { top, left } = target?.getBoundingClientRect() ?? {};
+                    // beforeDragCoordination.current = { top, left };
                 }}
                 onDrag={onDrag}
                 onDragEnd={() => {
                     target!.style.zIndex = `${cardInstance.get('zIndex')}`;
                     target!.classList.remove('card-is-dragging');
-                    const { top, left } = target?.getBoundingClientRect() ?? {};
-                    const { top: anchorTop, left: anchorLeft } = beforeDragCoordination.current;
-                    console.log('🚀 ~ file: movable-card.tsx:237', top, left, anchorTop, anchorLeft);
 
-                    if (top != null && left != null && anchorTop != null && anchorLeft != null) {
-                        const movedDistance = Math.sqrt((top - anchorTop)**2 + (left - anchorLeft)**2);
+                    if (originEntity === DOMEntityType['deckButton']) {
+                        const { top, left } = target?.getBoundingClientRect() ?? {};
 
-                        if (movedDistance > 50) onStaticBreak?.(uniqueId, origin);
+                        if (initialY != null && initialX != null && top != null && left != null) {
+                            const movedDistance = Math.sqrt((initialY - top)**2 + (initialX - left)**2);
+
+                            if (movedDistance > 50) {
+                                onDragToBoard?.(uniqueId, origin);
+                            }
+                        }
                     }
                 }}
             />}

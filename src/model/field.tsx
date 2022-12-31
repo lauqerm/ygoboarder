@@ -34,123 +34,149 @@ export const FieldKey = Object.freeze({
 
 export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, DOMRect>>;
 
+export type BoardComponent = {
+    fieldKey: FieldKey,
+    fieldComponentKey: FieldComponentKey,
+    type: DeckType,
+    preset: CardPreset,
+    name: string,
+    displayName: string,
+    beaconList: BeaconAction[],
+};
 export const BoardMapping: {
     fieldList: FieldKey[],
-} & Record<FieldKey, {
-    key: FieldKey,
-    componentList: FieldComponentKey[],
-    componentMap: Record<FieldComponentKey, {
-        deckType: FieldComponentKey,
-        type: DeckType,
-        preset: CardPreset,
-        name: string,
-        displayName: string,
-        beaconList: BeaconAction[],
+    fieldMap: Record<FieldKey, {
+        key: FieldKey,
+        componentList: FieldComponentKey[],
+        componentMap: Record<FieldComponentKey, BoardComponent>
     }>
-}> = {
+} = {
     fieldList: [FieldKey.your, FieldKey.opponent],
-    [FieldKey.your]: {
-        key: FieldKey.your,
-        componentList: [
-            FieldComponentKey.deck,
-            FieldComponentKey.extraDeck,
-            FieldComponentKey.gy,
-            FieldComponentKey.banishedPile,
-            FieldComponentKey.trunk,
-        ],
-        componentMap: {
-            [FieldComponentKey.deck]: {
-                deckType: FieldComponentKey.deck,
-                type: DeckType['permanent'],
-                preset: CardPreset['opp'],
-                displayName: 'Your Deck',
-                name: 'YOUR-DECK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.extraDeck]: {
-                deckType: FieldComponentKey.extraDeck,
-                type: DeckType['permanent'],
-                preset: CardPreset['opp'],
-                displayName: 'Your Extra Deck',
-                name: 'YOUR-EXTRA-DECK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
-            },
-            [FieldComponentKey.trunk]: {
-                deckType: FieldComponentKey.trunk,
-                type: DeckType['consistent'],
-                preset: CardPreset['opp'],
-                displayName: 'Your Trunk',
-                name: 'YOUR-TRUNK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.gy]: {
-                deckType: FieldComponentKey.gy,
-                type: DeckType['transient'],
-                preset: CardPreset['opp'],
-                displayName: 'Your GY',
-                name: 'YOUR-GY',
-                beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.banishedPile]: {
-                deckType: FieldComponentKey.banishedPile,
-                type: DeckType['transient'],
-                preset: CardPreset['opp'],
-                displayName: 'Your Banished Pile',
-                name: 'YOUR-BANISHED-PILE',
-                beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+    fieldMap: {
+        [FieldKey.your]: {
+            key: FieldKey.your,
+            componentList: [
+                FieldComponentKey.deck,
+                FieldComponentKey.extraDeck,
+                FieldComponentKey.gy,
+                FieldComponentKey.banishedPile,
+                FieldComponentKey.trunk,
+            ],
+            componentMap: {
+                [FieldComponentKey.deck]: {
+                    fieldKey: FieldKey.your,
+                    fieldComponentKey: FieldComponentKey.deck,
+                    type: DeckType['permanent'],
+                    preset: CardPreset['opp'],
+                    displayName: 'Your Deck',
+                    name: 'YOUR-DECK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.extraDeck]: {
+                    fieldKey: FieldKey.your,
+                    fieldComponentKey: FieldComponentKey.extraDeck,
+                    type: DeckType['permanent'],
+                    preset: CardPreset['opp'],
+                    displayName: 'Your Extra Deck',
+                    name: 'YOUR-EXTRA-DECK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
+                },
+                [FieldComponentKey.trunk]: {
+                    fieldKey: FieldKey.your,
+                    fieldComponentKey: FieldComponentKey.trunk,
+                    type: DeckType['consistent'],
+                    preset: CardPreset['opp'],
+                    displayName: 'Your Trunk',
+                    name: 'YOUR-TRUNK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.gy]: {
+                    fieldKey: FieldKey.your,
+                    fieldComponentKey: FieldComponentKey.gy,
+                    type: DeckType['transient'],
+                    preset: CardPreset['opp'],
+                    displayName: 'Your GY',
+                    name: 'YOUR-GY',
+                    beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.banishedPile]: {
+                    fieldKey: FieldKey.your,
+                    fieldComponentKey: FieldComponentKey.banishedPile,
+                    type: DeckType['transient'],
+                    preset: CardPreset['opp'],
+                    displayName: 'Your Banished Pile',
+                    name: 'YOUR-BANISHED-PILE',
+                    beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                },
             },
         },
-    },
-    [FieldKey.opponent]: {
-        key: FieldKey.opponent,
-        componentList: [
-            FieldComponentKey.deck,
-            FieldComponentKey.extraDeck,
-            FieldComponentKey.gy,
-            FieldComponentKey.banishedPile,
-            FieldComponentKey.trunk,
-        ],
-        componentMap: {
-            [FieldComponentKey.deck]: {
-                deckType: FieldComponentKey.deck,
-                preset: CardPreset['opp'],
-                type: DeckType['permanent'],
-                displayName: 'Opponent\'s Deck',
-                name: 'OP-DECK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.extraDeck]: {
-                deckType: FieldComponentKey.extraDeck,
-                preset: CardPreset['opp'],
-                type: DeckType['permanent'],
-                displayName: 'Opponent\'s Extra Deck',
-                name: 'OP-EXTRA-DECK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
-            },
-            [FieldComponentKey.trunk]: {
-                deckType: FieldComponentKey.trunk,
-                preset: CardPreset['opp'],
-                type: DeckType['consistent'],
-                displayName: 'Opponent\'s Trunk',
-                name: 'OP-TRUNK',
-                beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.gy]: {
-                deckType: FieldComponentKey.gy,
-                preset: CardPreset['opp'],
-                type: DeckType['transient'],
-                displayName: 'Opponent\'s GY',
-                name: 'OP-GY',
-                beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-            },
-            [FieldComponentKey.banishedPile]: {
-                deckType: FieldComponentKey.banishedPile,
-                preset: CardPreset['opp'],
-                type: DeckType['transient'],
-                displayName: 'Opponent\'s Banished Pile',
-                name: 'OP-BANISHED-PILE',
-                beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+        [FieldKey.opponent]: {
+            key: FieldKey.opponent,
+            componentList: [
+                FieldComponentKey.deck,
+                FieldComponentKey.extraDeck,
+                FieldComponentKey.gy,
+                FieldComponentKey.banishedPile,
+                FieldComponentKey.trunk,
+            ],
+            componentMap: {
+                [FieldComponentKey.deck]: {
+                    fieldKey: FieldKey.opponent,
+                    fieldComponentKey: FieldComponentKey.deck,
+                    preset: CardPreset['opp'],
+                    type: DeckType['permanent'],
+                    displayName: 'Opponent\'s Deck',
+                    name: 'OP-DECK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.extraDeck]: {
+                    fieldKey: FieldKey.opponent,
+                    fieldComponentKey: FieldComponentKey.extraDeck,
+                    preset: CardPreset['opp'],
+                    type: DeckType['permanent'],
+                    displayName: 'Opponent\'s Extra Deck',
+                    name: 'OP-EXTRA-DECK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
+                },
+                [FieldComponentKey.trunk]: {
+                    fieldKey: FieldKey.opponent,
+                    fieldComponentKey: FieldComponentKey.trunk,
+                    preset: CardPreset['opp'],
+                    type: DeckType['consistent'],
+                    displayName: 'Opponent\'s Trunk',
+                    name: 'OP-TRUNK',
+                    beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.gy]: {
+                    fieldKey: FieldKey.opponent,
+                    fieldComponentKey: FieldComponentKey.gy,
+                    preset: CardPreset['opp'],
+                    type: DeckType['transient'],
+                    displayName: 'Opponent\'s GY',
+                    name: 'OP-GY',
+                    beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                },
+                [FieldComponentKey.banishedPile]: {
+                    fieldKey: FieldKey.opponent,
+                    fieldComponentKey: FieldComponentKey.banishedPile,
+                    preset: CardPreset['opp'],
+                    type: DeckType['transient'],
+                    displayName: 'Opponent\'s Banished Pile',
+                    name: 'OP-BANISHED-PILE',
+                    beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                },
             },
         },
     },
 };
+
+export const BoardComponentList = Object
+    .values(BoardMapping.fieldMap)
+    .reduce((prev, curr) => {
+        const { componentList, componentMap } = curr;
+
+        return [
+            ...prev,
+            ...componentList.map(componentKey => componentMap[componentKey]),
+        ];
+    }, [] as BoardComponent[]);

@@ -25,7 +25,6 @@ export const createIndexQueue = (count: number) => {
             if (target !== undefined) {
                 newEntryQueue[existCount] = { id: target.id, index: existCount };
                 newEntryMap[target.id] = existCount;
-                console.log('🚀 ~ file: index-queue.tsx:24 ~ prune ~ target', newEntryQueue.map(entry => `${entry?.id ?? ''}-${entry?.index ?? ''}`), newEntryMap);
                 existCount += 1;
             } else {
                 newEntryQueue[count - 1 - nonExistCount] = undefined;
@@ -36,7 +35,6 @@ export const createIndexQueue = (count: number) => {
         entryMap = newEntryMap;
         entryQueue = newEntryQueue;
         topIndex = existCount;
-        console.log('🚀 ~ file: index-queue.tsx:37 ~ prune ~ newEntryQueue', newEntryMap, newEntryQueue, existCount);
     };
 
     return {
@@ -58,8 +56,6 @@ export const createIndexQueue = (count: number) => {
             entryQueue[newIndex] = { id, index: newIndex };
             entryMap[id] = newIndex;
             topIndex += 1;
-
-            console.log(entryQueue.map(entry => `${entry?.id ?? ''}-${entry?.index ?? ''}`), pruned);
 
             return pruned;
         },

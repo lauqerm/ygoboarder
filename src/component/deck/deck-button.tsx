@@ -190,7 +190,6 @@ export const DeckButton = ({
     );
     const draggCardFromDeckButtonToBoard = useCardEventStore(state => state.dragFromDeckButtonToBoard);
     const topDeckCard = deckList.get(0);
-    console.log('🚀 ~ file: deck-button.tsx:185 ~ topDeckCard', topDeckCard);
     const zIndex = modalInstance.get('zIndex');
     const commonBeaconProps = {
         className: CLASS_BEACON_DECK_BACK,
@@ -264,9 +263,10 @@ export const DeckButton = ({
                         uniqueId={topDeckCard.get('card').get('_id')}
                         image={topDeckCard.get('card')}
                         origin={topDeckCard.get('origin')}
+                        originEntity={DOMEntityType['deckButton']}
                         initialX={offsetLeft}
                         initialY={offsetTop}
-                        onStaticBreak={(_id, origin) => {
+                        onDragToBoard={(_id, origin) => {
                             draggCardFromDeckButtonToBoard(0, name);
                         }}
                         onMouseEnter={() => {
