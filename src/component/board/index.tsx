@@ -55,7 +55,7 @@ export const Board = ({
             const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
 
             if (top == null || left == null) return null;
-            return <DeckButton key={fieldComponentKey}
+            return <DeckButton key={`${fieldKey}${fieldComponentKey}`}
                 {...deckButtonProps}
                 absoluteTop={absoluteTop}
                 absoluteLeft={absoluteLeft}

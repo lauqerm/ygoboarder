@@ -190,6 +190,8 @@ export const DeckButton = ({
     );
     const draggCardFromDeckButtonToBoard = useCardEventStore(state => state.dragFromDeckButtonToBoard);
     const topDeckCard = deckList.get(0);
+    console.log('🚀 ~ file: deck-button.tsx:193 ~ topDeckCard', topDeckCard);
+    const nextTopDeckCard = deckList.get(1);
     const zIndex = modalInstance.get('zIndex');
     const commonBeaconProps = {
         className: CLASS_BEACON_DECK_BACK,
@@ -198,6 +200,7 @@ export const DeckButton = ({
     };
 
     const portal = document.getElementById('modal-wrapper');
+    const [test, setTest] = useState(false);
 
     if (!portal) return null;
     return createPortal(
@@ -259,7 +262,12 @@ export const DeckButton = ({
                     })}
                 </div>
                 <div className="top-card">
-                    {topDeckCard && <MovableCard key={topDeckCard.get('card').get('_id')}
+                    <button onClick={() => setTest(true)} style={{
+                        position: 'relative',
+                        pointerEvents: 'all',
+                        bottom: '15px',
+                    }}>Click</button>
+                    {(topDeckCard && true) && <MovableCard key={topDeckCard.get('card').get('_id')}
                         uniqueId={topDeckCard.get('card').get('_id')}
                         image={topDeckCard.get('card')}
                         origin={topDeckCard.get('origin')}

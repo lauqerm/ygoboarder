@@ -317,6 +317,7 @@ function App() {
                 <button onClick={() => cardIndexQueue.toTop('B')}>B top top</button>
                 <button onClick={() => cardIndexQueue.toTop('C')}>C top top</button>
                 <button onClick={() => cardIndexQueue.toTop('D')}>D top top</button>
+                <button onClick={() => recalculate()}>Force recal</button>
             </div>
             <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
                 <ExportButton />
@@ -332,6 +333,10 @@ function App() {
                         })));
                     });
                     setHardReset(cnt => cnt + 1);
+                    /**
+                     * Sau khi hard reset ta cũng mất thông tin của DOMEntity, vậy nên phải recalculate
+                     */
+                    recalculate();
                 }} />
                 <Board boardName="main-board" />
                 <div className="padding" />

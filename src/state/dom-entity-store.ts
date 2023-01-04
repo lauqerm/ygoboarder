@@ -55,6 +55,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
     recalculate: () => set(state => {
         const DOMEntityElementList = document.querySelectorAll<HTMLElement>(`.${DOM_ENTITY_CLASS}`);
         const DOMEntityInfoList: DOMEntity[] = [];
+        console.log('🚀 ~ file: dom-entity-store.ts:58 ~ useDOMEntityStateStore ~ DOMEntityElementList', DOMEntityElementList);
 
         for (let cnt = 0; cnt < DOMEntityElementList.length; cnt++) {
             const element = DOMEntityElementList[cnt];
@@ -119,6 +120,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             nextDOMEntityMap[type][name] = DOMEntityInfo;
         }
 
+        console.log('after calculation', nextDOMEntityList, state.recalculateCount + 1);
         return {
             ...state,
             recalculateCount: state.recalculateCount + 1,
