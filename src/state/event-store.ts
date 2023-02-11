@@ -7,9 +7,10 @@ export type CardEventState = {
     dragFromDeckButtonToBoardData: {
         _index: number,
         cardIndex: number,
+        cardCoord: { top: number, left: number },
         deckID: string,
     },
-    dragFromDeckButtonToBoard: (cardIndex: number, deckID: string) => void,
+    dragFromDeckButtonToBoard: (cardIndex: number, deckID: string, cardCoord: { top: number, left: number }) => void,
 }
 export const useCardEventStore = create<CardEventState>((set) => ({
     isDraggingBoardCard: false,
@@ -23,14 +24,16 @@ export const useCardEventStore = create<CardEventState>((set) => ({
     dragFromDeckButtonToBoardData: {
         _index: -1,
         cardIndex: -1,
+        cardCoord: { top: 0, left: 0 },
         deckID: '',
     },
-    dragFromDeckButtonToBoard: (cardIndex, deckID) => set(state => {
+    dragFromDeckButtonToBoard: (cardIndex, deckID, cardCoord) => set(state => {
         return {
             ...state,
             dragFromDeckButtonToBoardData: {
                 _index: state.dragFromDeckButtonToBoardData._index + 1,
                 cardIndex,
+                cardCoord,
                 deckID,
             },
         };

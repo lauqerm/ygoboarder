@@ -19,7 +19,7 @@ type DOMEntity = {
     right: number,
     bottom: number,
     zIndex: number,
-    element: HTMLElement,
+    element: () => HTMLElement,
     beaconList: {
         id: string,
         left: number,
@@ -27,13 +27,15 @@ type DOMEntity = {
         right: number,
         bottom: number,
         type: BeaconAction,
-        beaconElement: HTMLElement,
+        beaconElement: () => HTMLElement,
     }[]
 }
 export type DOMEntityState = {
     DOMEntityMap: Record<DOMEntityType, Record<string, DOMEntity>>,
     DOMEntityList: DOMEntity[],
     DOMEntityListTypeMap: Record<DOMEntityType, string[]>,
+
+    addDOMEntity: (ref: HTMLElement, type: DOMEntityType, beaconRefList?: HTMLElement[]) => void,
 
     recalculateCount: number,
     recalculate: () => void,
@@ -51,40 +53,95 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
         [DOMEntityType['deckModal']]: [],
     },
 
+    addDOMEntity: (ref: HTMLElement, type: DOMEntityType, beaconRefList?: HTMLElement[]) => set(state => {
+        const name = ref.getAttribute(PropDOMEntityName) ?? 'Default';
+        const newDOMEntity: DOMEntity = {
+            name,
+            type,
+            zIndex: 0,
+            bottom: 0,
+            left: 0,
+            top: 0,
+            right: 0,
+            element: () => ref,
+            beaconList: (beaconRefList ?? []).map(beacon => {
+                return {
+                    beaconElement: () => beacon,
+                    id: '',
+                    type: 'shuffle',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                };
+            }),
+        };
+
+        const { DOMEntityList, DOMEntityListTypeMap, DOMEntityMap } = state;
+        const isReplaced = !!(DOMEntityMap[type][name] as DOMEntity | undefined);
+
+        const nextDOMEntityMap = { ...DOMEntityMap };
+        nextDOMEntityMap[type][name] = newDOMEntity;
+
+        const nextDOMEntityList = isReplaced
+            ? DOMEntityList.map(entry => {
+                if (entry.name === name) return newDOMEntity;
+                return entry;
+            })
+            : [...DOMEntityList, newDOMEntity];
+
+        const nextDOMEntityListTypeMap = {
+            ...DOMEntityListTypeMap,
+            [type]: isReplaced
+                ? DOMEntityListTypeMap[type]
+                : [...DOMEntityListTypeMap[type], name],
+        };
+
+        return {
+            ...state,
+            DOMEntityMap: nextDOMEntityMap,
+            DOMEntityList: nextDOMEntityList,
+            DOMEntityListTypeMap: nextDOMEntityListTypeMap,
+        };
+    }),
+
     recalculateCount: 0,
     recalculate: () => set(state => {
-        const DOMEntityElementList = document.querySelectorAll<HTMLElement>(`.${DOM_ENTITY_CLASS}`);
-        const DOMEntityInfoList: DOMEntity[] = [];
-        console.log('🚀 ~ file: dom-entity-store.ts:58 ~ useDOMEntityStateStore ~ DOMEntityElementList', DOMEntityElementList);
+        /**
+         * `board`: .${DOM_ENTITY_CLASS}
+         * `deckButton` và `deckModal`: .${DOM_ENTITY_CLASS} .${CLASS_BEACON_WRAPPER}
+         */
+        const { DOMEntityList: currentDOMEntityList, recalculateCount } = state;
+        const unsortedDOMEntityList: DOMEntity[] = [];
 
-        for (let cnt = 0; cnt < DOMEntityElementList.length; cnt++) {
-            const element = DOMEntityElementList[cnt];
-            const name = element.getAttribute(PropDOMEntityName) ?? 'Default';
-            const type = (element.getAttribute(PropDOMEntityType) ?? 'Default') as DOMEntityType;
-            const zIndex = parseInt(element.style.zIndex);
-            const { left, top, right, bottom } = element.getBoundingClientRect();
+        for (const DOMEntity of currentDOMEntityList) {
+            const { element, beaconList } = DOMEntity;
+            const DOMElement = element();
+            const name = DOMElement.getAttribute(PropDOMEntityName) ?? 'Default';
+            const type = (DOMElement.getAttribute(PropDOMEntityType) ?? 'Default') as DOMEntityType;
+            const zIndex = parseInt(DOMElement.style.zIndex);
+            const { left, top, right, bottom } = DOMElement.getBoundingClientRect();
 
             if (!isNaN(zIndex)) {
-                const nextDOMEntityBeaconList: typeof DOMEntityInfoList[0] = {
+                const nextDOMEntityBeaconList: typeof unsortedDOMEntityList[0] = {
                     name, type,
                     left, top, right, bottom,
-                    element: type === 'deckButton' || type === 'deckModal'
-                        ? element.querySelectorAll(`.${CLASS_BEACON_WRAPPER}`)[0] as HTMLElement
-                        : element,
+                    element,
                     zIndex,
                     beaconList: [],
                 };
-                const beaconList = element.querySelectorAll<HTMLElement>(`.${BEACON_CLASS}`);
-                for (let innerCnt = 0; innerCnt < beaconList.length; innerCnt++) {
-                    const beaconElement = beaconList[innerCnt];
-                    const beaconInfo = beaconElement.getAttribute('data-deck-beacon');
+
+                for (const DOMBeaconEntity of beaconList) {
+                    const { beaconElement } = DOMBeaconEntity;
+                    const DOMBeaconElement = beaconElement();
+                    const beaconInfo = DOMBeaconElement.getAttribute('data-deck-beacon');
 
                     if (beaconInfo) {
-                        const beaconType = beaconElement.getAttribute(PROP_BEACON_ACTION_TYPE) as BeaconAction | null;
-                        const deckId = beaconElement.getAttribute(PROP_BEACON_DECK_ORIGIN);
+                        const beaconType = DOMBeaconElement.getAttribute(PROP_BEACON_ACTION_TYPE) as BeaconAction | null;
+                        const deckId = DOMBeaconElement.getAttribute(PROP_BEACON_DECK_ORIGIN);
 
                         if (deckId && beaconType) {
-                            const { left, top, right, bottom } = beaconElement.getBoundingClientRect();
+                            const { left, top, right, bottom } = DOMBeaconElement.getBoundingClientRect();
 
                             nextDOMEntityBeaconList.beaconList.push({
                                 id: deckId,
@@ -95,7 +152,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
                         }
                     }
                 }
-                DOMEntityInfoList.push(nextDOMEntityBeaconList);
+                unsortedDOMEntityList.push(nextDOMEntityBeaconList);
             }
         }
 
@@ -110,9 +167,9 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             [DOMEntityType['deckButton']]: [],
             [DOMEntityType['deckModal']]: [],
         };
-        const sortedDOMEntityInfoList = DOMEntityInfoList.sort((l, r) => r.zIndex - l.zIndex);
+        const sortedDOMEntityList = unsortedDOMEntityList.sort((l, r) => r.zIndex - l.zIndex);
 
-        for (const DOMEntityInfo of sortedDOMEntityInfoList) {
+        for (const DOMEntityInfo of sortedDOMEntityList) {
             const { type, name } = DOMEntityInfo;
 
             nextDOMEntityList.push(DOMEntityInfo);
@@ -120,10 +177,10 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             nextDOMEntityMap[type][name] = DOMEntityInfo;
         }
 
-        console.log('after calculation', nextDOMEntityList, state.recalculateCount + 1);
+        console.log('after calculation', nextDOMEntityList, recalculateCount + 1);
         return {
             ...state,
-            recalculateCount: state.recalculateCount + 1,
+            recalculateCount: recalculateCount + 1,
             DOMEntityList: nextDOMEntityList,
             DOMEntityListTypeMap: nextDOMEntityListTypeMap,
             DOMEntityMap: nextDOMEntityMap,

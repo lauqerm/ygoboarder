@@ -1,3 +1,20 @@
+.deck-button {
+    &.available-to-drop {
+        .deck-beacon-wrapper {
+            .deck-back-beacon-list {
+                z-index: 1;
+            }
+            .deck-beacon {
+                visibility: visible;
+                &.ready-to-drop {
+                    border-color: transparent;
+                    background: #e1e1e1ff;
+                    color: #ffffff;
+                }
+            }
+        }
+    }
+}
 .deck-modal-invisible {
     visibility: hidden;
     .deck-tool-bar button {

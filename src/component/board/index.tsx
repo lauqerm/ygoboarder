@@ -4,7 +4,8 @@ import { BeaconAction, BoardMapping, CLASS_BOARD, CLASS_BOARD_ACTIVE, DOM_ENTITY
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
 import './play-board.scss';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useDOMEntityStateStore } from 'src/state';
 
 const BoardContainer = styled.div`
     background-color: var(--main-primaryLighter);
@@ -26,6 +27,11 @@ export const Board = ({
         [FieldKey.opponent]: {},
     });
     const boardDrawingRef = useRef<HTMLDivElement>(null);
+    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
+
+    useEffect(() => {
+        if (boardDrawingRef.current) addDOMEntity(boardDrawingRef.current, DOMEntityType['board']);
+    }, []);
 
     return <BoardContainer ref={boardDrawingRef}
         onMouseOver={() => {

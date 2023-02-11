@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './app.scss';
 import { Input, Upload } from 'antd';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BeaconAction, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD, CLASS_BOARD_ACTIVE, PROP_BEACON_DECK_ORIGIN, PROP_BEACON_ACTION_TYPE, DOMEntityType } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
@@ -48,11 +48,13 @@ function App() {
     const mousePosition = useRef({ x: 0, y: 0 });
     /**
      * Khi bắt đầu drag, xác định chênh lệch giữa vị trí con trỏ chuột và góc trên trái của element
-     * ┍━━━━┑
+     * ```
+     * X━━━━┑
      * │    │
      * │    │
      * │   x│
      * ┕━━━━┙
+     * ```
      */
     const dragCardOffset = useRef({ x: 0, y: 0 });
 
@@ -254,19 +256,20 @@ function App() {
                 const { type, element } = DOMEntity;
 
                 if (type === DOMEntityType['board'] && isLieInside({ x, y }, DOMEntity)) {
-                    const { cardIndex, deckID } = cardDraggedFromDeckButtonToBoard;
-                    const boardName = element.getAttribute('data-board-name');
+                    const { cardIndex, deckID, cardCoord } = cardDraggedFromDeckButtonToBoard;
+                    const boardName = element().getAttribute('data-board-name');
                     if (deckID && boardName) {
                         const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(cardIndex);
     
                         if (deckID && cardInDeck) {
                             const { x: offsetX, y: offsetY } = dragCardOffset.current;
+                            const { left, top } = cardCoord;
                             const targetCard = cardInDeck.get('card');
                             deleteFromDeck(deckID, [targetCard.get('_id')]);
                             addToBoard(boardName, [{
                                 card: targetCard,
-                                initialX: x - 0 - offsetX,
-                                initialY: y - 0 - offsetY,
+                                initialX: left,
+                                initialY: top,
                                 origin: deckID,
                             }]);
                         }
@@ -298,11 +301,14 @@ function App() {
         return () => {
             document.removeEventListener('mousemove', getMousePosition);
         };
-    }, [recalculate]);
+    }, [hardResetCnt]);
 
-    useEffect(() => {
+    useLayoutEffect(() => {
+        /**
+         * Sau khi hard reset ta cũng mất thông tin của DOMEntity, vậy nên phải recalculate
+         */
         recalculate();
-    }, [zIndexChange, recalculate]);
+    }, [zIndexChange, recalculate, hardResetCnt]);
 
     return (
         <DragDropContext
@@ -333,10 +339,6 @@ function App() {
                         })));
                     });
                     setHardReset(cnt => cnt + 1);
-                    /**
-                     * Sau khi hard reset ta cũng mất thông tin của DOMEntity, vậy nên phải recalculate
-                     */
-                    recalculate();
                 }} />
                 <Board boardName="main-board" />
                 <div className="padding" />

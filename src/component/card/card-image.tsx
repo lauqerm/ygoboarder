@@ -78,7 +78,6 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
             imageSourceMap.add(src);
             imageSourceMap.get(src)
                 .then(resolvedSrc => {
-                    console.log('set');
                     setActualSrc(resolvedSrc);
                 });
         }

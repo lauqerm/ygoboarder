@@ -31,6 +31,7 @@ export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
 export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;
 export const GetDropActionRegex = /\[ACTION-([\w-]*)\]/m;
 export const GetBoardRegex = /\[BOARD-([\w-]*)\]/m;
+export const GetDeckButtonRegex = /\[DECKBUTTON-([\w-]*)\]/m;
 export const GetOriginRegex = /\[ORIGIN-([\w-]*)\]/m;
 
 export const DragTransformStatRegex = /translate\((-?\d*)px, (-?\d*)px\)/;

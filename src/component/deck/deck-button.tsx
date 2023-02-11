@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { DeckModal } from '.';
 import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
 import { BeaconAction, BeaconActionLabel, CardPreset, CLASS_BEACON_DECK_BACK, DeckType, DOM_ENTITY_CLASS, DOMEntityType, DOMEntityTypeClass, DROP_TYPE_DECK, MIN_ABSOLUTE_INDEX, PropDOMEntityName, PropDOMEntityType, DECK_BUTTON_INDEX } from 'src/model';
@@ -170,6 +170,7 @@ export const DeckButton = ({
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
     const deckButtonRef = useRef<HTMLDivElement>(null);
+    const deckButtonBeaconListRef = useRef<HTMLDivElement[]>([]);
     const beaconListRef = useRef<HTMLDivElement>(null);
     const {
         hide,
@@ -190,8 +191,6 @@ export const DeckButton = ({
     );
     const draggCardFromDeckButtonToBoard = useCardEventStore(state => state.dragFromDeckButtonToBoard);
     const topDeckCard = deckList.get(0);
-    console.log('🚀 ~ file: deck-button.tsx:193 ~ topDeckCard', topDeckCard);
-    const nextTopDeckCard = deckList.get(1);
     const zIndex = modalInstance.get('zIndex');
     const commonBeaconProps = {
         className: CLASS_BEACON_DECK_BACK,
@@ -200,7 +199,14 @@ export const DeckButton = ({
     };
 
     const portal = document.getElementById('modal-wrapper');
-    const [test, setTest] = useState(false);
+
+    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
+
+    useEffect(() => {
+        if (deckButtonRef.current && deckButtonBeaconListRef.current) {
+            addDOMEntity(deckButtonRef.current, DOMEntityType['deckButton'], deckButtonBeaconListRef.current);
+        }
+    }, []);
 
     if (!portal) return null;
     return createPortal(
@@ -249,33 +255,25 @@ export const DeckButton = ({
                 zIndex={zIndex}
                 isVisible={true}
             >
-                {/**
-             * Có một side-effect được trigger từ drag-n-drop
-             * 
-             * Ta muốn card nằm trên beacon khi kéo nó ra, nhưng lại muốn beacon nằm trên khi kéo sang deck khác, vậy nên ta để mặc định beacon ở trên card, và chèn class bằng side-effect để đẩy beacon xuống dưới khi chuẩn bị diễn ra việc drag. Việc này chỉ diễn ra 1 lần duy nhất.
-             */}
                 <div ref={beaconListRef} className="deck-back-beacon-list">
-                    {beaconList.map(beaconAction => {
-                        return <DeckBeacon key={beaconAction} {...commonBeaconProps} actionType={beaconAction}>
+                    {beaconList.map((beaconAction, index) => {
+                        return <DeckBeacon key={beaconAction} ref={ref => {
+                            if (ref) deckButtonBeaconListRef.current[index] = ref;
+                        }} {...commonBeaconProps} actionType={beaconAction}>
                             {BeaconActionLabel[beaconAction].shortLabel}
                         </DeckBeacon>;
                     })}
                 </div>
                 <div className="top-card">
-                    <button onClick={() => setTest(true)} style={{
-                        position: 'relative',
-                        pointerEvents: 'all',
-                        bottom: '15px',
-                    }}>Click</button>
                     {(topDeckCard && true) && <MovableCard key={topDeckCard.get('card').get('_id')}
-                        uniqueId={topDeckCard.get('card').get('_id')}
+                        uniqueId={`[DECKBUTTON-${name}]-[ID-${topDeckCard.get('card').get('_id')}]`}
                         image={topDeckCard.get('card')}
                         origin={topDeckCard.get('origin')}
                         originEntity={DOMEntityType['deckButton']}
                         initialX={offsetLeft}
                         initialY={offsetTop}
-                        onDragToBoard={(_id, origin) => {
-                            draggCardFromDeckButtonToBoard(0, name);
+                        onDragToBoard={(_id, coord) => {
+                            draggCardFromDeckButtonToBoard(0, name, coord);
                         }}
                         onMouseEnter={() => {
                             deckButtonRef.current?.classList.add('deck-button-force-show');

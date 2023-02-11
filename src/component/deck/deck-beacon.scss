@@ -15,18 +15,3 @@
         color: #ffffff;
     }
 }
-.deck-beacon-wrapper {
-    &.available-to-drop {
-        .deck-back-beacon-list {
-            z-index: 1;
-        }
-        .deck-beacon {
-            visibility: visible;
-            &.ready-to-drop {
-                border-color: transparent;
-                background: #e1e1e1ff;
-                color: #ffffff;
-            }
-        }
-    }
-}

@@ -30,13 +30,13 @@ export type DeckBeacon = {
     deckId: string,
     actionType: BeaconAction,
 } & React.HTMLAttributes<HTMLDivElement>;
-export const DeckBeacon = ({
+export const DeckBeacon = React.forwardRef(({
     deckId,
     actionType,
     className,
     ...rest
-}: DeckBeacon) => {
-    return <div
+}: DeckBeacon, ref: React.ForwardedRef<HTMLDivElement>) => {
+    return <div ref={ref}
         className={mergeClass(
             'deck-beacon',
             BEACON_CLASS,
@@ -50,4 +50,4 @@ export const DeckBeacon = ({
             [PROP_BEACON_ACTION_TYPE]: actionType,
         }}
     />;
-};
+});
