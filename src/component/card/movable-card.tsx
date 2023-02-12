@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { BeaconAction, DOMEntityType, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, GetBoardRegex, GetDeckButtonRegex, GetDropActionRegex, GetDropIDRegex } from 'src/model';
+import { BeaconAction, DOMEntityType, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, GetBoardRegex, GetDeckButtonRegex, GetDropActionRegex, GetDropIDRegex, PropDOMEntityVisible } from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
@@ -91,12 +91,13 @@ export const MovableCard = ({
                 let foundWrapper = false;
                 for (const DOMEntity of DOMEntityList) {
                     const { type, element, beaconList } = DOMEntity;
+                    const DOMElement = element();
                     element().classList.remove('available-to-drop');
 
-                    if (foundWrapper === false
-                        && type === DOMEntityType['deckButton']
-                        && isLieInside({ x: clientX, y: clientY }, DOMEntity)
-                    ) {
+                    if (foundWrapper) continue;
+                    if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
+                    if (type === DOMEntityType['deckButton']
+                    || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
                         foundWrapper = true;
                         let foundBeacon = false;
                         for (const beacon of beaconList) {
@@ -118,15 +119,16 @@ export const MovableCard = ({
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             let found = false;
             for (const DOMEntity of DOMEntityList) {
-                const { type, element, beaconList } = DOMEntity;
+                const { type, element, beaconList, name } = DOMEntity;
+                const DOMElement = element();
 
                 /**
                  * Nếu vị trí thả card nằm bên trong một beacon wrapper nào đó
                  */
-                if (found === false
-                    && type === DOMEntityType['deckButton']
-                    && isLieInside({ x: clientX, y: clientY }, DOMEntity)
-                ) {
+                if (found) continue;
+                if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
+                if (type === DOMEntityType['deckButton']
+                || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
                     found = true;
                     let beaconFound = false;
                     for (const beacon of beaconList) {
@@ -144,7 +146,7 @@ export const MovableCard = ({
                                     addToDeck(id, [image], type);
                                     removeFromBoard(boardId, [image.get('_id')]);
                                     beaconFound = true;
-                                } else if (deckButtonId) {
+                                } else if (deckButtonId && name !== deckButtonId) {
                                     addToDeck(id, [image], type);
                                     deleteFromDeck(deckButtonId, [image.get('_id')]);
                                     beaconFound = true;

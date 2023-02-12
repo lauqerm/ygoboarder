@@ -32,12 +32,14 @@ export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;
 export const GetDropActionRegex = /\[ACTION-([\w-]*)\]/m;
 export const GetBoardRegex = /\[BOARD-([\w-]*)\]/m;
 export const GetDeckButtonRegex = /\[DECKBUTTON-([\w-]*)\]/m;
+export const GetDeckModalRegex = /\[DECKMODAL-([\w-]*)\]/m;
 export const GetOriginRegex = /\[ORIGIN-([\w-]*)\]/m;
 
 export const DragTransformStatRegex = /translate\((-?\d*)px, (-?\d*)px\)/;
 
 export const PropDOMEntityName = 'data-dom-entity-name';
 export const PropDOMEntityType = 'data-dom-entity-type';
+export const PropDOMEntityVisible = 'data-dom-entity-visible';
 export const DOMEntityType = {
     board: 'board' as const,
     deckButton: 'deckButton' as const,

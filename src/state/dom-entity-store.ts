@@ -85,7 +85,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
 
         const nextDOMEntityList = isReplaced
             ? DOMEntityList.map(entry => {
-                if (entry.name === name) return newDOMEntity;
+                if (entry.name === name && entry.type === type) return newDOMEntity;
                 return entry;
             })
             : [...DOMEntityList, newDOMEntity];
@@ -113,6 +113,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
          */
         const { DOMEntityList: currentDOMEntityList, recalculateCount } = state;
         const unsortedDOMEntityList: DOMEntity[] = [];
+        console.log('🚀 ~ file: dom-entity-store.ts:122 ~ useDOMEntityStateStore ~ type', currentDOMEntityList);
 
         for (const DOMEntity of currentDOMEntityList) {
             const { element, beaconList } = DOMEntity;

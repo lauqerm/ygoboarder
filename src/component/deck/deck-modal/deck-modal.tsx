@@ -1,9 +1,9 @@
 import Moveable from 'react-moveable';
-import React, { useCallback, useEffect, useImperativeHandle, useState } from 'react';
+import React, { useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Button } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { DraggableCard } from '../../card';
-import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BeaconAction, BeaconActionLabel, PropDOMEntityName, DOMEntityTypeClass, DOM_ENTITY_CLASS, DOMEntityType, PropDOMEntityType } from 'src/model';
+import { DROP_TYPE_DECK, DECK_ROW_COUNT, DragTransformStatRegex, DeckType, BeaconAction, BeaconActionLabel, PropDOMEntityName, DOMEntityTypeClass, DOM_ENTITY_CLASS, DOMEntityType, PropDOMEntityType, PropDOMEntityVisible } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
 import { DeckImporter } from './deck-import';
@@ -122,6 +122,8 @@ export const DeckModal = React.forwardRef(({
         },
     );
     const currentZIndex = modalInstance.get('zIndex');
+    const deckButtonRef = useRef<HTMLDivElement | null>(null);
+    const deckButtonBeaconListRef = useRef<HTMLDivElement[]>([]);
 
     useImperativeHandle(ref, () => ({
         shuffle: () => {
@@ -153,10 +155,17 @@ export const DeckModal = React.forwardRef(({
 
     const currentDeckList = distributeDeckRow(currentFullDeckList);
     const portal = document.getElementById('modal-wrapper');
+    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
 
     useEffect(() => {
         register(deckId, type);
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        if (deckButtonRef.current && deckButtonBeaconListRef.current) {
+            addDOMEntity(deckButtonRef.current, DOMEntityType['deckModal'], deckButtonBeaconListRef.current);
+        }
     }, []);
 
     const beaconProps = {
@@ -235,6 +244,7 @@ export const DeckModal = React.forwardRef(({
             <ModalContainer
                 ref={targetRef => {
                     setTarget(targetRef);
+                    if (targetRef) deckButtonRef.current = targetRef;
                 }}
                 data-entity-type={DROP_TYPE_DECK}
                 className={mergeClass(
@@ -256,6 +266,7 @@ export const DeckModal = React.forwardRef(({
                 {...{
                     [PropDOMEntityName]: deckId,
                     [PropDOMEntityType]: DOMEntityType['deckModal'],
+                    [PropDOMEntityVisible]: `${isVisible}`,
                 }}
             >
                 <div className="deck-modal-header-padding" />
@@ -264,8 +275,16 @@ export const DeckModal = React.forwardRef(({
                     zIndex={currentZIndex}
                 >
                     <div className="deck-modal-beacon-list">
-                        {beaconList.map(beaconType => {
-                            return <DeckBeacon key={beaconType} {...beaconProps} actionType={beaconType}>{BeaconActionLabel[beaconType].label}</DeckBeacon>;
+                        {beaconList.map((beaconType, index) => {
+                            return <DeckBeacon key={beaconType}
+                                ref={ref => {
+                                    if (ref) deckButtonBeaconListRef.current[index] = ref;
+                                }}
+                                {...beaconProps}
+                                actionType={beaconType}
+                            >
+                                {BeaconActionLabel[beaconType].label}
+                            </DeckBeacon>;
                         })}
                     </div>
                     <div className="deck-card-list">
