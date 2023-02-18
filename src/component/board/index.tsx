@@ -1,11 +1,23 @@
 import styled from 'styled-components';
 import { BoardDrawing } from './board-drawing';
-import { BeaconAction, BoardMapping, CLASS_BOARD, CLASS_BOARD_ACTIVE, DOM_ENTITY_CLASS, DOMEntityType, DOMEntityTypeClass, FieldComponentKey, FieldDeckCoordinateMap, FieldKey, PropDOMEntityName, PropDOMEntityType, BOARD_INDEX, BoardComponentList } from 'src/model';
+import {
+    CLASS_BOARD,
+    CLASS_BOARD_ACTIVE,
+    DOM_ENTITY_CLASS,
+    DOMEntityType,
+    DOMEntityTypeClass,
+    FieldDeckCoordinateMap,
+    FieldKey,
+    PROP_DOM_ENTITY_NAME,
+    PROP_DOM_ENTITY_TYPE,
+    BOARD_INDEX,
+    BoardComponentList,
+} from 'src/model';
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
-import './play-board.scss';
 import { useEffect, useRef, useState } from 'react';
 import { useDOMEntityStateStore } from 'src/state';
+import './play-board.scss';
 
 const BoardContainer = styled.div`
     background-color: var(--main-primaryLighter);
@@ -14,7 +26,6 @@ const BoardContainer = styled.div`
     display: inline-block;
     flex: 0;
 `;
-
 
 export type Board = {
     boardName: string,
@@ -26,11 +37,13 @@ export const Board = ({
         [FieldKey.your]: {},
         [FieldKey.opponent]: {},
     });
+
+    /** [Register DOM Entity] */
     const boardDrawingRef = useRef<HTMLDivElement>(null);
     const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
-
     useEffect(() => {
         if (boardDrawingRef.current) addDOMEntity(boardDrawingRef.current, DOMEntityType['board']);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return <BoardContainer ref={boardDrawingRef}
@@ -50,21 +63,18 @@ export const Board = ({
             DOM_ENTITY_CLASS, DOMEntityTypeClass['board'],
         )}
         {...{
-            [PropDOMEntityName]: boardName,
-            [PropDOMEntityType]: DOMEntityType['board'],
+            [PROP_DOM_ENTITY_NAME]: boardName,
+            [PROP_DOM_ENTITY_TYPE]: DOMEntityType['board'],
         }}
     >
         <BoardDrawing onMount={setCoordinateMap} />
         {BoardComponentList.map(boardComponent => {
-            const { top: absoluteTop = 0, left: absoluteLeft = 0 } = boardDrawingRef.current?.getBoundingClientRect() ?? {};
             const { fieldComponentKey, fieldKey, ...deckButtonProps } = boardComponent;
             const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
 
             if (top == null || left == null) return null;
             return <DeckButton key={`${fieldKey}${fieldComponentKey}`}
                 {...deckButtonProps}
-                absoluteTop={absoluteTop}
-                absoluteLeft={absoluteLeft}
                 offsetTop={top}
                 offsetLeft={left}
             />;

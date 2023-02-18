@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { BoardCard, BoardEntryConverter, useBoardStore, useCardEventStore } from 'src/state';
+import { BoardCard, BoardEntryConverter, useBoardStore } from 'src/state';
 import { List } from 'immutable';
 import { MovableCard } from '../card';
 import './play-board.scss';
@@ -28,10 +28,8 @@ export const CardBoard = ({
         className="play-card-board"
     >
         {currentBoardList.map(boardCard => {
-            const cardId = `[BOARD-${boardName}]-[ID-${boardCard.get('card').get('_id')}]`;
-
             return <MovableCard key={boardCard.get('card').get('_id')}
-                uniqueId={cardId}
+                uniqueId={`[BOARD-${boardName}]-[ID-${boardCard.get('card').get('_id')}]`}
                 image={boardCard.get('card')}
                 origin={boardCard.get('origin')}
                 initialX={boardCard.get('initialX')}

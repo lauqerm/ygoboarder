@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { CardImage, DeckType } from 'src/model';
-import { mergeClass } from 'src/util';
 import './card.scss';
 
 type ImageSourceEntry = {
@@ -67,7 +65,7 @@ const createImageSourceQueue = () => {
 const imageSourceMap = createImageSourceQueue();
 
 /**
- * Làm ra để tránh limit card image của YGORPO
+ * Làm ra để tránh limit card image của YGORPO, ảnh trong component này sẽ load tuần tự, với số lượng mỗi giây dưới ngưỡng cho trước
  */
 export type DelayedImage = React.ImgHTMLAttributes<HTMLImageElement> & { type: 'URL' | 'Base64' };
 export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {

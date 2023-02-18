@@ -1,18 +1,27 @@
-import logo from './logo.svg';
 import './app.scss';
-import { Input, Upload } from 'antd';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BeaconAction, CardImage, CardImageConverter, DECK_ROW_COUNT, DeckType, DROP_TYPE_BOARD, DROP_TYPE_DECK, GetDropActionRegex, GetDropIDRegex, GetDropTypeRegex, GetOriginRegex, CLASS_BEACON_DECK_BACK, CLASS_BOARD, CLASS_BOARD_ACTIVE, PROP_BEACON_DECK_ORIGIN, PROP_BEACON_ACTION_TYPE, DOMEntityType } from './model';
+import {
+    BeaconAction,
+    CardImageConverter,
+    DROP_TYPE_DECK,
+    GetDropActionRegex,
+    GetDropIDRegex,
+    GetDropTypeRegex,
+    CLASS_BEACON_DECK_BACK,
+    CLASS_BOARD,
+    CLASS_BOARD_ACTIVE,
+    PROP_BEACON_DECK_ORIGIN,
+    PROP_BEACON_ACTION_TYPE,
+    DOMEntityType,
+} from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, Card, CardBoard, DeckButton, DeckModal, ExportButton, ImportButton, MovableCard } from './component';
+import { Board, CardBoard, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckCard, DeckListConverter, useBoardStore, useCardEventStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
-import debounce from 'lodash.debounce';
-import { List } from 'immutable';
-import 'antd/dist/antd.less';
+import { cardIndexQueue, DeckListConverter, useBoardStore, useCardEventStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
 import { deactivateAllBeacon } from './service';
 import { isLieInside } from './util';
+import 'antd/dist/antd.less';
 
 function App() {
     const appRef = useRef<HTMLDivElement>(null);
@@ -74,7 +83,7 @@ function App() {
     };
 
     const onBeforeDragStart = (initial: DragStart) => {
-        const { draggableId, source } = initial;
+        const { source } = initial;
         console.log('🚀 ~ Draggable ~ onBeforeDragStart ~ draggableId', source);
         /**
          * Side-effect cho DeckButton
@@ -97,7 +106,15 @@ function App() {
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
         console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragEnd');
-        const { destination, source, draggableId } = result;
+        const { destination, source } = result;
+        const {
+            droppableId: sourceDropId,
+            index: sourceIndex,
+        } = source;
+        const {
+            droppableId: destinationDropId = '',
+            index: destinationIndex = -1,
+        } = destination ?? {};
         const cleanUpEffects = () => {
             appRef.current?.classList.remove('app-wrapper-is-dragging');
             deactivateAllBeacon();
@@ -110,16 +127,14 @@ function App() {
             let highestBeaconTarget: HTMLElement | null = null;
 
             for (let cnt = 0; cnt < backBeaconList.length; cnt++) {
-                const target = backBeaconList[cnt];
-                const zIndex = parseInt(target.style.zIndex ?? '0');
-                if (!isNaN(zIndex) && zIndex >= highestBeaconIndex) {
-                    const { top, left, right, bottom } = target.getBoundingClientRect();
-                    const { x, y } = mousePosition.current;
-
-                    if (x >= left && x <= right && y >= top && y <= bottom) {
-                        highestBeaconIndex = zIndex;
-                        highestBeaconTarget = target;
-                    }
+                const backBeacon = backBeaconList[cnt];
+                const zIndex = parseInt(backBeacon.style.zIndex ?? '0');
+                if (!isNaN(zIndex)
+                    && zIndex >= highestBeaconIndex
+                    && isLieInside(mousePosition.current, backBeacon.getBoundingClientRect())
+                ) {
+                    highestBeaconIndex = zIndex;
+                    highestBeaconTarget = backBeacon;
                 }
             }
 
@@ -127,9 +142,9 @@ function App() {
                 /** Drag vào Deck thông qua beacon từ Deck Back */
                 const dropType = highestBeaconTarget.getAttribute(PROP_BEACON_ACTION_TYPE) as BeaconAction | null;
                 const beaconOrigin = highestBeaconTarget.getAttribute(PROP_BEACON_DECK_ORIGIN);
-                const sourceDeckID = GetDropIDRegex.exec(source.droppableId)?.[1];
+                const sourceDeckID = GetDropIDRegex.exec(sourceDropId)?.[1];
                 if (dropType && beaconOrigin && sourceDeckID) {
-                    const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(source.index);
+                    const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(sourceIndex);
 
                     if (targetDeckCard) {
                         deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
@@ -149,22 +164,20 @@ function App() {
                 for (let cnt = 0; cnt < playBoardList.length; cnt++) {
                     const target = playBoardList[cnt];
                     const zIndex = parseInt(target.style.zIndex ?? '0');
-                    if (!isNaN(zIndex) && zIndex >= highestBoardIndex) {
-                        const { top, left, right, bottom } = target.getBoundingClientRect();
-                        const { x, y } = mousePosition.current;
-
-                        if (x >= left && x <= right && y >= top && y <= bottom) {
-                            highestBoardIndex = zIndex;
-                            highestBoardTarget = target;
-                        }
+                    if (!isNaN(zIndex)
+                        && zIndex >= highestBoardIndex
+                        && isLieInside(mousePosition.current, target.getBoundingClientRect())
+                    ) {
+                        highestBoardIndex = zIndex;
+                        highestBoardTarget = target;
                     }
                 }
 
                 if (highestBoardTarget) {
-                    const deckID = GetDropIDRegex.exec(source.droppableId)?.[1];
+                    const deckID = GetDropIDRegex.exec(sourceDropId)?.[1];
                     const boardName = highestBoardTarget.getAttribute('data-board-name');
                     if (deckID && boardName) {
-                        const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(source.index);
+                        const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(sourceIndex);
 
                         if (deckID && cardInDeck) {
                             const { x, y } = mousePosition.current;
@@ -184,27 +197,27 @@ function App() {
             cleanUpEffects();
             return;
         }
-        if (destination.droppableId === source.droppableId && destination.index === source.index) {
+        if (destinationDropId === sourceDropId && destinationIndex === sourceIndex) {
             cleanUpEffects();
             return;
         }
-        const sourceType = GetDropTypeRegex.exec(source.droppableId)?.[1];
-        const destinationType = GetDropTypeRegex.exec(destination.droppableId)?.[1];
 
-        if (sourceType === DROP_TYPE_DECK && destinationType === DROP_TYPE_DECK) {
-            const sourceDeckID = GetDropIDRegex.exec(source.droppableId)?.[1];
-            const destinationDeckID = GetDropIDRegex.exec(destination.droppableId)?.[1];
+        if (GetDropTypeRegex.exec(sourceDropId)?.[1] === DROP_TYPE_DECK
+            && GetDropTypeRegex.exec(destinationDropId)?.[1] === DROP_TYPE_DECK
+        ) {
+            const sourceDeckID = GetDropIDRegex.exec(sourceDropId)?.[1];
+            const destinationDeckID = GetDropIDRegex.exec(destinationDropId)?.[1];
 
             if (sourceDeckID && destinationDeckID) {
                 if (sourceDeckID === destinationDeckID) {
                     /** Drag cục bộ trong Deck */
                     if (sourceDeckID) reorder(sourceDeckID, [{
-                        prevIndex: source.index,
-                        nextIndex: destination.index,
+                        prevIndex: sourceIndex,
+                        nextIndex: destinationIndex,
                     }]);
                 } else {
-                    const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(source.index);
-                    const dropActionType = GetDropActionRegex.exec(destination.droppableId)?.[1];
+                    const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(sourceIndex);
+                    const dropActionType = GetDropActionRegex.exec(destinationDropId)?.[1];
                     if (targetDeckCard) {
                         if (dropActionType) {
                             /** Drag từ Deck này sang Deck khác thông qua Beacon */
@@ -217,7 +230,7 @@ function App() {
                             /** Drag từ Deck này sang Deck khác bằng thao tác trực tiếp */
                             addToDeckInPosition(destinationDeckID, [{
                                 card: targetDeckCard,
-                                position: destination.index,
+                                position: destinationIndex,
                             }]);
                         }
                         deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
@@ -237,10 +250,7 @@ function App() {
             const target = backBeaconList[cnt];
             const zIndex = parseInt(target.style.zIndex ?? '0');
             if (!isNaN(zIndex) && zIndex >= highestBeaconIndex) {
-                const { top, left, right, bottom } = target.getBoundingClientRect();
-                const { x, y } = mousePosition.current;
-
-                if (x >= left && x <= right && y >= top && y <= bottom) {
+                if (isLieInside(mousePosition.current, target.getBoundingClientRect())) {
                     highestBeaconIndex = zIndex;
                     highestBeaconTarget = target;
                 }
@@ -260,9 +270,8 @@ function App() {
                     const boardName = element().getAttribute('data-board-name');
                     if (deckID && boardName) {
                         const cardInDeck = currentDeckList.get(deckID, DeckListConverter()).get('cardList').get(cardIndex);
-    
-                        if (deckID && cardInDeck) {
-                            const { x: offsetX, y: offsetY } = dragCardOffset.current;
+
+                        if (cardInDeck) {
                             const { left, top } = cardCoord;
                             const targetCard = cardInDeck.get('card');
                             deleteFromDeck(deckID, [targetCard.get('_id')]);
@@ -301,6 +310,7 @@ function App() {
         return () => {
             document.removeEventListener('mousemove', getMousePosition);
         };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hardResetCnt]);
 
     useLayoutEffect(() => {

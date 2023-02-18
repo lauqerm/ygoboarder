@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { BeaconAction, DOMEntityType, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, GetBoardRegex, GetDeckButtonRegex, GetDropActionRegex, GetDropIDRegex, PropDOMEntityVisible } from 'src/model';
+import { DOMEntityType, GetBoardRegex, GetDeckButtonRegex, PropDOMEntityVisible } from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
-import { useBoardStore, useCardEventStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
-import './movable-card.scss';
+import { useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
 import { createPortal } from 'react-dom';
+import './movable-card.scss';
 
 export type MovableCard = {
     uniqueId: string,
@@ -28,10 +28,7 @@ export const MovableCard = ({
     onDragToBoard,
     ...rest
 }: MovableCard) => {
-    const {
-        addToDeck,
-        deleteFromDeck,
-    } = useDeckStore(
+    const { addToDeck, deleteFromDeck } = useDeckStore(
         state => ({
             addToDeck: state.add,
             deleteFromDeck: state.delete,
@@ -39,36 +36,23 @@ export const MovableCard = ({
         () => true,
     );
     const removeFromBoard = useBoardStore(state => state.delete);
-    const beforeDragCoordination = useRef({
-        top: undefined as number | undefined,
-        left: undefined as number | undefined,
-    });
-    const [target, setTarget] = useState<HTMLDivElement | null>(null);
+
     const {
-        cardInstance,
+        zIndexInstance,
         focus,
     } = useZIndexState(
         state => ({
-            cardInstance: state.categoryMap['card'].queueMap.get(uniqueId, ZIndexInstanceConverter()),
+            zIndexInstance: state.categoryMap['card'].queueMap.get(uniqueId, ZIndexInstanceConverter()),
             focus: state.toTop,
         }),
         (prev, next) => {
-            return prev.cardInstance.get('name') === next.cardInstance.get('name')
-                && prev.cardInstance.get('zIndex') === next.cardInstance.get('zIndex');
+            return prev.zIndexInstance.get('name') === next.zIndexInstance.get('name')
+                && prev.zIndexInstance.get('zIndex') === next.zIndexInstance.get('zIndex');
         },
     );
-    const {
-        DOMEntityList,
-        DOMEntityMap,
-        DOMEntityVersion,
-    } = useDOMEntityStateStore(
-        ({ DOMEntityList, DOMEntityMap, recalculateCount }) => ({
-            DOMEntityList: DOMEntityList,
-            DOMEntityMap: DOMEntityMap,
-            DOMEntityVersion: recalculateCount,
-        }),
-        (prev, next) => prev.DOMEntityVersion === next.DOMEntityVersion,
-    );
+    const zIndex = zIndexInstance.get('zIndex');
+
+    const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const onDrag = useCallback(({
         target,
         left, top,
@@ -85,14 +69,13 @@ export const MovableCard = ({
         let highlightBeacon = (_e: MouseEvent) => { };
         const onMouseDown = () => {
             focus('card', uniqueId);
-            highlightBeacon = (e: MouseEvent) => {
-                const { clientX, clientY } = e;
+            highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
                 const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
                 let foundWrapper = false;
                 for (const DOMEntity of DOMEntityList) {
                     const { type, element, beaconList } = DOMEntity;
                     const DOMElement = element();
-                    element().classList.remove('available-to-drop');
+                    DOMElement.classList.remove('js-available-to-drop');
 
                     if (foundWrapper) continue;
                     if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
@@ -101,21 +84,20 @@ export const MovableCard = ({
                         foundWrapper = true;
                         let foundBeacon = false;
                         for (const beacon of beaconList) {
-                            beacon.beaconElement().classList.remove('ready-to-drop');
+                            beacon.beaconElement().classList.remove('js-ready-to-drop');
                             if (foundBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
                                 foundBeacon = true;
-                                beacon.beaconElement().classList.add('ready-to-drop');
+                                beacon.beaconElement().classList.add('js-ready-to-drop');
                             }
                         }
-                        element().classList.add('available-to-drop');
+                        DOMElement.classList.add('js-available-to-drop');
                     }
                 }
             };
             document.addEventListener('mousemove', highlightBeacon);
         };
-        const onMouseUp = (e: MouseEvent) => {
+        const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon);
-            const { clientX, clientY } = e;
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             let found = false;
             for (const DOMEntity of DOMEntityList) {
@@ -140,7 +122,6 @@ export const MovableCard = ({
                         if (beaconFound === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
                             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                             const deckButtonId = GetDeckButtonRegex.exec(uniqueId)?.[1];
-                            console.log('🚀 ~ file: movable-card.tsx:84 ~ onMouseDown ~ element', type, id, boardId, uniqueId);
                             if (type && id) {
                                 if (boardId) {
                                     addToDeck(id, [image], type);
@@ -153,10 +134,10 @@ export const MovableCard = ({
                                 }
                             }
                         }
-                        beaconElement().classList.remove('ready-to-drop');
+                        beaconElement().classList.remove('js-ready-to-drop');
                     }
                 }
-                element().classList.remove('available-to-drop');
+                DOMElement.classList.remove('js-available-to-drop');
             }
         };
         if (target && once.current === false) {
@@ -190,7 +171,7 @@ export const MovableCard = ({
             data-moveable-card-id={uniqueId}
             className={mergeClass('ygo-card', 'ygo-movable-card', `ygo-card-size-${size}`, className)}
             {...rest}
-            style={{ zIndex: cardInstance.get('zIndex'), ...style }}
+            style={{ zIndex, ...style }}
         >
             <Card image={image} origin={origin} />
             {ableTarget && <Moveable
@@ -205,12 +186,10 @@ export const MovableCard = ({
                 throttleDrag={0}
                 onDragStart={() => {
                     target!.classList.add('card-is-dragging');
-                    // const { top, left } = target?.getBoundingClientRect() ?? {};
-                    // beforeDragCoordination.current = { top, left };
                 }}
                 onDrag={onDrag}
                 onDragEnd={() => {
-                    target!.style.zIndex = `${cardInstance.get('zIndex')}`;
+                    target!.style.zIndex = `${zIndex}`;
                     target!.classList.remove('card-is-dragging');
 
                     if (originEntity === DOMEntityType['deckButton']) {

@@ -1,5 +1,12 @@
 import React, { ForwardedRef } from 'react';
-import { BeaconAction, BEACON_CLASS, CLASS_BEACON_WRAPPER, DROP_TYPE_DECK_BEACON, DROP_TYPE_DECK_BEACON_LIST, PROP_BEACON_ACTION_TYPE, PROP_BEACON_DECK_ORIGIN } from 'src/model';
+import {
+    BeaconAction,
+    BEACON_CLASS,
+    CLASS_BEACON_WRAPPER,
+    PROP_BEACON_ACTION_TYPE,
+    PROP_BEACON_DECK_ORIGIN,
+    PROP_BEACON_INFO,
+} from 'src/model';
 import { mergeClass } from 'src/util';
 import './deck-beacon.scss';
 
@@ -19,7 +26,6 @@ export const DeckBeaconWrapper = React.forwardRef(({
             CLASS_BEACON_WRAPPER,
             className,
         )}
-        data-entity-type={DROP_TYPE_DECK_BEACON_LIST}
         data-beacon-visibility={isVisible}
         data-beacon-index={zIndex}
         {...rest}
@@ -42,10 +48,9 @@ export const DeckBeacon = React.forwardRef(({
             BEACON_CLASS,
             className,
         )}
-        data-entity-type={DROP_TYPE_DECK_BEACON}
-        data-deck-beacon={`[ID-${deckId}]-[ACTION-${actionType}]`}
         {...rest}
         {...{
+            [PROP_BEACON_INFO]: `[ID-${deckId}]-[ACTION-${actionType}]`,
             [PROP_BEACON_DECK_ORIGIN]: deckId,
             [PROP_BEACON_ACTION_TYPE]: actionType,
         }}

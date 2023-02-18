@@ -2,6 +2,7 @@ import { CardPreset, DeckType } from './deck';
 
 export const PROP_BEACON_DECK_ORIGIN = 'data-beacon-deck-origin';
 export const PROP_BEACON_ACTION_TYPE = 'data-beacon-action-type';
+export const PROP_BEACON_INFO = 'data-beacon-info';
 export const BEACON_CLASS = 'js-beacon';
 export const BeaconAction = Object.freeze({
     top: 'top' as const,

@@ -1,13 +1,11 @@
 import {
     BeaconAction,
-    BEACON_CLASS,
-    CLASS_BEACON_WRAPPER,
     DOMEntityType,
-    DOM_ENTITY_CLASS,
-    PropDOMEntityName,
-    PropDOMEntityType,
+    PROP_DOM_ENTITY_NAME,
+    PROP_DOM_ENTITY_TYPE,
     PROP_BEACON_ACTION_TYPE,
     PROP_BEACON_DECK_ORIGIN,
+    PROP_BEACON_INFO,
 } from 'src/model';
 import create from 'zustand';
 
@@ -54,7 +52,7 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
     },
 
     addDOMEntity: (ref: HTMLElement, type: DOMEntityType, beaconRefList?: HTMLElement[]) => set(state => {
-        const name = ref.getAttribute(PropDOMEntityName) ?? 'Default';
+        const name = ref.getAttribute(PROP_DOM_ENTITY_NAME) ?? 'Default';
         const newDOMEntity: DOMEntity = {
             name,
             type,
@@ -107,19 +105,13 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
 
     recalculateCount: 0,
     recalculate: () => set(state => {
-        /**
-         * `board`: .${DOM_ENTITY_CLASS}
-         * `deckButton` và `deckModal`: .${DOM_ENTITY_CLASS} .${CLASS_BEACON_WRAPPER}
-         */
         const { DOMEntityList: currentDOMEntityList, recalculateCount } = state;
         const unsortedDOMEntityList: DOMEntity[] = [];
-        console.log('🚀 ~ file: dom-entity-store.ts:122 ~ useDOMEntityStateStore ~ type', currentDOMEntityList);
 
-        for (const DOMEntity of currentDOMEntityList) {
-            const { element, beaconList } = DOMEntity;
+        for (const { element, beaconList } of currentDOMEntityList) {
             const DOMElement = element();
-            const name = DOMElement.getAttribute(PropDOMEntityName) ?? 'Default';
-            const type = (DOMElement.getAttribute(PropDOMEntityType) ?? 'Default') as DOMEntityType;
+            const name = DOMElement.getAttribute(PROP_DOM_ENTITY_NAME) ?? 'Default';
+            const type = (DOMElement.getAttribute(PROP_DOM_ENTITY_TYPE) ?? 'Default') as DOMEntityType;
             const zIndex = parseInt(DOMElement.style.zIndex);
             const { left, top, right, bottom } = DOMElement.getBoundingClientRect();
 
@@ -132,10 +124,9 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
                     beaconList: [],
                 };
 
-                for (const DOMBeaconEntity of beaconList) {
-                    const { beaconElement } = DOMBeaconEntity;
+                for (const { beaconElement } of beaconList) {
                     const DOMBeaconElement = beaconElement();
-                    const beaconInfo = DOMBeaconElement.getAttribute('data-deck-beacon');
+                    const beaconInfo = DOMBeaconElement.getAttribute(PROP_BEACON_INFO);
 
                     if (beaconInfo) {
                         const beaconType = DOMBeaconElement.getAttribute(PROP_BEACON_ACTION_TYPE) as BeaconAction | null;
@@ -178,7 +169,6 @@ export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
             nextDOMEntityMap[type][name] = DOMEntityInfo;
         }
 
-        console.log('after calculation', nextDOMEntityList, recalculateCount + 1);
         return {
             ...state,
             recalculateCount: recalculateCount + 1,

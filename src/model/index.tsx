@@ -24,7 +24,7 @@ export const DECK_ROW_COUNT = 7;
 
 export const CLASS_BEACON_WRAPPER = 'js-deck-beacon-wrapper';
 export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
-export const CLASS_BOARD_ACTIVE = 'js-deck-board-ready-to-drop';
+export const CLASS_BOARD_ACTIVE = 'js-deck-board-js-ready-to-drop';
 export const CLASS_BOARD = 'js-board';
 
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
@@ -37,8 +37,8 @@ export const GetOriginRegex = /\[ORIGIN-([\w-]*)\]/m;
 
 export const DragTransformStatRegex = /translate\((-?\d*)px, (-?\d*)px\)/;
 
-export const PropDOMEntityName = 'data-dom-entity-name';
-export const PropDOMEntityType = 'data-dom-entity-type';
+export const PROP_DOM_ENTITY_NAME = 'data-dom-entity-name';
+export const PROP_DOM_ENTITY_TYPE = 'data-dom-entity-type';
 export const PropDOMEntityVisible = 'data-dom-entity-visible';
 export const DOMEntityType = {
     board: 'board' as const,
