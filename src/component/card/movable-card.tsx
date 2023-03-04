@@ -13,7 +13,7 @@ export type MovableCard = {
     initialX?: number,
     initialY?: number,
     originEntity?: DOMEntityType,
-    onDragToBoard?: (id: string, newCoor: { top: number, left: number }, origin: string) => void,
+    onDragToBoard?: (id: string, newCoor: { top: number, left: number }, origin: string, boardName: string) => void,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
 export const MovableCard = ({
     uniqueId,
@@ -80,7 +80,7 @@ export const MovableCard = ({
                     if (foundWrapper) continue;
                     if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
                     if (type === DOMEntityType['deckButton']
-                    || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
+                        || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
                         foundWrapper = true;
                         let foundBeacon = false;
                         for (const beacon of beaconList) {
@@ -98,46 +98,53 @@ export const MovableCard = ({
         };
         const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon);
+            const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
+            const movedDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
-            let found = false;
+            let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
                 const { type, element, beaconList, name } = DOMEntity;
                 const DOMElement = element();
+                DOMElement.classList.remove('js-available-to-drop');
 
-                /**
-                 * Nếu vị trí thả card nằm bên trong một beacon wrapper nào đó
-                 */
-                if (found) continue;
+                if (foundValidDrop) continue;
                 if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
                 if (type === DOMEntityType['deckButton']
-                || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
-                    found = true;
-                    let beaconFound = false;
+                    || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')
+                ) {
+                    foundValidDrop = true;
+                    let foundValidBeacon = false;
                     for (const beacon of beaconList) {
                         const { id, type, beaconElement } = beacon;
 
                         /**
                          * Nếu vị trí thả card nằm bên trong một beacon nào đó
                          */
-                        if (beaconFound === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
+                        if (foundValidBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
                             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                             const deckButtonId = GetDeckButtonRegex.exec(uniqueId)?.[1];
                             if (type && id) {
                                 if (boardId) {
                                     addToDeck(id, [image], type);
                                     removeFromBoard(boardId, [image.get('_id')]);
-                                    beaconFound = true;
+                                    foundValidBeacon = true;
                                 } else if (deckButtonId && name !== deckButtonId) {
                                     addToDeck(id, [image], type);
                                     deleteFromDeck(deckButtonId, [image.get('_id')]);
-                                    beaconFound = true;
+                                    foundValidBeacon = true;
                                 }
                             }
                         }
                         beaconElement().classList.remove('js-ready-to-drop');
                     }
+                    continue;
                 }
-                DOMElement.classList.remove('js-available-to-drop');
+                if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedDistance > 50) {
+                    const boardName = DOMElement.getAttribute('data-board-name');
+
+                    /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCard không có thông tin về Deck mà nó thuộc về */
+                    if (boardName) onDragToBoard?.(uniqueId, { top, left }, origin, boardName);
+                }
             }
         };
         if (target && once.current === false) {
@@ -191,18 +198,6 @@ export const MovableCard = ({
                 onDragEnd={() => {
                     target!.style.zIndex = `${zIndex}`;
                     target!.classList.remove('card-is-dragging');
-
-                    if (originEntity === DOMEntityType['deckButton']) {
-                        const { top, left } = target?.getBoundingClientRect() ?? {};
-
-                        if (initialY != null && initialX != null && top != null && left != null) {
-                            const movedDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
-
-                            if (movedDistance > 50) {
-                                onDragToBoard?.(uniqueId, { top, left }, origin);
-                            }
-                        }
-                    }
                 }}
             />}
         </div>,

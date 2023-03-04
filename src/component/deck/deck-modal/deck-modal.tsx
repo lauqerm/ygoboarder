@@ -5,7 +5,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { DraggableCard } from '../../card';
 import {
     DROP_TYPE_DECK,
-    DECK_ROW_COUNT,
+    DECK_COL_COUNT,
     DragTransformStatRegex,
     DeckType,
     BeaconAction,
@@ -16,11 +16,12 @@ import {
     DOMEntityType,
     PROP_DOM_ENTITY_TYPE,
     PropDOMEntityVisible,
+    DECK_ROW_COUNT,
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
 import { DeckImporter } from './deck-import';
-import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer } from './deck-modal-styled';
+import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { ExtractProps } from 'src/type';
 import { List } from 'immutable';
@@ -36,7 +37,7 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
     cardList.forEach(entry => {
         currentRowList.push({ card: entry, index: currentCounter });
 
-        if ((1 + currentCounter) % DECK_ROW_COUNT === 0) {
+        if ((1 + currentCounter) % DECK_COL_COUNT === 0) {
             processedDeckRow.push(currentRowList);
             currentRowList = [];
         }
@@ -165,6 +166,17 @@ export const DeckModal = React.forwardRef(({
     }, [target, handle]);
 
     const currentDeckList = distributeDeckRow(currentFullDeckList);
+    /**
+     * Vì ta chia không gian modal ra từng row để drag, nên sẽ có thời điểm row không phủ kín hết modal.
+     * 
+     * Ví dụ với modal cho 3 row:
+     * |00000000
+     * |0000
+     * |<-- Trống -->
+     * 
+     * Để khắc phục, row cuối cùng phải cao lên để phủ kín phần không gian còn lại, đây là hệ số cho biết row cuối phải cao lên bao nhiêu
+     */
+    const lastRowExtender = Math.max(0, DECK_ROW_COUNT - currentDeckList.length) + 1;
     const portal = document.getElementById('modal-wrapper');
 
     useEffect(() => {
@@ -181,7 +193,7 @@ export const DeckModal = React.forwardRef(({
         if (deckButtonRef.current && deckButtonBeaconListRef.current) {
             addDOMEntity(deckButtonRef.current, DOMEntityType['deckModal'], deckButtonBeaconListRef.current);
         }
-    }, []);
+    }, [addDOMEntity]);
 
     const beaconProps = {
         deckId,
@@ -229,7 +241,7 @@ export const DeckModal = React.forwardRef(({
                             /**
                              * Nếu modal bị tràn khỏi màn hình, ta ép nó vào lại viewport để đảm bảo khả năng tương tác
                              * 
-                             * Ta check đáy trước, để nếu cả đáy và đỉnh đều tràn thì ưu tiên đỉnh
+                             * Ta check đáy trước, để nếu cả đáy và đỉnh đều tràn thì ưu tiên ép vào đỉnh
                              */
                             if (x + handlePadding > window.innerWidth) {
                                 handleTarget.style.left = `${window.innerWidth - handlePadding}px`;
@@ -302,16 +314,17 @@ export const DeckModal = React.forwardRef(({
                         })}
                     </div>
                     <div className="deck-card-list">
-                        {currentDeckList.map((deckRow, rowIndex) => {
+                        {currentDeckList.map((deckRow, rowIndex, arr) => {
                             return <Droppable key={rowIndex}
                                 droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]-[ROW-${rowIndex}]`}
                                 direction="horizontal"
                                 isDropDisabled={!isVisible || !isFocused}
                             >
                                 {dropProvided => {
-                                    return <div
+                                    return <ModalRowContainer
                                         ref={dropProvided.innerRef}
                                         className="deck-result"
+                                        lastRowExtender={arr.length - 1 === rowIndex ? lastRowExtender : 1}
                                         {...dropProvided.droppableProps}
                                     >
                                         <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
@@ -345,7 +358,7 @@ export const DeckModal = React.forwardRef(({
                                                 }}
                                             </Draggable>;
                                         })}
-                                    </div>;
+                                    </ModalRowContainer>;
                                 }}
                             </Droppable>;
                         })}

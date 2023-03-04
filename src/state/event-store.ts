@@ -1,5 +1,6 @@
 import create from 'zustand';
 
+/** @todo Possibly deprecated */
 export type CardEventState = {
     isDraggingBoardCard: boolean,
     setDraggingBoardCardStatus: (newStatus: boolean) => void,

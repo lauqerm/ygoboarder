@@ -1,9 +1,9 @@
-import { DECK_ROW_COUNT } from 'src/model';
+import { DECK_COL_COUNT, DECK_ROW_COUNT } from 'src/model';
 import styled from 'styled-components';
 
 const DRAGGABLE_CARD_WIDTH = 86 + 2 * 2 + 1 * 2;
 /** Total card length + 2 border + possible scrollbar */
-export const DECK_MODAL_WIDTH = DRAGGABLE_CARD_WIDTH * DECK_ROW_COUNT + 1 * 2 + 10;
+export const DECK_MODAL_WIDTH = DRAGGABLE_CARD_WIDTH * DECK_COL_COUNT + 1 * 2 + 10;
 export const DECK_MODAL_HEIGHT = 600;
 
 export const DeckModalHandleContainer = styled.div`
@@ -36,7 +36,7 @@ export const DeckModalHandleContainer = styled.div`
 
 export const ModalContainer = styled.div<{ $beaconCount: number }>`
     --row-height: 135px;
-    --content-height: calc(var(--row-height) * 4 + var(--spacing) * 2);
+    --content-height: ${() => `calc(var(--row-height) * ${DECK_ROW_COUNT} + var(--spacing) * 2);`};
     width: ${DECK_MODAL_WIDTH}px;
     border: var(--bd);
     border-radius: var(--br);
@@ -105,4 +105,8 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
             border-left-color: greenyellow;
         }
     }
+`;
+
+export const ModalRowContainer = styled.div<{ lastRowExtender: number }>`
+    height: ${props => `calc(var(--row-height) * ${props.lastRowExtender});`}
 `;

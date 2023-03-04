@@ -14,7 +14,7 @@ import {
     PROP_DOM_ENTITY_TYPE,
     DECK_BUTTON_INDEX,
 } from 'src/model';
-import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useCardEventStore, useDOMEntityStateStore } from 'src/state';
+import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useDOMEntityStateStore, useBoardStore } from 'src/state';
 import styled from 'styled-components';
 import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
@@ -141,13 +141,14 @@ export const DeckButton = ({
     );
     const zIndex = modalInstance.get('zIndex');
 
+    const addToBoard = useBoardStore(state => state.add);
+
+    const deleteFromDeck = useDeckStore(state => state.delete);
     const deckList = useDeckStore(
         state => state.deckMap.get(name, DeckListConverter()).get('cardList', List()),
         (oldState, newState) => oldState.equals(newState),
     );
     const topDeckCard = deckList.get(0);
-
-    const requireMoveCardFromDeckButtonToBoard = useCardEventStore(state => state.dragFromDeckButtonToBoard);
 
     /** [Register DOM Entity] */
     const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
@@ -231,8 +232,20 @@ export const DeckButton = ({
                         originEntity={DOMEntityType['deckButton']}
                         initialX={offsetLeft}
                         initialY={offsetTop}
-                        onDragToBoard={(_id, coord) => {
-                            requireMoveCardFromDeckButtonToBoard(0, name, coord);
+                        onDragToBoard={(_id, coord, _origin, boardName) => {
+                            const cardInDeck = deckList.get(0);
+    
+                            if (cardInDeck) {
+                                const { left, top } = coord;
+                                const targetCard = cardInDeck.get('card');
+                                deleteFromDeck(name, [targetCard.get('_id')]);
+                                addToBoard(boardName, [{
+                                    card: targetCard,
+                                    initialX: left,
+                                    initialY: top,
+                                    origin: name,
+                                }]);
+                            }
                         }}
                         onMouseEnter={() => {
                             deckButtonRef.current?.classList.add('deck-button-force-show');
