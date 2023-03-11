@@ -11,20 +11,24 @@ const DraggableCardContainer = styled.div`
 
 export type DraggableCard = {
     uniqueId: string,
+    isDragging: boolean,
     onDelete?: () => void,
     onDuplicate?: () => void,
+    dragRef: (element?: HTMLElement | null | undefined) => any,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
-export const DraggableCard = React.forwardRef<HTMLDivElement, DraggableCard>(({
+export const DraggableCard = ({
     uniqueId,
+    isDragging,
     image,
     size = 'sm',
     onDelete = () => {},
     onDuplicate = () => {},
     className,
     origin,
+    dragRef,
     ...rest
-}: DraggableCard, externalRef) => {
-    return <DraggableCardContainer ref={externalRef}
+}: DraggableCard) => {
+    return <DraggableCardContainer ref={dragRef}
         data-countable-card-id={uniqueId}
         className={mergeClass('ygo-card-wrapper', 'ygo-draggable-card', `ygo-card-size-${size}`, className)}
         {...rest}
@@ -40,4 +44,4 @@ export const DraggableCard = React.forwardRef<HTMLDivElement, DraggableCard>(({
     >
         <Card image={image} origin={origin} />
     </DraggableCardContainer>;
-});
+};

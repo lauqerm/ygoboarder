@@ -27,19 +27,6 @@
 .deck-modal-visible {
     visibility: visible;
 }
-.app-wrapper-is-dragging {
-    .deck-button {
-        z-index: 1000;
-    }
-    .deck-button:hover {
-        .deck-beacon {
-            visibility: visible;
-        }
-        .deck-button-toolbar {
-            display: none;
-        }
-    }
-}
 .deck-back-beacon-suppress {
     z-index: 0 !important;
 }

@@ -13,6 +13,7 @@ import {
     PROP_DOM_ENTITY_NAME,
     PROP_DOM_ENTITY_TYPE,
     DECK_BUTTON_INDEX,
+    MODAL_WRAPPER_ID,
 } from 'src/model';
 import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useDOMEntityStateStore, useBoardStore } from 'src/state';
 import styled from 'styled-components';
@@ -161,7 +162,7 @@ export const DeckButton = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const portal = document.getElementById('modal-wrapper');
+    const portal = document.getElementById(MODAL_WRAPPER_ID);
     if (!portal) return null;
     return createPortal(
         <DeckButtonContainer ref={deckButtonRef}
@@ -200,12 +201,6 @@ export const DeckButton = ({
             <DeckBeaconWrapper
                 className="deck-back ygo-card-size-sm"
                 style={{ zIndex: 1 }}
-                onMouseEnter={() => {
-                    beaconListRef.current?.classList.add('deck-back-beacon-active');
-                }}
-                onMouseLeave={() => {
-                    beaconListRef.current?.classList.remove('deck-back-beacon-active', 'deck-back-beacon-suppress');
-                }}
                 zIndex={zIndex}
                 isVisible={true}
             >

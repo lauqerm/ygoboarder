@@ -17,6 +17,7 @@ import {
     PROP_DOM_ENTITY_TYPE,
     PropDOMEntityVisible,
     DECK_ROW_COUNT,
+    MODAL_WRAPPER_ID,
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
@@ -177,7 +178,7 @@ export const DeckModal = React.forwardRef(({
      * Để khắc phục, row cuối cùng phải cao lên để phủ kín phần không gian còn lại, đây là hệ số cho biết row cuối phải cao lên bao nhiêu
      */
     const lastRowExtender = Math.max(0, DECK_ROW_COUNT - currentDeckList.length) + 1;
-    const portal = document.getElementById('modal-wrapper');
+    const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     useEffect(() => {
         register(deckId, type);
@@ -340,10 +341,12 @@ export const DeckModal = React.forwardRef(({
                                                 draggableId={cardId}
                                             >
                                                 {(dragProvided, snapshot) => {
-                                                    return <DraggableCard ref={dragProvided.innerRef}
+                                                    return <DraggableCard
+                                                        dragRef={dragProvided.innerRef}
                                                         uniqueId={cardId}
                                                         image={card}
                                                         origin={origin}
+                                                        isDragging={snapshot.isDragging}
                                                         onDelete={() => {
                                                             deleteFromList(deckId, [_id]);
                                                         }}

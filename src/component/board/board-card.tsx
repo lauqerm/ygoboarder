@@ -3,6 +3,7 @@ import { BoardCard, BoardEntryConverter, useBoardStore } from 'src/state';
 import { List } from 'immutable';
 import { MovableCard } from '../card';
 import './play-board.scss';
+import { DOMEntityType } from 'src/model';
 
 const BoardCardContainer = styled.div`
     top: 0;
@@ -34,6 +35,7 @@ export const CardBoard = ({
                 origin={boardCard.get('origin')}
                 initialX={boardCard.get('initialX')}
                 initialY={boardCard.get('initialY')}
+                originEntity={DOMEntityType['board']}
             />;
         })}
     </BoardCardContainer>;

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DOMEntityType, GetBoardRegex, GetDeckButtonRegex, PropDOMEntityVisible } from 'src/model';
+import { DOMEntityType, GetBoardRegex, GetDeckButtonRegex, MODAL_WRAPPER_ID, PropDOMEntityVisible } from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
@@ -151,6 +151,7 @@ export const MovableCard = ({
             once.current = true;
             target.style.left = `${initialX}px`;
             target.style.top = `${initialY}px`;
+            if (originEntity === DOMEntityType['board']) focus('card', uniqueId);
         }
         if (target) {
             target.addEventListener('mousedown', onMouseDown);
@@ -167,7 +168,7 @@ export const MovableCard = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [target]);
 
-    const portal = document.getElementById('modal-wrapper');
+    const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     if (!portal) return null;
 

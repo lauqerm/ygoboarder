@@ -54,6 +54,7 @@ export const DOMEntityTypeClass = {
     deckModal: 'js-dom-entity-deckModal' as const,
 };
 
+export const MODAL_WRAPPER_ID = 'modal-wrapper';
 
 /** Ta không bắt đầu từ 0 vì một vài component dùng index 0 là signal để xử lý vấn đề khác */
 export const MIN_CARD_INDEX = 10;

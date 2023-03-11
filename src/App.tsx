@@ -13,13 +13,15 @@ import {
     PROP_BEACON_DECK_ORIGIN,
     PROP_BEACON_ACTION_TYPE,
     DOMEntityTypeClass,
+    MODAL_WRAPPER_ID,
+    DOMEntityType,
+    PropDOMEntityVisible,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
-import { deactivateAllBeacon } from './service';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 
@@ -79,22 +81,54 @@ function App() {
         /*...*/
     };
 
+    const currentEventTarget = useRef<HTMLDivElement | null>(null);
+    const currentHighlightEvent = useRef<(_e: MouseEvent) => void>(() => { });
+    const currentMouseDownEvent = useRef<(_e: MouseEvent) => void>();
     const onBeforeDragStart = (initial: DragStart) => {
-        const { source } = initial;
-        appRef.current?.classList.add('app-wrapper-is-dragging');
+        const { source, draggableId } = initial;
 
         /**
          * Side-effect cho modal, vì handle có index cao hơn modal, card khi drag ngang qua handle sẽ bị khuất, ta cần effect để nâng index của modal lên, rồi hạ xuống sau khi kết thúc drag
          */
-        document
-            ?.querySelector(`[data-rbd-droppable-id="${source.droppableId}"]`)
+        document.querySelector(`[data-rbd-droppable-id="${source.droppableId}"]`)
             ?.closest(`.${DOMEntityTypeClass.deckModal}`)
             ?.classList.add('deck-modal-viewer-boost');
     };
 
-    const onDragStart = () => {
+    const onDragStart = (initial: DragStart) => {
+        const { source, draggableId } = initial;
         console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragStart');
         /*...*/
+
+        /**
+         * Side effect cho Draggable Card để cho phép nó tương tác với các beacon (tương tự như Movable Card)
+         */
+        currentEventTarget.current = document.querySelector(`[data-rbd-draggable-id="${draggableId}"`);
+        currentHighlightEvent.current = ({ clientX, clientY }: MouseEvent) => {
+            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            let foundWrapper = false;
+            for (const DOMEntity of DOMEntityList) {
+                const { type, element, beaconList } = DOMEntity;
+                const DOMElement = element();
+                DOMElement.classList.remove('js-available-to-drop');
+
+                if (foundWrapper) continue;
+                if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
+                if (type === DOMEntityType['deckButton']) {
+                    foundWrapper = true;
+                    let foundBeacon = false;
+                    for (const beacon of beaconList) {
+                        beacon.beaconElement().classList.remove('js-ready-to-drop');
+                        if (foundBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
+                            foundBeacon = true;
+                            beacon.beaconElement().classList.add('js-ready-to-drop');
+                        }
+                    }
+                    DOMElement.classList.add('js-available-to-drop');
+                }
+            }
+        };
+        document.addEventListener('mousemove', currentHighlightEvent.current);
     };
     const onDragUpdate = () => {
         console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragUpdate');
@@ -112,9 +146,8 @@ function App() {
             index: destinationIndex = -1,
         } = destination ?? {};
         const cleanEffect = () => {
-            appRef.current?.classList.remove('app-wrapper-is-dragging');
+            document.removeEventListener('mousemove', currentHighlightEvent.current);
             document.querySelector('.deck-modal-viewer-boost')?.classList.remove('deck-modal-viewer-boost');
-            deactivateAllBeacon();
         };
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */
