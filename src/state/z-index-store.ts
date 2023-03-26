@@ -26,7 +26,7 @@ type IndexCategoryData = {
 }
 /**
  * Dồn toa entry
- * [1, x, x, 4, 5, 6, x, 8, x, x, x, 12]
+ *    [1, x, x, 4, 5, 6, x, 8, x, x, x, 12]
  * => [1, 2, 3, 4, 5, 6, x, x, x, x, x, x]
  */
 const prune = (category: IndexCategoryData): IndexCategoryData => {

@@ -9,4 +9,8 @@
             visibility: visible!important;
         }
     }
+    &.card-is-zoned {
+        box-shadow: 0 0 0 2px deepskyblue;
+        border-radius: 3px;
+    }
 }

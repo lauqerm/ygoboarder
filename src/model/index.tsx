@@ -27,6 +27,8 @@ export const CLASS_BEACON_WRAPPER = 'js-deck-beacon-wrapper';
 export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
 export const CLASS_BOARD_ACTIVE = 'js-deck-board-js-ready-to-drop';
 export const CLASS_BOARD = 'js-board';
+export const CLASS_CARD_MOVABLE = 'js-movable-card';
+export const CLASS_CARD_MOVABLE_ZONED = 'js-movable-card-zoned';
 
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
 export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;

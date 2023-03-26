@@ -148,6 +148,14 @@ function App() {
         const cleanEffect = () => {
             document.removeEventListener('mousemove', currentHighlightEvent.current);
             document.querySelector('.deck-modal-viewer-boost')?.classList.remove('deck-modal-viewer-boost');
+            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            for (const DOMEntity of DOMEntityList) {
+                const { element, beaconList } = DOMEntity;
+                element().classList.remove('js-available-to-drop');
+                for (const beacon of beaconList) {
+                    beacon.beaconElement().classList.remove('js-ready-to-drop');
+                }
+            }
         };
 
         /** Giả drag, mặc dù ta không dùng droppable, ta lợi dụng event drag-n-drop để thực viện việc drop */

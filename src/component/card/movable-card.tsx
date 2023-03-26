@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { DOMEntityType, GetBoardRegex, GetDeckButtonRegex, MODAL_WRAPPER_ID, PropDOMEntityVisible } from 'src/model';
+import { CLASS_CARD_MOVABLE, DOMEntityType, GetBoardRegex, GetDeckButtonRegex, MODAL_WRAPPER_ID, PropDOMEntityVisible } from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
@@ -171,19 +171,18 @@ export const MovableCard = ({
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     if (!portal) return null;
-
-    const ableTarget: HTMLElement | null = document.querySelector(`[data-moveable-card-id="${uniqueId}"`);
     return createPortal(
         <div
             ref={targetRef => setTarget(targetRef)}
             data-moveable-card-id={uniqueId}
-            className={mergeClass('ygo-card', 'ygo-movable-card', `ygo-card-size-${size}`, className)}
+            data-moveable-card-origin-entity={originEntity}
+            className={mergeClass('ygo-card', 'ygo-movable-card', CLASS_CARD_MOVABLE, `ygo-card-size-${size}`, className)}
             {...rest}
             style={{ zIndex, ...style }}
         >
             <Card image={image} origin={origin} />
-            {ableTarget && <Moveable
-                target={ableTarget}
+            {target && <Moveable
+                target={target}
                 container={null}
 
                 /* Resize event edges */

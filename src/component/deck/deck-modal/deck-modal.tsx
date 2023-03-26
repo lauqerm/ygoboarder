@@ -58,11 +58,14 @@ const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, s
     return '';
 };
 const getDraggingStyle = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined => {
-    /** Skip việc transform lúc move dragging để giảm giật layout */
-    if (!snapshot.isDragging) return {
-        ...style,
-        transform: '',
-    };
+    /** Giảm giật layout */
+    if (!snapshot.isDragging) {
+        /** Không dùng regex vì quá lười */
+        return {
+            ...style,
+            transform: '',
+        };
+    }
     /** Skip hết mức transition lúc drop để giảm giật layout */
     if (snapshot.isDropAnimating && snapshot.dropAnimation) {
         const { curve } = snapshot.dropAnimation;
@@ -148,10 +151,11 @@ export const DeckModal = React.forwardRef(({
         target: handleTarget,
         left, top,
     }: Parameters<NonNullable<ExtractProps<typeof Moveable>['onDrag']>>[0]) => {
-        target!.style.left = `${left}px`;
         handleTarget!.style.left = `${left}px`;
-        target!.style.top = `${top}px`;
         handleTarget!.style.top = `${top}px`;
+
+        target!.style.left = `${left}px`;
+        target!.style.top = `${top}px`;
     }, [target]);
 
     useEffect(() => {
@@ -159,10 +163,11 @@ export const DeckModal = React.forwardRef(({
             const initialLeft = Math.max(0, window.innerWidth - DECK_MODAL_WIDTH) / 2;
             const initialTop = Math.max(0, window.innerHeight - DECK_MODAL_HEIGHT) / 2;
 
-            target.style.left = `${initialLeft}px`;
             handle.style.left = `${initialLeft}px`;
-            target.style.top = `${initialTop}px`;
             handle.style.top = `${initialTop}px`;
+
+            target.style.left = `${initialLeft}px`;
+            target.style.top = `${initialTop}px`;
         }
     }, [target, handle]);
 
