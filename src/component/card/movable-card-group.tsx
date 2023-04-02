@@ -6,9 +6,11 @@ import { ExtractProps } from 'src/type';
 import { Card } from './card';
 import { useBoardStore, useCardGroupStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
 import { createPortal } from 'react-dom';
+import './movable-card-group.scss';
 
 export type MovableCardGroup = {
     groupName: string,
+    count: number,
     initialX?: number,
     initialY?: number,
     originEntity?: DOMEntityType,
@@ -16,6 +18,7 @@ export type MovableCardGroup = {
 } & React.HTMLAttributes<HTMLDivElement>;
 export const MovableCardGroup = ({
     groupName,
+    count,
     initialX = 0,
     initialY = 0,
     className,
@@ -61,6 +64,27 @@ export const MovableCardGroup = ({
         // target!.style.transform = transform;
     }, []);
 
+    const onDragGroup = useCallback(({
+        events,
+        targets,
+        left, top,
+        transform,
+    }: Parameters<NonNullable<ExtractProps<typeof Moveable>['onDragGroup']>>[0]) => {
+        events.forEach(ev => {
+            const { target, left, top, transform } = ev;
+            // ev.target.style.transform = ev.transform;
+            target!.style.left = `${left}px`;
+            target!.style.top = `${top}px`;
+            target!.style.zIndex = '1000';
+            target!.style.transform = transform;
+        });
+        // target!.style.left = `${left}px`;
+        // target!.style.top = `${top}px`;
+        // target!.style.zIndex = '1000';
+        // target!.style.transform = transform;
+    }, []);
+
+    const [showLabel, setShowLabel] = useState(false);
     const once = useRef(false);
     useEffect(() => {
         let highlightBeacon = (_e: MouseEvent) => { };
@@ -146,6 +170,7 @@ export const MovableCardGroup = ({
         };
         if (once.current === false) {
             once.current = true;
+            setShowLabel(true);
             // if (originEntity === DOMEntityType['board']) focus('card', uniqueId);
         }
         // if (target) {
@@ -166,14 +191,16 @@ export const MovableCardGroup = ({
 
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
+    const [selectedCount, setSelectedCount] = useState(0);
     if (!portal) return null;
 
     return createPortal(
         <div
-            className={mergeClass('ygo-card', 'ygo-movable-card-group', className)}
+            className={mergeClass('ygo-card-group', 'ygo-movable-card-group', className)}
             {...rest}
             // style={{ zIndex, ...style }}
         >
+            {showLabel && <MovableCardGroupLabel count={count} />}
             {<Moveable
                 // targetGroups={cardGroupElementList}
                 target={`.${CLASS_CARD_MOVABLE}.${CLASS_CARD_MOVABLE_ZONED}`}
@@ -185,16 +212,33 @@ export const MovableCardGroup = ({
                 /* draggable */
                 draggable={true}
                 throttleDrag={0}
-                onDragStart={() => {
-                    cardGroupElementList.forEach(element => element!.classList.add('card-is-dragging'));
-                }}
-                onDragGroup={(...args) => console.log(...args)}
-                onDrag={onDrag}
-                onDragEnd={() => {
-                    // cardGroupElementList.forEach(element => element!.style.zIndex = `${zIndex}`);
-                    cardGroupElementList.forEach(element => element!.classList.remove('card-is-dragging'));
-                }}
+                onDragGroup={onDragGroup}
+                // onDragGroupStart={e => {
+                //     setSelectedCount(e.events.length);
+                //     setLabelWidth(e.target.getBoundingClientRect().width);
+                // }}
+                // onDragGroupEnd={() => {
+                //     setSelectedCount(0);
+                //     setLabelWidth(0);
+                // }}
             />}
+        </div>,
+        portal,
+    );
+};
+
+type MovableCardGroupLabel = {
+    count: number,
+}
+const MovableCardGroupLabel = ({
+    count,
+}: MovableCardGroupLabel) => {
+    const portal = document.querySelector('.ygo-card-group.ygo-movable-card-group .moveable-control-box');
+
+    if (!portal) return null;
+    return createPortal(
+        <div className="ygo-movable-card-group-label">
+            {count} selected cards
         </div>,
         portal,
     );

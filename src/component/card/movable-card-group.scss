@@ -1,0 +1,11 @@
+.ygo-movable-card-group {
+    .ygo-movable-card-group-label {
+        width: 120px;
+        position: absolute;
+        top: -22px;
+        background: var(--moveable-color);
+        outline: 1px solid var(--moveable-color);
+        padding: 0 var(--spacing-sm);
+        border-radius: var(--br-sm) var(--br-sm) 0 0;
+    }
+}

@@ -22,6 +22,7 @@ export const CardBoard = ({
     boardName,
 }: CardBoard) => {
     const [cardGroupKey, setCardGroupKey] = useState(0);
+    const [cardGroupCount, setCardGroupCount] = useState(0);
     const addToCardGroup = useCardGroupStore(state => state.addToGroup);
     const currentBoardList = useBoardStore(
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
@@ -45,7 +46,7 @@ export const CardBoard = ({
                 originEntity={DOMEntityType['board']}
             />;
         })}
-        <MovableCardGroup key={cardGroupKey} groupName="board-group" />
+        <MovableCardGroup key={cardGroupKey} groupName="board-group" count={cardGroupCount} />
         <Selecto
             // The container to add a selection element
             container={document.getElementById('modal-wrapper')}
@@ -70,6 +71,7 @@ export const CardBoard = ({
                 e.removed.forEach(el => {
                     el.classList.remove(CLASS_CARD_MOVABLE_ZONED, 'card-is-zoned');
                 });
+                setCardGroupCount(e.selected.length);
             }}
             onDragStart={e => {
                 if (!e.inputEvent.target?.closest(`.${CLASS_BOARD}`)) {
