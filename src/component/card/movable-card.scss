@@ -5,6 +5,7 @@
         visibility: hidden!important;
     }
     &.card-is-dragging {
+        opacity: 0.85;
         .moveable-control-box {
             visibility: visible!important;
         }

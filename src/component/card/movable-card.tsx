@@ -80,7 +80,8 @@ export const MovableCard = ({
                     if (foundWrapper) continue;
                     if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
                     if (type === DOMEntityType['deckButton']
-                        || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
+                        || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')
+                    ) {
                         foundWrapper = true;
                         let foundBeacon = false;
                         for (const beacon of beaconList) {
@@ -139,6 +140,7 @@ export const MovableCard = ({
                     }
                     continue;
                 }
+                /** Drag từ topdeck ra board */
                 if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedDistance > 50) {
                     const boardName = DOMElement.getAttribute('data-board-name');
 

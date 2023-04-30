@@ -1,11 +1,11 @@
+import Selecto from 'react-selecto';
 import styled from 'styled-components';
 import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore } from 'src/state';
+import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType } from 'src/model';
 import { List } from 'immutable';
 import { MovableCard, MovableCardGroup } from '../card';
+import { useEffect, useState } from 'react';
 import './play-board.scss';
-import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType } from 'src/model';
-import Selecto from 'react-selecto';
-import { useState } from 'react';
 
 const BoardCardContainer = styled.div`
     top: 0;
@@ -17,25 +17,28 @@ const BoardCardContainer = styled.div`
 
 export type CardBoard = {
     boardName: string,
+    boardId?: string,
 }
 export const CardBoard = ({
     boardName,
+    boardId = 'board-group',
 }: CardBoard) => {
     const [cardGroupKey, setCardGroupKey] = useState(0);
     const [cardGroupCount, setCardGroupCount] = useState(0);
-    const addToCardGroup = useCardGroupStore(state => state.addToGroup);
+    const replaceCardGroup = useCardGroupStore(state => state.replaceGroup);
     const currentBoardList = useBoardStore(
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
         (oldState, newState) => oldState.equals(newState),
     );
 
+    useEffect(() => {
+        setCardGroupKey(cnt => cnt + 1);
+    }, [currentBoardList]);
+
     return <BoardCardContainer
         data-card-board-name={boardName}
         className="play-card-board"
     >
-        <button onClick={() => {
-            addToCardGroup('board-group', Array.from(document.querySelectorAll(`.${CLASS_CARD_MOVABLE}`).values()) as HTMLElement[]);
-        }}>Get group</button>
         {currentBoardList.map(boardCard => {
             return <MovableCard key={boardCard.get('card').get('_id')}
                 uniqueId={`[BOARD-${boardName}]-[ID-${boardCard.get('card').get('_id')}]`}
@@ -46,7 +49,10 @@ export const CardBoard = ({
                 originEntity={DOMEntityType['board']}
             />;
         })}
-        <MovableCardGroup key={cardGroupKey} groupName="board-group" count={cardGroupCount} />
+        <MovableCardGroup key={cardGroupKey}
+            groupName="board-group"
+            count={cardGroupCount}
+        />
         <Selecto
             // The container to add a selection element
             container={document.getElementById('modal-wrapper')}
@@ -72,6 +78,7 @@ export const CardBoard = ({
                     el.classList.remove(CLASS_CARD_MOVABLE_ZONED, 'card-is-zoned');
                 });
                 setCardGroupCount(e.selected.length);
+                replaceCardGroup(boardId, e.selected as HTMLElement[]);
             }}
             onDragStart={e => {
                 if (!e.inputEvent.target?.closest(`.${CLASS_BOARD}`)) {

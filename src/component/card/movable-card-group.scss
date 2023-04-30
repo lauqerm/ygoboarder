@@ -1,6 +1,6 @@
 .ygo-movable-card-group {
     .ygo-movable-card-group-label {
-        width: 120px;
+        width: 60px;
         position: absolute;
         top: -22px;
         background: var(--moveable-color);
@@ -8,4 +8,17 @@
         padding: 0 var(--spacing-sm);
         border-radius: var(--br-sm) var(--br-sm) 0 0;
     }
+    > .moveable-control-box {
+        /** Nhỏ hơn 1 đơn vị so với MIN_MODAL_INDEX */
+        z-index: 609 !important;
+    }
+}
+.ygo-movable-card-group.is-dragging {
+    > .moveable-control-box {
+        z-index: 1000 !important;
+    }
+}
+.belong-to-dragging-group {
+    opacity: 0.85;
+    z-index: 1000 !important;
 }

@@ -1,11 +1,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType, GetBoardRegex, GetDeckButtonRegex, MODAL_WRAPPER_ID, PropDOMEntityVisible } from 'src/model';
+import {
+    CLASS_CARD_MOVABLE,
+    CLASS_CARD_MOVABLE_ZONED,
+    CardImageConverter,
+    DOMEntityType,
+    GetBoardRegex,
+    GetDropIDRegex,
+    MODAL_WRAPPER_ID,
+    PropDOMEntityVisible,
+} from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
-import { Card } from './card';
-import { useBoardStore, useCardGroupStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
+import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from 'src/state';
 import { createPortal } from 'react-dom';
+import { List } from 'immutable';
 import './movable-card-group.scss';
 
 export type MovableCardGroup = {
@@ -14,7 +23,6 @@ export type MovableCardGroup = {
     initialX?: number,
     initialY?: number,
     originEntity?: DOMEntityType,
-    onDragToBoard?: (id: string, newCoor: { top: number, left: number }, origin: string, boardName: string) => void,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const MovableCardGroup = ({
     groupName,
@@ -24,184 +32,151 @@ export const MovableCardGroup = ({
     className,
     originEntity,
     style,
-    onDragToBoard,
     ...rest
 }: MovableCardGroup) => {
-    const cardGroupElementList = useCardGroupStore(state => state.elementGroup[groupName] ?? []);
-    const { addToDeck, deleteFromDeck } = useDeckStore(
-        state => ({
-            addToDeck: state.add,
-            deleteFromDeck: state.delete,
-        }),
-        () => true,
-    );
+    const fullIdList = useRef<string[]>([]);
+    const cardIdList = useRef<string[]>([]);
+    const target = useRef<HTMLDivElement>(null);
+    const movableRef = useRef<Moveable>(null);
+    const cardGroupElementList = useCardGroupStore(state => state.elementGroup[groupName]);
+    const addToDeck = useDeckStore(state => state.add);
     const removeFromBoard = useBoardStore(state => state.delete);
 
-    // const {
-    // zIndexInstance,
-    //     focus,
-    // } = useZIndexState(
-    //     state => ({
-    // zIndexInstance: state.categoryMap['card'].queueMap.get(uniqueId, ZIndexInstanceConverter()),
-    //         focus: state.toTop,
-    //     }),
-    //     (prev, next) => {
-    //         return prev.zIndexInstance.get('name') === next.zIndexInstance.get('name')
-    //             && prev.zIndexInstance.get('zIndex') === next.zIndexInstance.get('zIndex');
-    //     },
-    // );
-    // const zIndex = zIndexInstance.get('zIndex');
-
-    const onDrag = useCallback(({
-        target,
-        left, top,
-        transform,
-    }: Parameters<NonNullable<ExtractProps<typeof Moveable>['onDrag']>>[0]) => {
-        console.log(target, left, top, transform);
-        // target!.style.left = `${left}px`;
-        // target!.style.top = `${top}px`;
-        // target!.style.zIndex = '1000';
-        // target!.style.transform = transform;
-    }, []);
+    const focus = useZIndexState(
+        state => state.toTop,
+    );
 
     const onDragGroup = useCallback(({
         events,
-        targets,
-        left, top,
-        transform,
     }: Parameters<NonNullable<ExtractProps<typeof Moveable>['onDragGroup']>>[0]) => {
         events.forEach(ev => {
             const { target, left, top, transform } = ev;
-            // ev.target.style.transform = ev.transform;
             target!.style.left = `${left}px`;
             target!.style.top = `${top}px`;
-            target!.style.zIndex = '1000';
             target!.style.transform = transform;
         });
-        // target!.style.left = `${left}px`;
-        // target!.style.top = `${top}px`;
-        // target!.style.zIndex = '1000';
-        // target!.style.transform = transform;
     }, []);
 
     const [showLabel, setShowLabel] = useState(false);
     const once = useRef(false);
     useEffect(() => {
+        const currentTarget = target.current;
+        fullIdList.current = (cardGroupElementList ?? [])
+            .map(cardElement => cardElement.getAttribute('data-moveable-card-id'))
+            .filter(entry => entry && entry.length > 0) as string[];
+        cardIdList.current = fullIdList.current
+            .map(id => GetDropIDRegex.exec(id)?.[1])
+            .filter(Boolean) as string[];
+
         let highlightBeacon = (_e: MouseEvent) => { };
         const onMouseDown = () => {
-            // focus('card', uniqueId);
-            // highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
-            //     const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
-            //     let foundWrapper = false;
-            //     for (const DOMEntity of DOMEntityList) {
-            //         const { type, element, beaconList } = DOMEntity;
-            //         const DOMElement = element();
-            //         DOMElement.classList.remove('js-available-to-drop');
+            cardIdList.current.forEach(cardId => focus('card', cardId));
+            highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
+                const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+                let foundWrapper = false;
+                for (const DOMEntity of DOMEntityList) {
+                    const { type, element, beaconList } = DOMEntity;
+                    const DOMElement = element();
+                    DOMElement.classList.remove('js-available-to-drop');
 
-            //         if (foundWrapper) continue;
-            //         if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
-            //         if (type === DOMEntityType['deckButton']
-            //             || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')) {
-            //             foundWrapper = true;
-            //             let foundBeacon = false;
-            //             for (const beacon of beaconList) {
-            //                 beacon.beaconElement().classList.remove('js-ready-to-drop');
-            //                 if (foundBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
-            //                     foundBeacon = true;
-            //                     beacon.beaconElement().classList.add('js-ready-to-drop');
-            //                 }
-            //             }
-            //             DOMElement.classList.add('js-available-to-drop');
-            //         }
-            //     }
-            // };
-            // document.addEventListener('mousemove', highlightBeacon);
+                    if (foundWrapper) continue;
+                    if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
+                    if (type === DOMEntityType['deckButton']
+                        || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')
+                    ) {
+                        foundWrapper = true;
+                        let foundBeacon = false;
+                        for (const beacon of beaconList) {
+                            beacon.beaconElement().classList.remove('js-ready-to-drop');
+                            if (foundBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
+                                foundBeacon = true;
+                                beacon.beaconElement().classList.add('js-ready-to-drop');
+                            }
+                        }
+                        DOMElement.classList.add('js-available-to-drop');
+                    }
+                }
+            };
+            document.addEventListener('mousemove', highlightBeacon);
         };
         const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
-            // document.removeEventListener('mousemove', highlightBeacon);
-            // const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
-            // const movedDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
-            // const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
-            // let foundValidDrop = false;
-            // for (const DOMEntity of DOMEntityList) {
-            //     const { type, element, beaconList, name } = DOMEntity;
-            //     const DOMElement = element();
-            //     DOMElement.classList.remove('js-available-to-drop');
+            document.removeEventListener('mousemove', highlightBeacon);
+            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            let foundValidDrop = false;
+            for (const DOMEntity of DOMEntityList) {
+                const { type, element, beaconList } = DOMEntity;
+                const DOMElement = element();
+                DOMElement.classList.remove('js-available-to-drop');
 
-            //     if (foundValidDrop) continue;
-            //     if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
-            //     if (type === DOMEntityType['deckButton']
-            //         || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')
-            //     ) {
-            //         foundValidDrop = true;
-            //         let foundValidBeacon = false;
-            //         for (const beacon of beaconList) {
-            //             const { id, type, beaconElement } = beacon;
+                if (foundValidDrop) continue;
+                if (!isLieInside({ x: clientX, y: clientY }, DOMEntity)) continue;
+                if (type === DOMEntityType['deckButton']
+                    || (type === DOMEntityType['deckModal'] && DOMElement.getAttribute(PropDOMEntityVisible) === 'true')
+                ) {
+                    foundValidDrop = true;
+                    let foundValidBeacon = false;
+                    for (const beacon of beaconList) {
+                        const { id, type, beaconElement } = beacon;
 
-            //             /**
-            //              * Nếu vị trí thả card nằm bên trong một beacon nào đó
-            //              */
-            //             if (foundValidBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
-            //                 const boardId = GetBoardRegex.exec(uniqueId)?.[1];
-            //                 const deckButtonId = GetDeckButtonRegex.exec(uniqueId)?.[1];
-            //                 if (type && id) {
-            //                     if (boardId) {
-            //                         addToDeck(id, [image], type);
-            //                         removeFromBoard(boardId, [image.get('_id')]);
-            //                         foundValidBeacon = true;
-            //                     } else if (deckButtonId && name !== deckButtonId) {
-            //                         addToDeck(id, [image], type);
-            //                         deleteFromDeck(deckButtonId, [image.get('_id')]);
-            //                         foundValidBeacon = true;
-            //                     }
-            //                 }
-            //             }
-            //             beaconElement().classList.remove('js-ready-to-drop');
-            //         }
-            //         continue;
-            //     }
-            //     if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedDistance > 50) {
-            //         const boardName = DOMElement.getAttribute('data-board-name');
+                        /**
+                         * Nếu vị trí thả card nằm bên trong một beacon nào đó
+                         */
+                        if (foundValidBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
+                            /** Lấy phần tử đầu tiên trong list làm uniqueId của cả group */
+                            const uniqueId = fullIdList.current[0];
+                            const boardId = GetBoardRegex.exec(uniqueId)?.[1];
+                            const cardIdInGroupSet = new Set(cardIdList.current);
+                            if (type && id && boardId) {
+                                const cardImageList = useBoardStore
+                                    .getState().boardMap
+                                    .get(boardId, BoardEntryConverter())
+                                    .get('boardCardList', List<BoardCard>())
+                                    .filter(entry => cardIdInGroupSet.has(entry.get('card', CardImageConverter()).get('_id', '')))
+                                    .map(entry => entry.get('card'))
+                                    .toArray();
 
-            //         /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCardGroup không có thông tin về Deck mà nó thuộc về */
-            //         if (boardName) onDragToBoard?.(uniqueId, { top, left }, origin, boardName);
-            //     }
-            // }
+                                addToDeck(id, cardImageList, type);
+                                removeFromBoard(boardId, cardImageList.map(entry => entry.get('_id')));
+                                foundValidBeacon = true;
+                            }
+                        }
+                        beaconElement().classList.remove('js-ready-to-drop');
+                    }
+                    continue;
+                }
+            }
         };
         if (once.current === false) {
             once.current = true;
             setShowLabel(true);
-            // if (originEntity === DOMEntityType['board']) focus('card', uniqueId);
         }
-        // if (target) {
-        //     target.addEventListener('mousedown', onMouseDown);
-        //     target.addEventListener('mouseup', onMouseUp);
-            
-        // }
+        if (currentTarget) {
+            currentTarget.addEventListener('mousedown', onMouseDown);
+            currentTarget.addEventListener('mouseup', onMouseUp);
+        }
 
         return () => {
             document.removeEventListener('mousemove', highlightBeacon);
-            // if (target) {
-            //     target.removeEventListener('mousedown', onMouseDown);
-            //     target.removeEventListener('mouseup', onMouseUp);
-            // }
+            if (currentTarget) {
+                currentTarget.removeEventListener('mousedown', onMouseDown);
+                currentTarget.removeEventListener('mouseup', onMouseUp);
+            }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [cardGroupElementList]);
 
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
-    const [selectedCount, setSelectedCount] = useState(0);
     if (!portal) return null;
 
     return createPortal(
-        <div
-            className={mergeClass('ygo-card-group', 'ygo-movable-card-group', className)}
+        <div ref={target}
+            className={mergeClass('ygo-card-group', 'ygo-movable-card-group', 'js-ygo-movable-card-group', groupName, className)}
             {...rest}
-            // style={{ zIndex, ...style }}
+        // style={{ zIndex, ...style }}
         >
             {showLabel && <MovableCardGroupLabel count={count} />}
-            {<Moveable
+            {<Moveable ref={movableRef}
                 // targetGroups={cardGroupElementList}
                 target={`.${CLASS_CARD_MOVABLE}.${CLASS_CARD_MOVABLE_ZONED}`}
                 container={null}
@@ -213,14 +188,18 @@ export const MovableCardGroup = ({
                 draggable={true}
                 throttleDrag={0}
                 onDragGroup={onDragGroup}
-                // onDragGroupStart={e => {
-                //     setSelectedCount(e.events.length);
-                //     setLabelWidth(e.target.getBoundingClientRect().width);
-                // }}
-                // onDragGroupEnd={() => {
-                //     setSelectedCount(0);
-                //     setLabelWidth(0);
-                // }}
+                onDragGroupStart={e => {
+                    document.querySelector(`.js-ygo-movable-card-group.${groupName}`)?.classList.add('is-dragging');
+                    e.events.forEach(entry => {
+                        entry.target!.classList.add('belong-to-dragging-group');
+                    });
+                }}
+                onDragGroupEnd={e => {
+                    document.querySelector(`.js-ygo-movable-card-group.${groupName}`)?.classList.remove('is-dragging');
+                    e.events.forEach(entry => {
+                        entry.target!.classList.remove('belong-to-dragging-group');
+                    });
+                }}
             />}
         </div>,
         portal,
@@ -229,16 +208,17 @@ export const MovableCardGroup = ({
 
 type MovableCardGroupLabel = {
     count: number,
-}
+} & React.HTMLAttributes<HTMLDivElement>;
 const MovableCardGroupLabel = ({
     count,
+    ...rest
 }: MovableCardGroupLabel) => {
     const portal = document.querySelector('.ygo-card-group.ygo-movable-card-group .moveable-control-box');
 
     if (!portal) return null;
     return createPortal(
-        <div className="ygo-movable-card-group-label">
-            {count} selected cards
+        <div {...rest} className="ygo-movable-card-group-label">
+            {count} cards
         </div>,
         portal,
     );
