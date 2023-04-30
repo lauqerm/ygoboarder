@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, CardImage, CardImageConverter, DeckType } from 'src/model';
+import { BeaconAction, CardImage, CardImageConverter, CardPreset, DeckType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/service';
@@ -7,11 +7,13 @@ import { shuffleDeck } from 'src/service';
 export type BaseDeckCard = {
     card: CardImage,
     origin: string,
+    preset: CardPreset,
 };
 export type DeckCard = ImmutableRecord<BaseDeckCard>;
 export const DeckCardConverter = ImmutableRecord<BaseDeckCard>({
     card: CardImageConverter(),
     origin: '',
+    preset: CardPreset['normal'],
 });
 
 export type BaseDeckList = {

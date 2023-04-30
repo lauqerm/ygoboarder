@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { CLASS_CARD_MOVABLE, DOMEntityType, GetBoardRegex, GetDeckButtonRegex, MODAL_WRAPPER_ID, PropDOMEntityVisible } from 'src/model';
+import {
+    CLASS_CARD_MOVABLE,
+    DOMEntityType,
+    GetBoardRegex,
+    GetDeckButtonRegex,
+    MODAL_WRAPPER_ID,
+    PhaseType,
+    Position,
+    PropDOMEntityVisible,
+} from 'src/model';
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
@@ -12,6 +21,8 @@ export type MovableCard = {
     uniqueId: string,
     initialX?: number,
     initialY?: number,
+    phase?: PhaseType,
+    position?: Position,
     originEntity?: DOMEntityType,
     onDragToBoard?: (id: string, newCoor: { top: number, left: number }, origin: string, boardName: string) => void,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
@@ -21,6 +32,8 @@ export const MovableCard = ({
     size = 'sm',
     initialX = 0,
     initialY = 0,
+    phase,
+    position,
     className,
     origin,
     originEntity,
@@ -35,7 +48,14 @@ export const MovableCard = ({
         }),
         () => true,
     );
-    const removeFromBoard = useBoardStore(state => state.delete);
+    const { changePhase, changePosition, removeFromBoard } = useBoardStore(
+        state => ({
+            removeFromBoard: state.delete,
+            changePosition: state.changePosition,
+            changePhase: state.changePhase,
+        }),
+        () => true,
+    );
 
     const {
         zIndexInstance,
@@ -67,7 +87,11 @@ export const MovableCard = ({
     const once = useRef(false);
     useEffect(() => {
         let highlightBeacon = (_e: MouseEvent) => { };
-        const onMouseDown = () => {
+        let currentX = initialX;
+        let currentY = initialY;
+        const onMouseDown = ({ clientX, clientY }: MouseEvent) => {
+            currentX = clientX;
+            currentY = clientY;
             focus('card', uniqueId);
             highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
                 const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
@@ -97,10 +121,22 @@ export const MovableCard = ({
             };
             document.addEventListener('mousemove', highlightBeacon);
         };
-        const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
+        const onMouseUp = ({ clientX, clientY, button }: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon);
+            /** Bỏ qua right click */
+            if (button === 2) return;
+            /** Left click một lần để đổi trạng thái faceup-facedown */
+            const movedDistance = Math.sqrt((currentY - clientY) ** 2 + (currentX - clientX) ** 2);
+            const boardId = GetBoardRegex.exec(uniqueId)?.[1];
+            if (movedDistance <= 5 && boardId) {
+                if (originEntity === 'board' && phase) {
+                    changePhase(boardId, [{ id: image.get('_id') }]);
+                }
+                return;
+            }
+
             const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
-            const movedDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
+            const movedInitialDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
@@ -122,7 +158,6 @@ export const MovableCard = ({
                          * Nếu vị trí thả card nằm bên trong một beacon nào đó
                          */
                         if (foundValidBeacon === false && isLieInside({ x: clientX, y: clientY }, beacon)) {
-                            const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                             const deckButtonId = GetDeckButtonRegex.exec(uniqueId)?.[1];
                             if (type && id) {
                                 if (boardId) {
@@ -141,7 +176,7 @@ export const MovableCard = ({
                     continue;
                 }
                 /** Drag từ topdeck ra board */
-                if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedDistance > 50) {
+                if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedInitialDistance > 50) {
                     const boardName = DOMElement.getAttribute('data-board-name');
 
                     /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCard không có thông tin về Deck mà nó thuộc về */
@@ -178,11 +213,32 @@ export const MovableCard = ({
             ref={targetRef => setTarget(targetRef)}
             data-moveable-card-id={uniqueId}
             data-moveable-card-origin-entity={originEntity}
-            className={mergeClass('ygo-card', 'ygo-movable-card', CLASS_CARD_MOVABLE, `ygo-card-size-${size}`, className)}
+            className={mergeClass(
+                'ygo-card',
+                'ygo-movable-card',
+                CLASS_CARD_MOVABLE,
+                `ygo-card-size-${size}`,
+                `ygo-card-phase-${phase}`,
+                `ygo-card-position-${position}`,
+                className,
+            )}
             {...rest}
             style={{ zIndex, ...style }}
         >
-            <Card image={image} origin={origin} />
+            <Card
+                image={image}
+                origin={origin}
+                phase={phase}
+                position={position}
+                onContextMenu={e => {
+                    e.preventDefault();
+                    const boardId = GetBoardRegex.exec(uniqueId)?.[1];
+                    if (boardId && originEntity === 'board' && position) {
+                        console.log('change position', boardId, position);
+                        changePosition(boardId, [{ id: image.get('_id') }]);
+                    }
+                }}
+            />
             {target && <Moveable
                 target={target}
                 container={null}

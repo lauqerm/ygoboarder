@@ -7,10 +7,41 @@
     background-size: contain;
     background-position: center;
     position: relative;
+    &.ygo-card-position-def {
+        width: var(--card-height);
+        height: var(--card-width);
+        > .card-image,
+        > .card-back {
+            transform-origin: 0 0;
+            transform: rotate(-90deg) translateX(-100%);
+        }
+    }
     .card-image {
         width: var(--card-width);
         height: var(--card-height);
         object-fit: contain;
         vertical-align: baseline;
+    }
+    .card-back {
+        user-select: none;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: var(--card-width);
+        height: var(--card-height);
+    }
+    .card-back-flashing {
+        animation: fade-cycle 4s infinite;
+    }
+}
+@keyframes fade-cycle {
+    0% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.55;
     }
 }

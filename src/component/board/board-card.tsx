@@ -46,6 +46,8 @@ export const CardBoard = ({
                 origin={boardCard.get('origin')}
                 initialX={boardCard.get('initialX')}
                 initialY={boardCard.get('initialY')}
+                phase={boardCard.get('phase')}
+                position={boardCard.get('position')}
                 originEntity={DOMEntityType['board']}
             />;
         })}
