@@ -37,7 +37,7 @@ export const MovableCardGroup = ({
     const fullIdList = useRef<string[]>([]);
     const cardIdList = useRef<string[]>([]);
     const target = useRef<HTMLDivElement>(null);
-    const movableRef = useRef<Moveable>(null);
+    const [key, setKey] = useState(0);
     const cardGroupElementList = useCardGroupStore(state => state.elementGroup[groupName]);
     const addToDeck = useDeckStore(state => state.add);
     const removeFromBoard = useBoardStore(state => state.delete);
@@ -69,7 +69,7 @@ export const MovableCardGroup = ({
             .filter(Boolean) as string[];
 
         let highlightBeacon = (_e: MouseEvent) => { };
-        const onMouseDown = () => {
+        const onMouseDown = ({ clientX, clientY }: MouseEvent) => {
             cardIdList.current.forEach(cardId => focus('card', cardId));
             highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
                 const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
@@ -172,11 +172,26 @@ export const MovableCardGroup = ({
     return createPortal(
         <div ref={target}
             className={mergeClass('ygo-card-group', 'ygo-movable-card-group', 'js-ygo-movable-card-group', groupName, className)}
+            onContextMenu={e => {
+                e.preventDefault();
+                const { clientX, clientY } = e;
+                /** Right click một lần để gom lại theo chiều ngang */
+                const offsetBetweenCard = 8;
+                /** 86 là chiều dài của card xoay đứng ở size SM */
+                const groupWidth = (cardGroupElementList.length - 1) * offsetBetweenCard + 86;
+
+                cardGroupElementList.forEach((element, index) => {
+                    element.style.top = `${clientY - 40}px`;
+                    element.style.left = `${clientX - (groupWidth / 2) + offsetBetweenCard * index}px`;
+                });
+                /** Set key để force reset bound */
+                setKey(cnt => cnt + 1);
+            }}
             {...rest}
         // style={{ zIndex, ...style }}
         >
-            {showLabel && <MovableCardGroupLabel count={count} />}
-            {<Moveable ref={movableRef}
+            {showLabel && <MovableCardGroupLabel key={key} count={count} />}
+            {<Moveable key={key}
                 // targetGroups={cardGroupElementList}
                 target={`.${CLASS_CARD_MOVABLE}.${CLASS_CARD_MOVABLE_ZONED}`}
                 container={null}
@@ -187,6 +202,20 @@ export const MovableCardGroup = ({
                 /* draggable */
                 draggable={true}
                 throttleDrag={0}
+                onClickGroup={e => {
+                    const { clientX, clientY } = e;
+                    /** Left click một lần để dàn ra theo chiều ngang */
+                    const groupWidth = Math.min(Math.max(0, cardGroupElementList.length * 90), 750);
+                    /** 86 là chiều dài của card xoay đứng ở size SM */
+                    const offsetBetweenCard = cardGroupElementList.length <= 1
+                        ? 0
+                        : (groupWidth - 86) / (cardGroupElementList.length - 1);
+
+                    cardGroupElementList.forEach((element, index) => {
+                        element.style.top = `${clientY - 40}px`;
+                        element.style.left = `${clientX - (groupWidth / 2) + offsetBetweenCard * index}px`;
+                    });
+                }}
                 onDragGroup={onDragGroup}
                 onDragGroupStart={e => {
                     document.querySelector(`.js-ygo-movable-card-group.${groupName}`)?.classList.add('is-dragging');

@@ -66,6 +66,9 @@
       margin-bottom: 0;
     }
   }
+  img {
+    user-select: none;
+  }
 }
 
 .app-wrapper {

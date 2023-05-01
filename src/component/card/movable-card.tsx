@@ -125,6 +125,7 @@ export const MovableCard = ({
             document.removeEventListener('mousemove', highlightBeacon);
             /** Bỏ qua right click */
             if (button === 2) return;
+            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             /** Left click một lần để đổi trạng thái faceup-facedown */
             const movedDistance = Math.sqrt((currentY - clientY) ** 2 + (currentX - clientX) ** 2);
             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
@@ -132,12 +133,17 @@ export const MovableCard = ({
                 if (originEntity === 'board' && phase) {
                     changePhase(boardId, [{ id: image.get('_id') }]);
                 }
+                for (const DOMEntity of DOMEntityList) {
+                    const { element, beaconList } = DOMEntity;
+                    element().classList.remove('js-available-to-drop');
+
+                    for (const beacon of beaconList) beacon.beaconElement().classList.remove('js-ready-to-drop');
+                }
                 return;
             }
 
             const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
             const movedInitialDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
-            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
                 const { type, element, beaconList, name } = DOMEntity;
@@ -234,7 +240,6 @@ export const MovableCard = ({
                     e.preventDefault();
                     const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                     if (boardId && originEntity === 'board' && position) {
-                        console.log('change position', boardId, position);
                         changePosition(boardId, [{ id: image.get('_id') }]);
                     }
                 }}
