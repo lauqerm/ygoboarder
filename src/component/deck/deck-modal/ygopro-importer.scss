@@ -1,0 +1,48 @@
+.ygopro-card-list {
+    .ygopro-card-entry {
+        position: relative;
+        display: grid;
+        grid-template-columns: 86px 1fr;
+        column-gap: var(--spacing);
+        margin-top: var(--spacing-xs);
+        .image-container {
+            position: relative;
+        }
+        .card-entry-image {
+            width: 86px;
+            img {
+                max-width: 100%;
+            }
+            .stat-list {
+                position: absolute;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                font-family: monospace;
+                bottom: 0;
+                width: 100%;
+                text-align: right;
+                background-color: #333333dd;
+                padding: var(--spacing-xs);
+                column-gap: var(--spacing-xs);
+                .stat {
+                    background-color: #fafafadd;
+                    padding: 0 var(--spacing-xs);
+                }
+            }
+        }
+        .main-statistic {
+            color: #000000;
+            .rate,
+            .attribute-text {
+                display: inline-block;
+                width: 65px;
+            }
+        }
+        p {
+            margin-top: var(--spacing-xs);
+            margin-bottom: 0;
+            line-height: 1.45;
+            white-space: pre-line;
+        }
+    }
+}

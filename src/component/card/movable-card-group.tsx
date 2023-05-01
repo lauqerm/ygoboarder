@@ -190,8 +190,8 @@ export const MovableCardGroup = ({
             {...rest}
         // style={{ zIndex, ...style }}
         >
-            {showLabel && <MovableCardGroupLabel key={key} count={count} />}
-            {<Moveable key={key}
+            {showLabel && <MovableCardGroupLabel key={`movable-label-${key}`} count={count} />}
+            {<Moveable key={`movable-${key}`}
                 // targetGroups={cardGroupElementList}
                 target={`.${CLASS_CARD_MOVABLE}.${CLASS_CARD_MOVABLE_ZONED}`}
                 container={null}

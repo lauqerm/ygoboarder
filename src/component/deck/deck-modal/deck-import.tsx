@@ -7,6 +7,7 @@ import { ExtractProps } from 'src/type';
 import { InboxOutlined } from '@ant-design/icons';
 import { Loading } from '../../loading';
 import './deck-import.scss';
+import { YGOProImporter } from './ygopro-importer';
 
 const { Dragger } = Upload;
 
@@ -118,6 +119,8 @@ export const DeckImporter = ({
             okText={'Add'}
         >
             <div className="deck-import-modal">
+                <h2>Search on YGOPRODeck</h2>
+                <YGOProImporter />
                 <h2>Online image links</h2>
                 <Input.TextArea key={`online-upload-${onlineInputKey}`}
                     placeholder="https://my-online-image... (separate by new line)"
@@ -125,7 +128,7 @@ export const DeckImporter = ({
                         onlineImageValue.current = e.target.value;
                     }}
                     cols={64}
-                    rows={12}
+                    rows={8}
                 />
                 <h2>Upload offline images</h2>
                 <i>Offline images will be uploaded to <a target="_blank" href="https://www.imgur.com" rel="noreferrer">imgur.com</a> to store online.</i>

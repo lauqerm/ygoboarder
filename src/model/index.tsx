@@ -63,7 +63,8 @@ export const MIN_CARD_INDEX = 10;
 export const MIN_MODAL_INDEX = 610;
 export const MIN_ABSOLUTE_INDEX = 650;
 
-export * from './imgur';
-export * from './field';
-export * from './deck';
 export * from './card';
+export * from './deck';
+export * from './field';
+export * from './imgur';
+export * from './ygopro';

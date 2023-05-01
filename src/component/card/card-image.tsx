@@ -31,11 +31,12 @@ const createImageSourceQueue = () => {
 
     return {
         add: (source: string | undefined) => {
-            if (source && !sourceMap[source]) sourceMap[source] = { source, resolved: false };
+            if (source && !sourceMap[source]) {
+                sourceMap[source] = { source, resolved: false };
+            }
         },
         get: async (name: string | undefined) => {
             if (name) {
-                const currentQueue = inQueue.next().value;
                 const { source, resolved } = sourceMap[name] ?? {};
 
                 if (source) {
@@ -43,6 +44,7 @@ const createImageSourceQueue = () => {
                     if (resolved || source.indexOf('images.ygoprodeck.com') < 0) return source;
                     else {
                         let upcomingQueue;
+                        const currentQueue = inQueue.next().value;
                         do {
                             upcomingQueue = (await outQueue.next()).value;
                         } while (upcomingQueue !== currentQueue);
@@ -81,7 +83,12 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
         }
     }, [type, src]);
 
-    return <img {...rest} alt="card" src={actualSrc} onLoad={() => {
-        imageSourceMap.resolve(actualSrc);
-    }} />;
+    return <img
+        {...rest}
+        alt="card"
+        src={actualSrc ?? '/asset/img/ygo-card-back-grey.png'}
+        onLoad={() => {
+            imageSourceMap.resolve(actualSrc);
+        }}
+    />;
 };
