@@ -220,35 +220,47 @@ export const DeckButton = ({
                     })}
                 </div>
                 <div className="top-card">
-                    {(topDeckCard && true) && <MovableCard key={topDeckCard.get('card').get('_id')}
-                        uniqueId={`[DECKBUTTON-${name}]-[ID-${topDeckCard.get('card').get('_id')}]`}
-                        image={topDeckCard.get('card')}
-                        origin={topDeckCard.get('origin')}
-                        originEntity={DOMEntityType['deckButton']}
-                        initialX={offsetLeft}
-                        initialY={offsetTop}
-                        onDragToBoard={(_id, coord, _origin, boardName) => {
-                            const cardInDeck = deckList.get(0);
+                    {(topDeckCard && true)
+                        ? <MovableCard key={topDeckCard.get('card').get('_id')}
+                            uniqueId={`[DECKBUTTON-${name}]-[ID-${topDeckCard.get('card').get('_id')}]`}
+                            image={topDeckCard.get('card')}
+                            origin={topDeckCard.get('origin')}
+                            originEntity={DOMEntityType['deckButton']}
+                            initialX={offsetLeft}
+                            initialY={offsetTop}
+                            onDragToBoard={(_id, coord, _origin, boardName) => {
+                                const cardInDeck = deckList.get(0);
     
-                            if (cardInDeck) {
-                                const { left, top } = coord;
-                                const targetCard = cardInDeck.get('card');
-                                deleteFromDeck(name, [targetCard.get('_id')]);
-                                addToBoard(boardName, [{
-                                    card: targetCard,
-                                    initialX: left,
-                                    initialY: top,
-                                    origin: name,
-                                }]);
-                            }
-                        }}
-                        onMouseEnter={() => {
-                            deckButtonRef.current?.classList.add('deck-button-force-show');
-                        }}
-                        onMouseLeave={() => {
-                            deckButtonRef.current?.classList.remove('deck-button-force-show');
-                        }}
-                    />}
+                                if (cardInDeck) {
+                                    const { left, top } = coord;
+                                    const targetCard = cardInDeck.get('card');
+                                    deleteFromDeck(name, [targetCard.get('_id')]);
+                                    addToBoard(boardName, [{
+                                        card: targetCard,
+                                        initialX: left,
+                                        initialY: top,
+                                        origin: name,
+                                    }]);
+                                }
+                            }}
+                            onMouseEnter={() => {
+                                deckButtonRef.current?.classList.add('deck-button-force-show');
+                            }}
+                            onMouseLeave={() => {
+                                deckButtonRef.current?.classList.remove('deck-button-force-show');
+                            }}
+                        />
+                        : <img
+                            className="card-back card-back-flashing allow-event"
+                            src="/asset/img/ygo-card-back-grey.png"
+                            alt="card-back"
+                            onMouseEnter={() => {
+                                deckButtonRef.current?.classList.add('deck-button-force-show');
+                            }}
+                            onMouseLeave={() => {
+                                deckButtonRef.current?.classList.remove('deck-button-force-show');
+                            }}
+                        />}
                 </div>
             </DeckBeaconWrapper>
             {/* <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>

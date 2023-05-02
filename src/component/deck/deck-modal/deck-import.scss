@@ -5,4 +5,11 @@
     .deck-import-dragger {
         margin-top: var(--spacing-xs);
     }
+    .file-item-grid {
+        margin: var(--spacing-sm) 0;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, 88px);
+        column-gap: var(--spacing-sm);
+        row-gap: var(--spacing-sm);
+    }
 }

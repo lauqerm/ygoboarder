@@ -6,10 +6,15 @@
   --spacing: var(--spacing-md);
   --spacing-lg: 12px;
 
+  --fs-sm: 0.857rem;
   --fs-lg: 1.25rem;
 
   --br-sm: 2px;
   --br: 4px;
+
+  --sub-antd: #40a9ff44;
+
+  --color-faint: rgba(40, 40, 40, 0.85);
 
   --main-contrast: #fff;
 
@@ -27,11 +32,16 @@
 
   --main-danger: #f22;
   --sub-danger: #f44;
+  --contrast-danger: #fff;
 
   --bdSize: 1px;
 
+  --bdColor-blunt: #555555;
+  --bd-blunt: var(--bdSize) solid var(--bdColor-blunt);
   --bdColor: #8a8a8a;
   --bd: var(--bdSize) solid var(--bdColor);
+  --bdColor-faint: #c8c8c8;
+  --bd-faint: var(--bdSize) solid var(--bdColor-faint);
   --bd-contrast: var(--bdSize) solid var(--main-contrast);
 
   --card-width-lg: 549px;
@@ -68,6 +78,9 @@
   }
   img {
     user-select: none;
+  }
+  .allow-event {
+    pointer-events: all;
   }
 }
 

@@ -69,7 +69,8 @@ export const MovableCardGroup = ({
             .filter(Boolean) as string[];
 
         let highlightBeacon = (_e: MouseEvent) => { };
-        const onMouseDown = ({ clientX, clientY }: MouseEvent) => {
+        const onMouseDown = ({ button }: MouseEvent) => {
+            if (button !== 0) return;
             cardIdList.current.forEach(cardId => focus('card', cardId));
             highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
                 const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;

@@ -24,6 +24,14 @@ export const getDefaultCardURLImage = () => ({
 });
 export type CardURLImage = ReturnType<typeof getDefaultCardURLImage>;
 
+export type LimitStatus = 'Semi-Limited' | 'Limited' | 'Banned' | 'Unlimited';
+export const getDefaultBanlistInfo = () => ({
+    ban_tcg: 'Unlimited' as LimitStatus,
+    ban_ocg: 'Unlimited' as LimitStatus,
+    ban_goat: 'Unlimited' as LimitStatus,
+});
+export type BanlistInfo = ReturnType<typeof getDefaultBanlistInfo>;
+
 export const getDefaultYGOProCardResponse = () => ({
     atk: 0 as number | undefined,
     attribute: '' as string | undefined,
@@ -41,5 +49,6 @@ export const getDefaultYGOProCardResponse = () => ({
     race: '' as string | undefined,
     scale: 0 as number | undefined,
     type: '',
+    banlist_info: getDefaultBanlistInfo() as BanlistInfo,
 });
 export type YGOProCardResponse = ReturnType<typeof getDefaultYGOProCardResponse>;

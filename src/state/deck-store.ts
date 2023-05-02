@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, CardImage, CardImageConverter, CardPreset, DeckType } from 'src/model';
+import { BeaconAction, BoardMapping, CardImage, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/service';
@@ -39,7 +39,13 @@ export type DeckState = {
     reset: () => void,
 }
 export const useDeckStore = create<DeckState>((set) => ({
-    deckMap: Map(),
+    deckMap: Map({
+        [BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].name]: DeckListConverter({
+            cardList: List(),
+            name: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].name,
+            type: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].type,
+        }),
+    }),
     register: (deckId, type) => set(state => {
         if (state.deckMap.has(deckId)) return state;
         const newDeck = DeckListConverter({

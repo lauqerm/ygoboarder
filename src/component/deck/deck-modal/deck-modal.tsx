@@ -21,7 +21,7 @@ import {
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
-import { DeckImporter } from './deck-import';
+import { DeckImporter, DeckImporterRef } from './deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { ExtractProps } from 'src/type';
@@ -201,8 +201,14 @@ export const DeckModal = React.forwardRef(({
         }
     }, [addDOMEntity]);
 
+    const deckImpoterRef = useRef<DeckImporterRef>(null);
+
     const beaconProps = {
         deckId,
+    };
+    const close = () => {
+        deckImpoterRef.current?.close();
+        onClose?.();
     };
     if (!portal) return null;
     return createPortal(
@@ -223,7 +229,7 @@ export const DeckModal = React.forwardRef(({
             >
                 <div className="deck-modal-content">
                     <div>{displayName}</div>
-                    <CloseOutlined onClick={onClose} />
+                    <CloseOutlined onClick={close} />
                 </div>
                 <Moveable
                     target={handle}
@@ -376,9 +382,9 @@ export const DeckModal = React.forwardRef(({
                     <div>
                         Card amount: {currentFullDeckList.size} / {deckCount ?? 0}
                     </div>
-                    <Button type="ghost" onClick={onClose}>Close</Button>
+                    <Button type="ghost" onClick={close}>Close</Button>
                     <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                    <DeckImporter deckId={deckId} />
+                    <DeckImporter ref={deckImpoterRef} deckId={deckId} />
                 </div>
             </ModalContainer>
         </>,

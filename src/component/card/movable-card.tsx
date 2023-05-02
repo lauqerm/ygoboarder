@@ -89,7 +89,8 @@ export const MovableCard = ({
         let highlightBeacon = (_e: MouseEvent) => { };
         let currentX = initialX;
         let currentY = initialY;
-        const onMouseDown = ({ clientX, clientY }: MouseEvent) => {
+        const onMouseDown = ({ clientX, clientY, button }: MouseEvent) => {
+            if (button !== 0) return;
             currentX = clientX;
             currentY = clientY;
             focus('card', uniqueId);
@@ -124,7 +125,7 @@ export const MovableCard = ({
         const onMouseUp = ({ clientX, clientY, button }: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon);
             /** Bỏ qua right click */
-            if (button === 2) return;
+            if (button !== 0) return;
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             /** Left click một lần để đổi trạng thái faceup-facedown */
             const movedDistance = Math.sqrt((currentY - clientY) ** 2 + (currentX - clientX) ** 2);
