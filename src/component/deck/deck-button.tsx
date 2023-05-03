@@ -14,6 +14,7 @@ import {
     PROP_DOM_ENTITY_TYPE,
     DECK_BUTTON_INDEX,
     MODAL_WRAPPER_ID,
+    FieldComponentKey,
 } from 'src/model';
 import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useDOMEntityStateStore, useBoardStore } from 'src/state';
 import styled from 'styled-components';
@@ -25,6 +26,7 @@ import { MovableCard } from '../card';
 import { mergeClass } from 'src/util';
 import { createPortal } from 'react-dom';
 import './deck-button.scss';
+import { BoardIcon } from '../atom';
 
 const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number, $top?: number, $left?: number }>`
     text-align: center;
@@ -112,6 +114,7 @@ export type DeckButton = {
     name: string,
     displayName?: string,
     type: DeckType,
+    component: FieldComponentKey,
     preset?: CardPreset,
     offsetTop?: number, offsetLeft?: number,
 } & Pick<DeckModal, 'beaconList'>;
@@ -119,6 +122,7 @@ export const DeckButton = ({
     name,
     displayName = name,
     type,
+    component,
     preset = 'normal',
     offsetTop, offsetLeft,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
@@ -230,7 +234,7 @@ export const DeckButton = ({
                             initialY={offsetTop}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
                                 const cardInDeck = deckList.get(0);
-    
+
                                 if (cardInDeck) {
                                     const { left, top } = coord;
                                     const targetCard = cardInDeck.get('card');
@@ -250,10 +254,9 @@ export const DeckButton = ({
                                 deckButtonRef.current?.classList.remove('deck-button-force-show');
                             }}
                         />
-                        : <img
-                            className="card-back card-back-flashing allow-event"
-                            src="/asset/img/ygo-card-back-grey.png"
-                            alt="card-back"
+                        : <BoardIcon
+                            size="sm"
+                            type={component}
                             onMouseEnter={() => {
                                 deckButtonRef.current?.classList.add('deck-button-force-show');
                             }}

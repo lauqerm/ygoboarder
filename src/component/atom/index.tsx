@@ -55,3 +55,6 @@ export const RestrictionText = ({
         {text}
     </RestrictionTextContainer>;
 };
+
+export * from './board-atom';
+export * from './board-icon';

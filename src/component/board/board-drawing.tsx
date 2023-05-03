@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey } from 'src/model';
 import styled from 'styled-components';
+import { FieldIcon, PendulumIcon } from '../atom';
 
 const BoardContainer = styled.div`
     --field-card-height-sm: calc(var(--card-height-sm) + 2px);
@@ -59,6 +60,14 @@ const BoardContainer = styled.div`
         width: var(--field-card-height-sm);
         background-color: var(--main-primaryLighter);
     }
+    .with-icon {
+        display: flex;
+        svg {
+            width: 60%;
+            color: #fafafa;
+            margin: auto;
+        }
+    }
 `;
 
 export type BoardDrawing = {
@@ -109,18 +118,24 @@ export const BoardDrawing = ({
             <div className="padding" />
             <div className="side-col-component side-col-bot">
                 <div ref={yourTrunkRef} className="vertical-zone" />
-                <div className="vertical-zone" />
+                <div className="vertical-zone with-icon">
+                    <FieldIcon />
+                </div>
                 <div ref={yourExtraDeckRef} className="vertical-zone" />
             </div>
         </div>
         <div className="main-col">
             <div className="main-col-component main-col-hand main-col-hand-top" />
             <div className="main-col-component main-col-field main-col-field-top">
+                <div className="square-zone with-icon">
+                    <PendulumIcon />
+                </div>
                 <div className="square-zone" />
                 <div className="square-zone" />
                 <div className="square-zone" />
-                <div className="square-zone" />
-                <div className="square-zone" />
+                <div className="square-zone with-icon">
+                    <PendulumIcon />
+                </div>
                 <div className="square-zone" />
                 <div className="square-zone" />
                 <div className="square-zone" />
@@ -140,18 +155,24 @@ export const BoardDrawing = ({
                 <div className="square-zone" />
                 <div className="square-zone" />
                 <div className="square-zone" />
+                <div className="square-zone with-icon">
+                    <PendulumIcon />
+                </div>
                 <div className="square-zone" />
                 <div className="square-zone" />
                 <div className="square-zone" />
-                <div className="square-zone" />
-                <div className="square-zone" />
+                <div className="square-zone with-icon">
+                    <PendulumIcon />
+                </div>
             </div>
             <div className="main-col-component main-col-hand main-col-hand-bot" />
         </div>
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppExtraDeckRef} className="vertical-zone" />
-                <div className="vertical-zone" />
+                <div className="vertical-zone with-icon">
+                    <FieldIcon />
+                </div>
                 <div ref={oppTrunkRef} className="vertical-zone" />
             </div>
             <div className="padding" />

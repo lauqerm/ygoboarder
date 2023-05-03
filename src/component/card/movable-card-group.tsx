@@ -59,6 +59,7 @@ export const MovableCardGroup = ({
 
     const [showLabel, setShowLabel] = useState(false);
     const once = useRef(false);
+    const highlightBeacon = useRef((_e: MouseEvent) => { });
     useEffect(() => {
         const currentTarget = target.current;
         fullIdList.current = (cardGroupElementList ?? [])
@@ -68,11 +69,10 @@ export const MovableCardGroup = ({
             .map(id => GetDropIDRegex.exec(id)?.[1])
             .filter(Boolean) as string[];
 
-        let highlightBeacon = (_e: MouseEvent) => { };
         const onMouseDown = ({ button }: MouseEvent) => {
             if (button !== 0) return;
             cardIdList.current.forEach(cardId => focus('card', cardId));
-            highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
+            highlightBeacon.current = ({ clientX, clientY }: MouseEvent) => {
                 const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
                 let foundWrapper = false;
                 for (const DOMEntity of DOMEntityList) {
@@ -98,10 +98,10 @@ export const MovableCardGroup = ({
                     }
                 }
             };
-            document.addEventListener('mousemove', highlightBeacon);
+            document.addEventListener('mousemove', highlightBeacon.current);
         };
         const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
-            document.removeEventListener('mousemove', highlightBeacon);
+            document.removeEventListener('mousemove', highlightBeacon.current);
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
@@ -157,7 +157,7 @@ export const MovableCardGroup = ({
         }
 
         return () => {
-            document.removeEventListener('mousemove', highlightBeacon);
+            document.removeEventListener('mousemove', highlightBeacon.current);
             if (currentTarget) {
                 currentTarget.removeEventListener('mousedown', onMouseDown);
                 currentTarget.removeEventListener('mouseup', onMouseUp);
@@ -216,6 +216,14 @@ export const MovableCardGroup = ({
                         element.style.top = `${clientY - 40}px`;
                         element.style.left = `${clientX - (groupWidth / 2) + offsetBetweenCard * index}px`;
                     });
+                    const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+                    for (const DOMEntity of DOMEntityList) {
+                        const { element, beaconList } = DOMEntity;
+                        element().classList.remove('js-available-to-drop');
+    
+                        for (const beacon of beaconList) beacon.beaconElement().classList.remove('js-ready-to-drop');
+                    }
+                    document.removeEventListener('mousemove', highlightBeacon.current);
                 }}
                 onDragGroup={onDragGroup}
                 onDragGroupStart={e => {
