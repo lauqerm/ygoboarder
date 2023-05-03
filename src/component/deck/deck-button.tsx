@@ -25,8 +25,8 @@ import { List } from 'immutable';
 import { MovableCard } from '../card';
 import { mergeClass } from 'src/util';
 import { createPortal } from 'react-dom';
-import './deck-button.scss';
 import { BoardIcon } from '../atom';
+import './deck-button.scss';
 
 const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number, $top?: number, $left?: number }>`
     text-align: center;
@@ -224,7 +224,7 @@ export const DeckButton = ({
                     })}
                 </div>
                 <div className="top-card">
-                    {(topDeckCard && true)
+                    {topDeckCard
                         ? <MovableCard key={topDeckCard.get('card').get('_id')}
                             uniqueId={`[DECKBUTTON-${name}]-[ID-${topDeckCard.get('card').get('_id')}]`}
                             image={topDeckCard.get('card')}
@@ -232,6 +232,7 @@ export const DeckButton = ({
                             originEntity={DOMEntityType['deckButton']}
                             initialX={offsetLeft}
                             initialY={offsetTop}
+                            fake={true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
                                 const cardInDeck = deckList.get(0);
 

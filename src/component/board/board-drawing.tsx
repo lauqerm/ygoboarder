@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey } from 'src/model';
+import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent } from 'src/model';
 import styled from 'styled-components';
-import { FieldIcon, PendulumIcon } from '../atom';
+import { CardBack, FieldIcon, PendulumIcon } from '../atom';
+import { useCountStore } from 'src/state';
 
 const BoardContainer = styled.div`
     --field-card-height-sm: calc(var(--card-height-sm) + 2px);
@@ -88,6 +89,8 @@ export const BoardDrawing = ({
     const yourGYRef = useRef<HTMLDivElement>(null);
     const yourDeckRef = useRef<HTMLDivElement>(null);
 
+    const deckCountMap = useCountStore(state => state.countMap);
+
     useEffect(() => {
         onMount({
             [FieldKey.your]: {
@@ -108,20 +111,52 @@ export const BoardDrawing = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const oppTrunkBoardComponent = getBoardComponent('opponent', 'trunk');
+    const oppExtraDeckBoardComponent = getBoardComponent('opponent', 'extraDeck');
+    const oppBanishedPileBoardComponent = getBoardComponent('opponent', 'banishedPile');
+    const oppGYBoardComponent = getBoardComponent('opponent', 'gy');
+    const oppDeckBoardComponent = getBoardComponent('opponent', 'deck');
+
+    const yourTrunkBoardComponent = getBoardComponent('your', 'trunk');
+    const yourExtraDeckBoardComponent = getBoardComponent('your', 'extraDeck');
+    const yourBanishedPileBoardComponent = getBoardComponent('your', 'banishedPile');
+    const yourGYBoardComponent = getBoardComponent('your', 'gy');
+    const yourDeckBoardComponent = getBoardComponent('your', 'deck');
+
     return <BoardContainer>
         <div className="side-col">
             <div className="side-col-component side-col-top">
-                <div ref={oppDeckRef} className="vertical-zone" />
-                <div ref={oppGYRef} className="vertical-zone" />
-                <div ref={oppBanishedPileRef} className="vertical-zone" />
+                <div ref={oppDeckRef} className="vertical-zone">
+                    {(deckCountMap[oppDeckBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={oppDeckBoardComponent.preset} />
+                        : null}
+                </div>
+                <div ref={oppGYRef} className="vertical-zone">
+                    {(deckCountMap[oppGYBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={oppGYBoardComponent.preset} />
+                        : null}
+                </div>
+                <div ref={oppBanishedPileRef} className="vertical-zone">
+                    {(deckCountMap[oppBanishedPileBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={oppBanishedPileBoardComponent.preset} />
+                        : null}
+                </div>
             </div>
             <div className="padding" />
             <div className="side-col-component side-col-bot">
-                <div ref={yourTrunkRef} className="vertical-zone" />
+                <div ref={yourTrunkRef} className="vertical-zone">
+                    {(deckCountMap[yourTrunkBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={yourTrunkBoardComponent.preset} />
+                        : null}
+                </div>
                 <div className="vertical-zone with-icon">
                     <FieldIcon />
                 </div>
-                <div ref={yourExtraDeckRef} className="vertical-zone" />
+                <div ref={yourExtraDeckRef} className="vertical-zone">
+                    {(deckCountMap[yourExtraDeckBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={yourExtraDeckBoardComponent.preset} />
+                        : null}
+                </div>
             </div>
         </div>
         <div className="main-col">
@@ -169,17 +204,37 @@ export const BoardDrawing = ({
         </div>
         <div className="side-col">
             <div className="side-col-component side-col-top">
-                <div ref={oppExtraDeckRef} className="vertical-zone" />
+                <div ref={oppExtraDeckRef} className="vertical-zone">
+                    {(deckCountMap[oppExtraDeckBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={oppExtraDeckBoardComponent.preset} />
+                        : null}
+                </div>
                 <div className="vertical-zone with-icon">
                     <FieldIcon />
                 </div>
-                <div ref={oppTrunkRef} className="vertical-zone" />
+                <div ref={oppTrunkRef} className="vertical-zone">
+                    {(deckCountMap[oppTrunkBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={oppTrunkBoardComponent.preset} />
+                        : null}
+                </div>
             </div>
             <div className="padding" />
             <div className="side-col-component side-col-bot">
-                <div ref={yourBanishedPileRef} className="vertical-zone" />
-                <div ref={yourGYRef} className="vertical-zone" />
-                <div ref={yourDeckRef} className="vertical-zone" />
+                <div ref={yourBanishedPileRef} className="vertical-zone">
+                    {(deckCountMap[yourBanishedPileBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={yourBanishedPileBoardComponent.preset} />
+                        : null}
+                </div>
+                <div ref={yourGYRef} className="vertical-zone">
+                    {(deckCountMap[yourGYBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={yourGYBoardComponent.preset} />
+                        : null}
+                </div>
+                <div ref={yourDeckRef} className="vertical-zone">
+                    {(deckCountMap[yourDeckBoardComponent.name] ?? 0) > 1
+                        ? <CardBack preset={yourDeckBoardComponent.preset} />
+                        : null}
+                </div>
             </div>
         </div>
     </BoardContainer>;

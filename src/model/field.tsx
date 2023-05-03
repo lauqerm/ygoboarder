@@ -68,7 +68,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.deck,
                     type: DeckType['permanent'],
-                    preset: CardPreset['opp'],
+                    preset: CardPreset['normal'],
                     displayName: 'Your Deck',
                     name: 'YOUR-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
@@ -77,7 +77,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.extraDeck,
                     type: DeckType['permanent'],
-                    preset: CardPreset['opp'],
+                    preset: CardPreset['normal'],
                     displayName: 'Your Extra Deck',
                     name: 'YOUR-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
@@ -86,7 +86,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.trunk,
                     type: DeckType['consistent'],
-                    preset: CardPreset['opp'],
+                    preset: CardPreset['normal'],
                     displayName: 'Your Trunk',
                     name: 'YOUR-TRUNK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
@@ -95,7 +95,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.gy,
                     type: DeckType['transient'],
-                    preset: CardPreset['opp'],
+                    preset: CardPreset['normal'],
                     displayName: 'Your GY',
                     name: 'YOUR-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
@@ -104,7 +104,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.banishedPile,
                     type: DeckType['transient'],
-                    preset: CardPreset['opp'],
+                    preset: CardPreset['normal'],
                     displayName: 'Your Banished Pile',
                     name: 'YOUR-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
@@ -171,6 +171,9 @@ export const BoardMapping: {
     },
 };
 
+export const getBoardComponent = (fieldKey: FieldKey, fieldComponentKey: FieldComponentKey) => {
+    return BoardMapping.fieldMap[fieldKey].componentMap[fieldComponentKey];
+};
 export const BoardComponentList = Object
     .values(BoardMapping.fieldMap)
     .reduce((prev, curr) => {

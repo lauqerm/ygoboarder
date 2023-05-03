@@ -77,8 +77,8 @@ export const Board = ({
                 {...deckButtonProps}
                 component={fieldComponentKey}
                 /** Dịch 1px cho border */
-                offsetTop={top + 1}
-                offsetLeft={left + 1}
+                offsetTop={top + window.scrollY + 1}
+                offsetLeft={left + window.scrollX + 1}
             />;
         })}
     </BoardContainer>;

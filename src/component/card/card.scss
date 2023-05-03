@@ -30,18 +30,4 @@
         width: var(--card-width);
         height: var(--card-height);
     }
-    .card-back-flashing {
-        animation: fade-cycle 4s infinite;
-    }
-}
-@keyframes fade-cycle {
-    0% {
-        opacity: 0.55;
-    }
-    50% {
-        opacity: 0.75;
-    }
-    100% {
-        opacity: 0.55;
-    }
 }

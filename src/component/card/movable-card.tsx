@@ -28,6 +28,7 @@ export type MovableCard = {
 } & Card & React.HTMLAttributes<HTMLDivElement>;
 export const MovableCard = ({
     uniqueId,
+    fake,
     image,
     size = 'sm',
     initialX = 0,
@@ -182,8 +183,8 @@ export const MovableCard = ({
                     }
                     continue;
                 }
-                /** Drag từ topdeck ra board */
-                if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedInitialDistance > 50) {
+                /** Drag từ topdeck ra board, nếu cự ly drag nhỏ hơn 20 thì ta không làm gì vì đây có thể là misclick */
+                if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedInitialDistance > 20) {
                     const boardName = DOMElement.getAttribute('data-board-name');
 
                     /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCard không có thông tin về Deck mà nó thuộc về */
@@ -235,6 +236,7 @@ export const MovableCard = ({
             <Card
                 image={image}
                 origin={origin}
+                fake={fake}
                 phase={phase}
                 position={position}
                 onContextMenu={e => {

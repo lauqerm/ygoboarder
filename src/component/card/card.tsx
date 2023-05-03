@@ -11,6 +11,8 @@ export type Card = {
     origin: string,
     phase?: PhaseType,
     position?: Position,
+    /** Fake card là card ảo, không được đếm và chỉ là copy của một card thật khác */
+    fake?: boolean,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const Card = ({
     image,
@@ -18,6 +20,7 @@ export const Card = ({
     origin,
     phase,
     position,
+    fake,
     ...rest
 }: Card) => {
     const changeCount = useCountStore(state => state.set);
@@ -29,10 +32,10 @@ export const Card = ({
             : undefined;
     
     useEffect(() => {
-        changeCount(origin, 1);
+        if (!fake) changeCount(origin, 1);
 
         return () => {
-            changeCount(origin, -1);
+            if (!fake) changeCount(origin, -1);
         };
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);

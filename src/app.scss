@@ -126,3 +126,16 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/** Animation **/
+@keyframes fade-cycle {
+    0% {
+        opacity: 0.55;
+    }
+    50% {
+        opacity: 0.75;
+    }
+    100% {
+        opacity: 0.55;
+    }
+}
