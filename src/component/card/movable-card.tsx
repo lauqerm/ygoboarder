@@ -243,6 +243,26 @@ export const MovableCard = ({
                     e.preventDefault();
                     const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                     if (boardId && originEntity === 'board' && position) {
+                        /** Ta tính toán lại vị trí để đảm bảo card xoay quanh tâm */
+                        try {
+                            if (target) {
+                                const computedStyle = getComputedStyle(target);
+                                const cardWidth = parseInt(computedStyle.getPropertyValue('--card-width').replace('px', ''));
+                                const cardHeight = parseInt(computedStyle.getPropertyValue('--card-height').replace('px', ''));
+                                const currentX = parseInt(target.style.left.replace('px', ''));
+                                const currentY = parseInt(target.style.top.replace('px', ''));
+
+                                if (position === 'atk') {
+                                    target.style.left = `${currentX - (cardHeight - cardWidth) / 2}px`;
+                                    target.style.top = `${currentY + (cardHeight - cardWidth) / 2}px`;
+                                } else {
+                                    target.style.left = `${currentX + (cardHeight - cardWidth) / 2}px`;
+                                    target.style.top = `${currentY - (cardHeight - cardWidth) / 2}px`;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('MovableCard: Missing coordinate or variable', e);
+                        }
                         changePosition(boardId, [{ id: image.get('_id') }]);
                     }
                 }}

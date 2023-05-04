@@ -75,7 +75,7 @@ export const Board = ({
             if (top == null || left == null) return null;
             return <DeckButton key={`${fieldKey}${fieldComponentKey}`}
                 {...deckButtonProps}
-                component={fieldComponentKey}
+                {...boardComponent}
                 /** Dịch 1px cho border */
                 offsetTop={top + window.scrollY + 1}
                 offsetLeft={left + window.scrollX + 1}

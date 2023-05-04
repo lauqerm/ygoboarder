@@ -1,3 +1,4 @@
+import { PhaseType } from './card';
 import { CardPreset, DeckType } from './deck';
 
 export const PROP_BEACON_DECK_ORIGIN = 'data-beacon-deck-origin';
@@ -35,6 +36,8 @@ export const FieldKey = Object.freeze({
 
 export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, DOMRect>>;
 
+export type BoardComponentAction = 'view' | 'shuffle' | 'excavate-top' | 'excavate-random' | 'excavate-random-faceup' | 'excavate-random-facedown';
+export type ActionListPlacement = 'left' | 'right';
 export type BoardComponent = {
     fieldKey: FieldKey,
     fieldComponentKey: FieldComponentKey,
@@ -43,6 +46,9 @@ export type BoardComponent = {
     name: string,
     displayName: string,
     beaconList: BeaconAction[],
+    actionPlacement: ActionListPlacement,
+    action: BoardComponentAction[],
+    defaultPhase: PhaseType,
 };
 export const BoardMapping: {
     fieldList: FieldKey[],
@@ -72,6 +78,9 @@ export const BoardMapping: {
                     displayName: 'Your Deck',
                     name: 'YOUR-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                    action: ['view', 'excavate-top', 'shuffle'],
+                    actionPlacement: 'left',
+                    defaultPhase: 'down',
                 },
                 [FieldComponentKey.extraDeck]: {
                     fieldKey: FieldKey.your,
@@ -81,6 +90,9 @@ export const BoardMapping: {
                     displayName: 'Your Extra Deck',
                     name: 'YOUR-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
+                    action: ['view', 'excavate-random-faceup', 'excavate-random-facedown'],
+                    actionPlacement: 'right',
+                    defaultPhase: 'down',
                 },
                 [FieldComponentKey.trunk]: {
                     fieldKey: FieldKey.your,
@@ -90,6 +102,9 @@ export const BoardMapping: {
                     displayName: 'Your Trunk',
                     name: 'YOUR-TRUNK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                    action: ['view', 'shuffle'],
+                    actionPlacement: 'right',
+                    defaultPhase: 'up',
                 },
                 [FieldComponentKey.gy]: {
                     fieldKey: FieldKey.your,
@@ -99,6 +114,9 @@ export const BoardMapping: {
                     displayName: 'Your GY',
                     name: 'YOUR-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                    action: ['view'],
+                    actionPlacement: 'left',
+                    defaultPhase: 'up',
                 },
                 [FieldComponentKey.banishedPile]: {
                     fieldKey: FieldKey.your,
@@ -108,6 +126,9 @@ export const BoardMapping: {
                     displayName: 'Your Banished Pile',
                     name: 'YOUR-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                    action: ['view'],
+                    actionPlacement: 'left',
+                    defaultPhase: 'up',
                 },
             },
         },
@@ -129,6 +150,9 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Deck',
                     name: 'OP-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                    action: ['view', 'excavate-top', 'shuffle'],
+                    actionPlacement: 'right',
+                    defaultPhase: 'down',
                 },
                 [FieldComponentKey.extraDeck]: {
                     fieldKey: FieldKey.opponent,
@@ -138,6 +162,9 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Extra Deck',
                     name: 'OP-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
+                    action: ['view', 'excavate-random-faceup', 'excavate-random-facedown'],
+                    actionPlacement: 'left',
+                    defaultPhase: 'down',
                 },
                 [FieldComponentKey.trunk]: {
                     fieldKey: FieldKey.opponent,
@@ -147,6 +174,9 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Trunk',
                     name: 'OP-TRUNK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+                    action: ['view', 'shuffle'],
+                    actionPlacement: 'left',
+                    defaultPhase: 'up',
                 },
                 [FieldComponentKey.gy]: {
                     fieldKey: FieldKey.opponent,
@@ -156,6 +186,9 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s GY',
                     name: 'OP-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                    action: ['view'],
+                    actionPlacement: 'right',
+                    defaultPhase: 'up',
                 },
                 [FieldComponentKey.banishedPile]: {
                     fieldKey: FieldKey.opponent,
@@ -165,6 +198,9 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Banished Pile',
                     name: 'OP-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
+                    action: ['view'],
+                    actionPlacement: 'right',
+                    defaultPhase: 'up',
                 },
             },
         },

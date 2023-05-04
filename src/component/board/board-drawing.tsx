@@ -10,8 +10,8 @@ const BoardContainer = styled.div`
 
     display: inline-grid;
     grid-template-columns: max-content max-content max-content;
-    column-gap: var(--spacing-lg);
-    padding: var(--spacing-lg);
+    column-gap: var(--spacing-xl);
+    padding: var(--spacing-xl);
     .side-col {
         display: inline-grid;
         grid-template-columns: 1fr;
@@ -19,7 +19,7 @@ const BoardContainer = styled.div`
         .side-col-component {
             display: inline-grid;
             grid-template-columns: 1fr;
-            row-gap: var(--spacing-lg);
+            row-gap: var(--spacing-xl);
         }
     }
     .main-col {

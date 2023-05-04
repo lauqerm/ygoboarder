@@ -6,7 +6,6 @@ import {
     BeaconActionLabel,
     CardPreset,
     CLASS_BEACON_DECK_BACK,
-    DeckType,
     DOM_ENTITY_CLASS,
     DOMEntityType,
     DOMEntityTypeClass,
@@ -14,7 +13,8 @@ import {
     PROP_DOM_ENTITY_TYPE,
     DECK_BUTTON_INDEX,
     MODAL_WRAPPER_ID,
-    FieldComponentKey,
+    BoardComponent,
+    ActionListPlacement,
 } from 'src/model';
 import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useDOMEntityStateStore, useBoardStore } from 'src/state';
 import styled from 'styled-components';
@@ -28,38 +28,77 @@ import { createPortal } from 'react-dom';
 import { BoardIcon } from '../atom';
 import './deck-button.scss';
 
+const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
+    display: block;
+    column-gap: var(--spacing-xs);
+    pointer-events: all;
+    position: absolute;
+    margin-top: var(--spacing);
+    top: 0;
+    ${props => props.$placement === 'left'
+        ? 'right: 100%;'
+        : 'left: calc(100% - 1px);'}
+    .deck-button-tool {
+        flex: 1;
+        padding: var(--spacing-xs);
+        line-height: 1;
+        text-align: center;
+        background-color: var(--main-metal);
+        border: var(--bd);
+        border-radius: var(--br);
+        user-select: none;
+        cursor: pointer;
+        width: 34px;
+        color: var(--color-contrast);
+        ${props => props.$placement === 'left'
+        ? `
+            &:first-child {
+                border-top-right-radius: 0;
+            }
+            &:last-child {
+                border-bottom-right-radius: 0;
+            }
+            &:last-child:first-child {
+                border-radius: var(--br) 0 0 var(--br);
+            }
+        `
+        : `
+            &:first-child {
+                border-top-left-radius: 0;
+            }
+            &:last-child {
+                border-bottom-left-radius: 0;
+            }
+            &:last-child:first-child {
+                border-radius: 0 var(--br) var(--br) 0;
+            }
+        `}
+        &:first-child {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        &:last-child {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+        }
+        + .deck-button-tool {
+            border-top: none;
+        }
+        &:hover {
+            background-color: var(--dim-metal);
+            box-shadow: 0 0 1px 1px #222 inset;
+        }
+    }
+`;
 const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number, $top?: number, $left?: number }>`
     text-align: center;
     position: absolute;
     top: ${props => `${props.$top}px`};
     left: ${props => `${props.$left}px`};
-    display: ${props => typeof props.$left === 'number' && typeof props.$top === 'number' ? 'inline-block' : 'none'};
+    display: ${props => typeof props.$left === 'number' && typeof props.$top === 'number' ? 'inline-flex' : 'none'};
     line-height: 0;
     z-index: 1;
     pointer-events: none;
-    .deck-button-toolbar {
-        display: none;
-        column-gap: var(--spacing-xs);
-        padding: var(--spacing-xs);
-        position: absolute;
-        width: 100%;
-        pointer-events: all;
-        .deck-button-tool {
-            flex: 1;
-            padding: var(--spacing-xs);
-            line-height: 1;
-            text-align: center;
-            background-color: var(--main-metal);
-            border: var(--bd);
-            border-radius: var(--br);
-            user-select: none;
-            cursor: pointer;
-            &:hover {
-                background-color: var(--dim-metal);
-                box-shadow: 0 0 1px 1px #222 inset;
-            }
-        }
-    }
     .deck-back {
         height: var(--card-height);
         width: var(--card-width);
@@ -102,30 +141,22 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: numb
         left: 50%;
         transform: translateX(-50%);
     }
-    &.deck-button-force-show,
-    &:hover {
-        .deck-button-toolbar {
-            display: flex;
-        }
-    }
 `;
 
 export type DeckButton = {
-    name: string,
-    displayName?: string,
-    type: DeckType,
-    component: FieldComponentKey,
-    preset?: CardPreset,
     offsetTop?: number, offsetLeft?: number,
-} & Pick<DeckModal, 'beaconList'>;
+} & Pick<DeckModal, 'beaconList'>
+    & BoardComponent;
 export const DeckButton = ({
     name,
     displayName = name,
     type,
-    component,
+    fieldComponentKey,
     preset = 'normal',
     offsetTop, offsetLeft,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
+    action,
+    actionPlacement,
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
@@ -182,8 +213,8 @@ export const DeckButton = ({
                 [PROP_DOM_ENTITY_TYPE]: DOMEntityType['deckButton'],
             }}
         >
-            <div className="deck-button-toolbar" style={{ zIndex: 1 + 1 }}>
-                <Tooltip overlay="View">
+            <DeckButtonToolbar className="deck-button-toolbar" style={{ zIndex: 2 }} $placement={actionPlacement}>
+                {action.includes('view') && <Tooltip overlay="View" placement={actionPlacement}>
                     <div
                         className="deck-button-tool deck-button-tool-view" onClick={() => {
                             setVisible(true);
@@ -192,16 +223,16 @@ export const DeckButton = ({
                     >
                         <EyeOutlined />
                     </div>
-                </Tooltip>
-                <Tooltip overlay="Shuffle">
+                </Tooltip>}
+                {action.includes('shuffle') && <Tooltip overlay="Shuffle" placement={actionPlacement}>
                     <div
                         className="deck-button-tool deck-button-tool-shuffle"
                         onClick={() => deckModalRef.current?.shuffle()}
                     >
                         <RetweetOutlined />
                     </div>
-                </Tooltip>
-            </div>
+                </Tooltip>}
+            </DeckButtonToolbar>
             <DeckBeaconWrapper
                 className="deck-back ygo-card-size-sm"
                 style={{ zIndex: 1 }}
@@ -257,7 +288,7 @@ export const DeckButton = ({
                         />
                         : <BoardIcon
                             size="sm"
-                            type={component}
+                            type={fieldComponentKey}
                             onMouseEnter={() => {
                                 deckButtonRef.current?.classList.add('deck-button-force-show');
                             }}
