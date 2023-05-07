@@ -18,7 +18,7 @@ import {
     PropDOMEntityVisible,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, CardBoard, ExportButton, ImportButton } from './component';
+import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
@@ -313,14 +313,7 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
-            <div>Test queue
-                <button onClick={() => cardIndexQueue.toTop('A')}>A top top</button>
-                <button onClick={() => cardIndexQueue.toTop('B')}>B top top</button>
-                <button onClick={() => cardIndexQueue.toTop('C')}>C top top</button>
-                <button onClick={() => cardIndexQueue.toTop('D')}>D top top</button>
-                <button onClick={() => recalculate()}>Force recal</button>
-            </div>
-            <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
+            <div>
                 <ExportButton />
                 <ImportButton onImport={importedData => {
                     resetDeck();
@@ -335,6 +328,9 @@ function App() {
                     });
                     setHardReset(cnt => cnt + 1);
                 }} />
+            </div>
+            <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
+                <CardPreviewer />
                 <Board boardName="main-board" />
                 <div className="padding" />
             </div>

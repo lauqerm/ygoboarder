@@ -13,7 +13,7 @@ import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
-import { useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
+import { useBoardStore, useDeckStore, useDOMEntityStateStore, usePreviewStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
 import { createPortal } from 'react-dom';
 import './movable-card.scss';
 
@@ -57,6 +57,7 @@ export const MovableCard = ({
         }),
         () => true,
     );
+    const preview = usePreviewStore(state => state.setCardPreview);
 
     const {
         zIndexInstance,
@@ -192,6 +193,13 @@ export const MovableCard = ({
                 }
             }
         };
+        const openPreview = () => {
+            if (image.get('type') === 'external') {
+                preview(image.get('dataURL'), 'external');
+            } else {
+                preview(image.get('data'), 'internal');
+            }
+        };
         if (target && once.current === false) {
             once.current = true;
             target.style.left = `${initialX}px`;
@@ -201,6 +209,7 @@ export const MovableCard = ({
         if (target) {
             target.addEventListener('mousedown', onMouseDown);
             target.addEventListener('mouseup', onMouseUp);
+            target.addEventListener('mouseenter', openPreview);
         }
 
         return () => {
@@ -208,6 +217,7 @@ export const MovableCard = ({
             if (target) {
                 target.removeEventListener('mousedown', onMouseDown);
                 target.removeEventListener('mouseup', onMouseUp);
+                target.removeEventListener('mouseenter', openPreview);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps

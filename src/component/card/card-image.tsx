@@ -80,6 +80,8 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
                 .then(resolvedSrc => {
                     setActualSrc(resolvedSrc);
                 });
+        } else {
+            setActualSrc(src);
         }
     }, [type, src]);
 
