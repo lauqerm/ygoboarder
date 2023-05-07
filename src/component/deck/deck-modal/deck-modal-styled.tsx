@@ -1,7 +1,7 @@
-import { DECK_COL_COUNT, DECK_ROW_COUNT } from 'src/model';
+import { CardSize, DECK_COL_COUNT, DECK_ROW_COUNT } from 'src/model';
 import styled from 'styled-components';
 
-const DRAGGABLE_CARD_WIDTH = 86 + 2 * 2 + 1 * 2;
+const DRAGGABLE_CARD_WIDTH = CardSize.sm.width + 2 * 2 + 1 * 2;
 /** Total card length + 2 border + possible scrollbar */
 export const DECK_MODAL_WIDTH = DRAGGABLE_CARD_WIDTH * DECK_COL_COUNT + 1 * 2 + 10;
 export const DECK_MODAL_HEIGHT = 600;

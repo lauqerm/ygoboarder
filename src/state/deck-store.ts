@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, BoardMapping, CardImage, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey } from 'src/model';
+import { BeaconAction, BoardMapping, CardImage, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey, PhaseType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/service';
@@ -8,17 +8,20 @@ export type BaseDeckCard = {
     card: CardImage,
     origin: string,
     preset: CardPreset,
+    phase: PhaseType,
 };
 export type DeckCard = ImmutableRecord<BaseDeckCard>;
 export const DeckCardConverter = ImmutableRecord<BaseDeckCard>({
     card: CardImageConverter(),
     origin: '',
     preset: CardPreset['normal'],
+    phase: 'up',
 });
 
 export type BaseDeckList = {
     name: string,
     type: DeckType,
+    phaseBehavior: 'always-up' | 'always-down' | 'keep',
     cardList: List<DeckCard>,
 };
 export type DeckList = ImmutableRecord<BaseDeckList>;
@@ -26,6 +29,7 @@ export const DeckListConverter = ImmutableRecord<BaseDeckList>({
     name: '',
     cardList: List(),
     type: DeckType['none'],
+    phaseBehavior: 'keep',
 });
 export type DeckState = {
     deckMap: Map<string, DeckList>,

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { DeckModal } from '.';
-import { DeckBeacon, DeckBeaconWrapper } from './deck-beacon';
+import { DeckModal } from '..';
+import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import {
     BeaconAction,
     BeaconActionLabel,
@@ -15,18 +15,37 @@ import {
     MODAL_WRAPPER_ID,
     BoardComponent,
     ActionListPlacement,
+    CardSize,
+    PhaseType,
 } from 'src/model';
-import { DeckListConverter, ZIndexInstanceConverter, useDeckStore, useZIndexState, useDOMEntityStateStore, useBoardStore } from 'src/state';
+import {
+    DeckListConverter,
+    ZIndexInstanceConverter,
+    useDeckStore,
+    useZIndexState,
+    useDOMEntityStateStore,
+    useBoardStore,
+    DeckCard,
+} from 'src/state';
 import styled from 'styled-components';
-import { EyeOutlined, RetweetOutlined } from '@ant-design/icons';
+import {
+    EyeOutlined,
+    RetweetOutlined,
+    CopyOutlined,
+    CopyFilled,
+    ToTopOutlined,
+    VerticalAlignTopOutlined,
+    VerticalAlignMiddleOutlined,
+} from '@ant-design/icons';
 import { Tooltip } from 'antd';
-import { DeckModalRef } from './deck-modal/deck-modal';
+import { DeckModalRef } from '../deck-modal/deck-modal';
 import { List } from 'immutable';
-import { MovableCard } from '../card';
+import { MovableCard } from '../../card';
 import { mergeClass } from 'src/util';
 import { createPortal } from 'react-dom';
-import { BoardIcon } from '../atom';
+import { BoardIcon } from '../../atom';
 import './deck-button.scss';
+import { DeckButtonAnnouncer, DeckButtonAnnouncerRef } from './deck-button-announce';
 
 const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
     display: block;
@@ -45,7 +64,6 @@ const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
         text-align: center;
         background-color: var(--main-metal);
         border: var(--bd);
-        border-radius: var(--br);
         user-select: none;
         cursor: pointer;
         width: 34px;
@@ -53,34 +71,20 @@ const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
         ${props => props.$placement === 'left'
         ? `
             &:first-child {
-                border-top-right-radius: 0;
+                border-top-left-radius: var(--br);
             }
             &:last-child {
-                border-bottom-right-radius: 0;
-            }
-            &:last-child:first-child {
-                border-radius: var(--br) 0 0 var(--br);
+                border-bottom-left-radius: var(--br);
             }
         `
         : `
             &:first-child {
-                border-top-left-radius: 0;
+                border-top-right-radius: var(--br);
             }
             &:last-child {
-                border-bottom-left-radius: 0;
-            }
-            &:last-child:first-child {
-                border-radius: 0 var(--br) var(--br) 0;
+                border-bottom-right-radius: var(--br);
             }
         `}
-        &:first-child {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-        }
-        &:last-child {
-            border-top-left-radius: 0;
-            border-top-right-radius: 0;
-        }
         + .deck-button-tool {
             border-top: none;
         }
@@ -145,11 +149,14 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: numb
 
 export type DeckButton = {
     offsetTop?: number, offsetLeft?: number,
+    /** Board name chứa deck button */
+    owner: string,
 } & Pick<DeckModal, 'beaconList'>
     & BoardComponent;
 export const DeckButton = ({
     name,
     displayName = name,
+    owner,
     type,
     fieldComponentKey,
     preset = 'normal',
@@ -197,7 +204,27 @@ export const DeckButton = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const announcerRef = useRef<DeckButtonAnnouncerRef>(null);
+
     const portal = document.getElementById(MODAL_WRAPPER_ID);
+    const excavateCard = (card?: DeckCard, phase?: PhaseType) => {
+        if (card) {
+            const cardOffsetX = CardSize.sm.width + 40 + Math.random() * 40;
+            const cardOffsetY = -20 + Math.random() * 40;
+            const cardImage = card.get('card');
+            deleteFromDeck(name, [cardImage.get('_id')]);
+            addToBoard(owner, [{
+                card: cardImage,
+                initialX: (offsetLeft ?? 0) + (actionPlacement === 'left' ? cardOffsetX * -1 : cardOffsetX),
+                initialY: (offsetTop ?? 0) + cardOffsetY,
+                origin: name,
+                phase: phase ?? card.get('phase'),
+            }]);
+
+            return true;
+        }
+        return false;
+    };
     if (!portal) return null;
     return createPortal(
         <DeckButtonContainer ref={deckButtonRef}
@@ -232,6 +259,62 @@ export const DeckButton = ({
                         <RetweetOutlined />
                     </div>
                 </Tooltip>}
+                {action.includes('excavate-top-faceup') && <Tooltip overlay="Excavate Top" placement={actionPlacement}>
+                    <div
+                        className="deck-button-tool deck-button-tool-excavate-top-faceup"
+                        onClick={() => {
+                            if (!excavateCard(deckList.get(0), 'up')) announcerRef.current?.trigger('No cards left');
+                        }}
+                    >
+                        <ToTopOutlined />
+                    </div>
+                </Tooltip>}
+                {action.includes('get-top') && <Tooltip overlay="Get Top" placement={actionPlacement}>
+                    <div
+                        className="deck-button-tool deck-button-tool-get-top"
+                        onClick={() => {
+                            if (!excavateCard(deckList.get(0))) announcerRef.current?.trigger('No cards left');
+                        }}
+                    >
+                        <VerticalAlignTopOutlined />
+                    </div>
+                </Tooltip>}
+                {action.includes('get-random') && <Tooltip overlay="Get Random" placement={actionPlacement}>
+                    <div
+                        className="deck-button-tool deck-button-tool-get-random"
+                        onClick={() => {
+                            if (!excavateCard(deckList.get(Math.floor(deckList.size)))) announcerRef.current?.trigger('No cards left');
+                        }}
+                    >
+                        <VerticalAlignMiddleOutlined />
+                    </div>
+                </Tooltip>}
+                {action.includes('get-random-faceup') && <Tooltip overlay="Get Random Face-up" placement={actionPlacement}>
+                    <div
+                        className="deck-button-tool deck-button-tool-get-random-face-up"
+                        onClick={() => {
+                            const faceUpDeckList = deckList
+                                .filter(entry => entry.get('phase') === 'up');
+                            if (!excavateCard(faceUpDeckList.get(Math.floor(faceUpDeckList.size)))) announcerRef.current?.trigger('No face-up cards');
+                        }}
+                    >
+                        <CopyOutlined />
+                        <VerticalAlignMiddleOutlined />
+                    </div>
+                </Tooltip>}
+                {action.includes('get-random-facedown') && <Tooltip overlay="Get Random Face-down" placement={actionPlacement}>
+                    <div
+                        className="deck-button-tool deck-button-tool-get-random-face-down"
+                        onClick={() => {
+                            const faceUpDeckList = deckList
+                                .filter(entry => entry.get('phase') === 'down');
+                            if (!excavateCard(faceUpDeckList.get(Math.floor(faceUpDeckList.size)))) announcerRef.current?.trigger('No face-down cards');
+                        }}
+                    >
+                        <CopyFilled />
+                        <VerticalAlignMiddleOutlined />
+                    </div>
+                </Tooltip>}
             </DeckButtonToolbar>
             <DeckBeaconWrapper
                 className="deck-back ygo-card-size-sm"
@@ -263,6 +346,7 @@ export const DeckButton = ({
                             originEntity={DOMEntityType['deckButton']}
                             initialX={offsetLeft}
                             initialY={offsetTop}
+                            phase={topDeckCard.get('phase')}
                             fake={true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
                                 const cardInDeck = deckList.get(0);
@@ -276,6 +360,7 @@ export const DeckButton = ({
                                         initialX: left,
                                         initialY: top,
                                         origin: name,
+                                        phase: cardInDeck.get('phase'),
                                     }]);
                                 }
                             }}
@@ -297,6 +382,7 @@ export const DeckButton = ({
                             }}
                         />}
                 </div>
+                <DeckButtonAnnouncer ref={announcerRef} />
             </DeckBeaconWrapper>
             {/* <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
             {displayName}

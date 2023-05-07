@@ -76,6 +76,7 @@ export const Board = ({
             return <DeckButton key={`${fieldKey}${fieldComponentKey}`}
                 {...deckButtonProps}
                 {...boardComponent}
+                owner={boardName}
                 /** Dịch 1px cho border */
                 offsetTop={top + window.scrollY + 1}
                 offsetLeft={left + window.scrollX + 1}

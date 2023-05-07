@@ -3,7 +3,7 @@ import create from 'zustand';
 export type ElementGroupState = {
     elementGroup: Record<string, HTMLElement[]>,
     addToGroup: (groupName: string, elementList: HTMLElement[]) => void,
-   replaceGroup: (groupName: string, elementList: HTMLElement[]) => void,
+    replaceGroup: (groupName: string, elementList: HTMLElement[]) => void,
 }
 export const useCardGroupStore = create<ElementGroupState>(set => ({
     elementGroup: {},

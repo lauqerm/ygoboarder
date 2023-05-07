@@ -7,6 +7,7 @@
         outline: 1px solid var(--moveable-color);
         padding: 0 var(--spacing-sm);
         border-radius: var(--br-sm) var(--br-sm) 0 0;
+        user-select: none;
     }
     > .moveable-control-box {
         /** Nhỏ hơn 1 đơn vị so với MIN_MODAL_INDEX */

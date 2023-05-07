@@ -7,7 +7,8 @@
   --spacing-lg: 12px;
   --spacing-xl: 16px;
 
-  --fs-sm: 0.857rem;
+  --fs-xs: 0.75rem;
+  --fs-sm: 0.875rem;
   --fs-lg: 1.25rem;
 
   --br-sm: 2px;
@@ -35,6 +36,10 @@
   --main-danger: #f22;
   --sub-danger: #f44;
   --contrast-danger: #fff;
+
+  --main-info: #2bd;
+  --sub-info: #2df;
+  --contrast-info: #fff;
 
   --bdSize: 1px;
 
@@ -140,4 +145,9 @@
     100% {
         opacity: 0.55;
     }
+}
+
+/** Hạn chế hành vi double click select text vì app vận hành bằng chuột rất nhiều **/
+.ant-tooltip-inner {
+  user-select: none;
 }

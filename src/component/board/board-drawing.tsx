@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent } from 'src/model';
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
-import { useCountStore } from 'src/state';
+import { DeckListConverter, useDeckStore } from 'src/state';
 
 const BoardContainer = styled.div`
     --field-card-height-sm: calc(var(--card-height-sm) + 2px);
@@ -56,6 +56,9 @@ const BoardContainer = styled.div`
         &.hidden-zone {
             visibility: hidden;
         }
+        &.pile {
+            border-color: var(--main-primaryLighter);
+        }
     }
     .empty-zone {
         width: var(--field-card-height-sm);
@@ -89,7 +92,7 @@ export const BoardDrawing = ({
     const yourGYRef = useRef<HTMLDivElement>(null);
     const yourDeckRef = useRef<HTMLDivElement>(null);
 
-    const deckCountMap = useCountStore(state => state.countMap);
+    const deckCountMap = useDeckStore(state => state.deckMap);
 
     useEffect(() => {
         onMount({
@@ -127,17 +130,17 @@ export const BoardDrawing = ({
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppDeckRef} className="vertical-zone">
-                    {(deckCountMap[oppDeckBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(oppDeckBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppDeckBoardComponent.preset} />
                         : null}
                 </div>
                 <div ref={oppGYRef} className="vertical-zone">
-                    {(deckCountMap[oppGYBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(oppGYBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppGYBoardComponent.preset} />
                         : null}
                 </div>
-                <div ref={oppBanishedPileRef} className="vertical-zone">
-                    {(deckCountMap[oppBanishedPileBoardComponent.name] ?? 0) > 1
+                <div ref={oppBanishedPileRef} className="vertical-zone pile">
+                    {deckCountMap.get(oppBanishedPileBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppBanishedPileBoardComponent.preset} />
                         : null}
                 </div>
@@ -145,7 +148,7 @@ export const BoardDrawing = ({
             <div className="padding" />
             <div className="side-col-component side-col-bot">
                 <div ref={yourTrunkRef} className="vertical-zone">
-                    {(deckCountMap[yourTrunkBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(yourTrunkBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourTrunkBoardComponent.preset} />
                         : null}
                 </div>
@@ -153,7 +156,7 @@ export const BoardDrawing = ({
                     <FieldIcon />
                 </div>
                 <div ref={yourExtraDeckRef} className="vertical-zone">
-                    {(deckCountMap[yourExtraDeckBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(yourExtraDeckBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourExtraDeckBoardComponent.preset} />
                         : null}
                 </div>
@@ -205,7 +208,7 @@ export const BoardDrawing = ({
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppExtraDeckRef} className="vertical-zone">
-                    {(deckCountMap[oppExtraDeckBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(oppExtraDeckBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppExtraDeckBoardComponent.preset} />
                         : null}
                 </div>
@@ -213,25 +216,25 @@ export const BoardDrawing = ({
                     <FieldIcon />
                 </div>
                 <div ref={oppTrunkRef} className="vertical-zone">
-                    {(deckCountMap[oppTrunkBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(oppTrunkBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppTrunkBoardComponent.preset} />
                         : null}
                 </div>
             </div>
             <div className="padding" />
             <div className="side-col-component side-col-bot">
-                <div ref={yourBanishedPileRef} className="vertical-zone">
-                    {(deckCountMap[yourBanishedPileBoardComponent.name] ?? 0) > 1
+                <div ref={yourBanishedPileRef} className="vertical-zone pile">
+                    {deckCountMap.get(yourBanishedPileBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourBanishedPileBoardComponent.preset} />
                         : null}
                 </div>
                 <div ref={yourGYRef} className="vertical-zone">
-                    {(deckCountMap[yourGYBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(yourGYBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourGYBoardComponent.preset} />
                         : null}
                 </div>
                 <div ref={yourDeckRef} className="vertical-zone">
-                    {(deckCountMap[yourDeckBoardComponent.name] ?? 0) > 1
+                    {deckCountMap.get(yourDeckBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourDeckBoardComponent.preset} />
                         : null}
                 </div>

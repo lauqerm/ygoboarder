@@ -3,6 +3,7 @@ import {
     CLASS_CARD_MOVABLE,
     CLASS_CARD_MOVABLE_ZONED,
     CardImageConverter,
+    CardSize,
     DOMEntityType,
     GetBoardRegex,
     GetDropIDRegex,
@@ -178,8 +179,7 @@ export const MovableCardGroup = ({
                 const { clientX, clientY } = e;
                 /** Right click một lần để gom lại theo chiều ngang */
                 const offsetBetweenCard = 8;
-                /** 86 là chiều dài của card xoay đứng ở size SM */
-                const groupWidth = (cardGroupElementList.length - 1) * offsetBetweenCard + 86;
+                const groupWidth = (cardGroupElementList.length - 1) * offsetBetweenCard + CardSize.sm.width;
 
                 cardGroupElementList.forEach((element, index) => {
                     element.style.top = `${clientY - 40}px`;
@@ -206,11 +206,10 @@ export const MovableCardGroup = ({
                 onClickGroup={e => {
                     const { clientX, clientY } = e;
                     /** Left click một lần để dàn ra theo chiều ngang */
-                    const groupWidth = Math.min(Math.max(0, cardGroupElementList.length * 90), 750);
-                    /** 86 là chiều dài của card xoay đứng ở size SM */
+                    const groupWidth = Math.min(Math.max(0, cardGroupElementList.length * 90), 600);
                     const offsetBetweenCard = cardGroupElementList.length <= 1
                         ? 0
-                        : (groupWidth - 86) / (cardGroupElementList.length - 1);
+                        : (groupWidth - CardSize.sm.width) / (cardGroupElementList.length - 1);
 
                     cardGroupElementList.forEach((element, index) => {
                         element.style.top = `${clientY - 40}px`;

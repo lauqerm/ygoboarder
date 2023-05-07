@@ -36,7 +36,10 @@ export const FieldKey = Object.freeze({
 
 export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, DOMRect>>;
 
-export type BoardComponentAction = 'view' | 'shuffle' | 'excavate-top' | 'excavate-random' | 'excavate-random-faceup' | 'excavate-random-facedown';
+export type BoardComponentAction = 'view' | 'shuffle'
+| 'excavate-top-faceup'
+| 'get-top'
+| 'get-random' | 'get-random-faceup' | 'get-random-facedown';
 export type ActionListPlacement = 'left' | 'right';
 export type BoardComponent = {
     fieldKey: FieldKey,
@@ -78,7 +81,7 @@ export const BoardMapping: {
                     displayName: 'Your Deck',
                     name: 'YOUR-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-                    action: ['view', 'excavate-top', 'shuffle'],
+                    action: ['view', 'get-top', 'excavate-top-faceup', 'shuffle'],
                     actionPlacement: 'left',
                     defaultPhase: 'down',
                 },
@@ -90,7 +93,7 @@ export const BoardMapping: {
                     displayName: 'Your Extra Deck',
                     name: 'YOUR-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
-                    action: ['view', 'excavate-random-faceup', 'excavate-random-facedown'],
+                    action: ['view', 'get-random-faceup', 'get-random-facedown'],
                     actionPlacement: 'right',
                     defaultPhase: 'down',
                 },
@@ -114,7 +117,7 @@ export const BoardMapping: {
                     displayName: 'Your GY',
                     name: 'YOUR-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-                    action: ['view'],
+                    action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'left',
                     defaultPhase: 'up',
                 },
@@ -126,7 +129,7 @@ export const BoardMapping: {
                     displayName: 'Your Banished Pile',
                     name: 'YOUR-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-                    action: ['view'],
+                    action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'left',
                     defaultPhase: 'up',
                 },
@@ -150,7 +153,7 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Deck',
                     name: 'OP-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
-                    action: ['view', 'excavate-top', 'shuffle'],
+                    action: ['view', 'get-top', 'excavate-top-faceup', 'shuffle'],
                     actionPlacement: 'right',
                     defaultPhase: 'down',
                 },
@@ -162,7 +165,7 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Extra Deck',
                     name: 'OP-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
-                    action: ['view', 'excavate-random-faceup', 'excavate-random-facedown'],
+                    action: ['view', 'get-random-faceup', 'get-random-facedown'],
                     actionPlacement: 'left',
                     defaultPhase: 'down',
                 },
@@ -186,7 +189,7 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s GY',
                     name: 'OP-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-                    action: ['view'],
+                    action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'right',
                     defaultPhase: 'up',
                 },
@@ -198,7 +201,7 @@ export const BoardMapping: {
                     displayName: 'Opponent\'s Banished Pile',
                     name: 'OP-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-                    action: ['view'],
+                    action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'right',
                     defaultPhase: 'up',
                 },

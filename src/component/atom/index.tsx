@@ -13,6 +13,7 @@ export const AttributeText = ({
     attribute,
 }: AttributeText) => {
     let color = '#aaaaaa';
+    let textShadow = '';
     switch (attribute) {
     case 'LIGHT': color = '#ddaa00'; break;
     case 'DARK': color = '#cc00ff'; break;
@@ -20,10 +21,10 @@ export const AttributeText = ({
     case 'WIND': color = '#00bb00'; break;
     case 'WATER': color = '#00aaff'; break;
     case 'FIRE': color = '#dd0000'; break;
-    case 'DIVINE': color = '#ffffff'; break;
+    case 'DIVINE': color = '#eebb00'; break;
     }
 
-    return <AttributeTextContainer className="attribute-text" style={{ color }}>
+    return <AttributeTextContainer className="attribute-text" style={{ color, textShadow }}>
         {attribute?.toUpperCase()}
     </AttributeTextContainer>;
 };

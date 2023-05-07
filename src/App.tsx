@@ -227,6 +227,7 @@ function App() {
                                 initialX: x - 0 - offsetX,
                                 initialY: y - 0 - offsetY,
                                 origin: deckID,
+                                phase: cardInDeck.get('phase'),
                             }]);
                         }
                     }
