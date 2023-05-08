@@ -1,6 +1,6 @@
 import { Button, Drawer, Input, Modal, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { CardImageConverter, ImgurResponse } from 'src/model';
+import { CardImageConverter, ImgurResponse, PhaseType } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
 import { useDeckStore } from 'src/state';
 import { ExtractProps } from 'src/type';
@@ -8,8 +8,9 @@ import { InboxOutlined, StopOutlined } from '@ant-design/icons';
 import { Loading } from '../../loading';
 import { YGOProImporter } from './ygopro-importer';
 import styled from 'styled-components';
-import './deck-import.scss';
 import axios from 'axios';
+import './deck-import.scss';
+import { CardBack } from 'src/component/atom';
 
 const { Dragger } = Upload;
 
@@ -43,63 +44,6 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
     );
     const [loading, setLoading] = useState(false);
     const onlineImageValue = useRef('');
-    const onSubmit = () => {
-        setLoading(true);
-        /** [OFFLINE IMAGE] */
-        let finishedCount = 0;
-        let imageQueue = Object.values(imageQueueMap.current);
-        if (imageQueue.length) {
-            imageQueue.forEach(image => {
-                const reader = new FileReader();
-
-                reader.onload = e => {
-                    const target = e.target;
-                    if (target) {
-                        if (typeof target.result === 'string') {
-                            addToList(
-                                deckId,
-                                [CardImageConverter({
-                                    _id: uuidv4(),
-                                    name: image.name,
-                                    type: 'internal',
-                                    data: reader.result as string,
-                                    dataURL: '',
-                                })],
-                            );
-                            finishedCount++;
-                            if (finishedCount === imageQueue.length) {
-                                imageQueueMap.current = {};
-                                resetUpload();
-                                setLoading(false);
-                                setOpen(false);
-                            }
-                        }
-                    }
-                };
-                reader.readAsDataURL(image);
-                // const imgurFormData = new FormData();
-                // imgurFormData.append('image', target);
-                // axios.post<ImgurResponse>(
-                //     'https://api.imgur.com/3/image',
-                //     imgurFormData,
-                //     {
-
-                //         headers: {
-                //             'Authorization': 'Client-ID f9bbe0da263580e',
-                //         },
-                //     },
-                // ).then(response => {
-                //     console.log(response);
-                // }).catch(e => {
-                //     console.error(e);
-                // });
-            });
-        } else {
-            resetUpload();
-            setLoading(false);
-            setOpen(false);
-        }
-    };
 
     useImperativeHandle(ref, () => ({
         close: () => {
@@ -120,13 +64,16 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                 <YGOProImporter onSelect={(name, url) => {
                     addToList(
                         deckId,
-                        [CardImageConverter({
-                            _id: uuidv4(),
-                            name: name,
-                            type: 'external',
-                            data: '',
-                            dataURL: url,
-                        })],
+                        [{
+                            card: CardImageConverter({
+                                _id: uuidv4(),
+                                name: name,
+                                type: 'external',
+                                data: '',
+                                dataURL: url,
+                                description: '',
+                            }),
+                        }],
                     );
                 }} />
                 <h2>Online image links</h2>
@@ -144,12 +91,14 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                         (onlineImageValue.current ?? '')
                             .split('\n')
                             .filter(entry => typeof entry === 'string' && entry.length > 0)
-                            .map(entry => CardImageConverter({
-                                _id: uuidv4(),
-                                type: 'external',
-                                name: entry,
-                                dataURL: entry,
-                                data: '',
+                            .map(entry => ({
+                                card: CardImageConverter({
+                                    _id: uuidv4(),
+                                    type: 'external',
+                                    name: entry,
+                                    dataURL: entry,
+                                    data: '',
+                                }),
                             })),
                     );
                     setOnlineInputKey(cnt => cnt + 1);
@@ -198,13 +147,15 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                     }));
                                     addToList(
                                         deckId,
-                                        [CardImageConverter({
-                                            _id: uuidv4(),
-                                            name: name,
-                                            type: 'external',
-                                            data: '',
-                                            dataURL: dataAsURL,
-                                        })],
+                                        [{
+                                            card: CardImageConverter({
+                                                _id: uuidv4(),
+                                                name: name,
+                                                type: 'external',
+                                                data: '',
+                                                dataURL: dataAsURL,
+                                            }),
+                                        }],
                                     );
                                 }}
                                 onOfflineFinish={(dataAsString: string, name: string) => {
@@ -215,13 +166,15 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                     }));
                                     addToList(
                                         deckId,
-                                        [CardImageConverter({
-                                            _id: uuidv4(),
-                                            name: name,
-                                            type: 'internal',
-                                            data: dataAsString,
-                                            dataURL: '',
-                                        })],
+                                        [{
+                                            card: CardImageConverter({
+                                                _id: uuidv4(),
+                                                name: name,
+                                                type: 'internal',
+                                                data: dataAsString,
+                                                dataURL: '',
+                                            }),
+                                        }],
                                     );
                                 }}
                             />;
@@ -327,11 +280,7 @@ const FileItem = ({
         <div className="file-image">
             {thumb
                 ? <img src={thumb} alt={fileData.name} />
-                : <img
-                    className="card-back card-back-flashing allow-event"
-                    src="/asset/img/ygo-card-back-grey.png"
-                    alt="card-back"
-                />}
+                : <CardBack />}
             <Loading.FullView size="small" />
         </div>
         <div className="file-action">

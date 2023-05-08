@@ -1,19 +1,21 @@
 import { Record as ImmutableRecord } from 'immutable';
 
-type BaseCardImage = {
+type BaseCardRecord = {
     _id: string,
     name: string,
     type: 'internal' | 'external',
     data: string,
     dataURL: string,
+    description: string,
 };
-export type CardImage = ImmutableRecord<BaseCardImage>;
-export const CardImageConverter = ImmutableRecord<BaseCardImage>({
+export type BaseCard = ImmutableRecord<BaseCardRecord>;
+export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
     _id: '',
     name: '',
     type: 'internal',
     data: '',
     dataURL: '',
+    description: '',
 });
 
 export const DROP_TYPE_DECK = 'DECK';

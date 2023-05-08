@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { CardImage, CardImageConverter, CardPreset, PhaseType, Position } from 'src/model';
+import { BaseCard, CardImageConverter, CardPreset, PhaseType, Position } from 'src/model';
 import create from 'zustand';
 import { BaseDeckCard } from './deck-store';
 
@@ -31,7 +31,7 @@ export const BoardEntryConverter = ImmutableRecord<BaseBoardEntry>({
 });
 export type BoardState = {
     boardMap: Map<string, BoardEntry>,
-    add: (boardName: string, cardList: { card: CardImage, initialX: number, initialY: number, origin: string, phase: PhaseType }[]) => void,
+    add: (boardName: string, cardList: { card: BaseCard, initialX: number, initialY: number, origin: string, phase: PhaseType }[]) => void,
     delete: (boardName: string, idList: string[]) => void,
     changePosition: (boardName: string, affectList: { id: string, position?: Position }[]) => void,
     changePhase: (boardName: string, affectList: { id: string, phase?: PhaseType }[]) => void,

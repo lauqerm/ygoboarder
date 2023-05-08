@@ -1,7 +1,7 @@
 import { List } from 'immutable';
 import React from 'react';
-import { DeckType } from 'src/model';
-import { useBoardStore, useDeckStore } from 'src/state';
+import { DeckType, PhaseType } from 'src/model';
+import { PhaseBehavior, useBoardStore, useDeckStore } from 'src/state';
 
 export const ExportButton = () => {
     const allDeckList = useDeckStore(
@@ -44,14 +44,19 @@ export const ExportButton = () => {
     }}>Export</button>;
 };
 
-type TransferableData = Record<string, { type: DeckType, value: string[] }>;
+type TransferableData = Record<string, {
+    type: DeckType,
+    defaultPhase: PhaseType,
+    phaseBehavior: PhaseBehavior,
+    value: { imageURL: string, description: string }[],
+}>;
 export type ImportButton = {
     onImport: (importedData: TransferableData) => void,
 }
 export const ImportButton = ({
     onImport,
 }: ImportButton) => {
-    const value = '{"YOUR-DECK":{"type":"permanent","value":["https://i.imgur.com/NM1vrsS.png"]},"OP-TRUNK":{"type":"consistent","value":["https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png"]},"YOUR-GY":{"type":"transient","value":["https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png","https://i.imgur.com/NM1vrsS.png","https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/fM4cbNb.png","https://i.imgur.com/Y7rRxaV.png","https://i.imgur.com/q3PxbhU.png","https://i.imgur.com/4ADMrbA.jpg","https://i.imgur.com/YgaX2lG.png","https://i.imgur.com/p9Ogumt.png","https://i.imgur.com/NM1vrsS.png","https://i.imgur.com/zYH5QtC.png","https://i.imgur.com/fM4cbNb.png","https://i.imgur.com/Y7rRxaV.png","https://i.imgur.com/q3PxbhU.png","https://i.imgur.com/4ADMrbA.jpg"]}}';
+    const value = '{"YOUR-DECK":{"phaseBehavior": "always-down", "defaultPhase":"down","type":"permanent","value":[{ "imageURL": "https://i.imgur.com/NM1vrsS.png", "description": "" }]},"OP-TRUNK":{"phaseBehavior": "always-up", "defaultPhase":"up","type":"consistent","value":[{ "imageURL": "https://i.imgur.com/YgaX2lG.png", "description": "" },{ "imageURL": "https://i.imgur.com/p9Ogumt.png", "description": "" }]},"YOUR-GY":{"phaseBehavior": "always-up", "defaultPhase":"up","type":"transient","value":[{ "imageURL": "https://i.imgur.com/zYH5QtC.png", "description": "" },{ "imageURL": "https://i.imgur.com/YgaX2lG.png", "description": "" },{ "imageURL": "https://i.imgur.com/p9Ogumt.png", "description": "" },{ "imageURL": "https://i.imgur.com/NM1vrsS.png", "description": "" },{ "imageURL": "https://i.imgur.com/zYH5QtC.png", "description": "" },{ "imageURL": "https://i.imgur.com/fM4cbNb.png", "description": "" },{ "imageURL": "https://i.imgur.com/Y7rRxaV.png", "description": "" },{ "imageURL": "https://i.imgur.com/q3PxbhU.png", "description": "" },{ "imageURL": "https://i.imgur.com/4ADMrbA.jpg", "description": "" },{ "imageURL": "https://i.imgur.com/YgaX2lG.png", "description": "" },{ "imageURL": "https://i.imgur.com/p9Ogumt.png", "description": "" },{ "imageURL": "https://i.imgur.com/NM1vrsS.png", "description": "" },{ "imageURL": "https://i.imgur.com/zYH5QtC.png", "description": "" },{ "imageURL": "https://i.imgur.com/fM4cbNb.png", "description": "" },{ "imageURL": "https://i.imgur.com/Y7rRxaV.png", "description": "" },{ "imageURL": "https://i.imgur.com/q3PxbhU.png", "description": "" },{ "imageURL": "https://i.imgur.com/4ADMrbA.jpg", "description": "" }]}}';
 
     return <button onClick={() => {
         const importedData = window.prompt('Paste imported data', value);

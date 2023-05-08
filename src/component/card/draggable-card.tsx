@@ -14,24 +14,30 @@ export type DraggableCard = {
     isDragging: boolean,
     onDelete?: () => void,
     onDuplicate?: () => void,
+    onFlip?: () => void,
     dragRef: (element?: HTMLElement | null | undefined) => any,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
 export const DraggableCard = ({
     uniqueId,
     isDragging,
-    image,
+    baseCard,
     size = 'sm',
     onDelete = () => {},
     onDuplicate = () => {},
+    onFlip = () => {},
     className,
     origin,
     dragRef,
+    phase,
     ...rest
 }: DraggableCard) => {
     return <DraggableCardContainer ref={dragRef}
         data-countable-card-id={uniqueId}
         className={mergeClass('ygo-card-wrapper', 'ygo-draggable-card', `ygo-card-size-${size}`, className)}
         {...rest}
+        onClick={() => {
+            onFlip();
+        }}
         onContextMenu={e => {
             e.preventDefault();
             onDelete();
@@ -42,6 +48,6 @@ export const DraggableCard = ({
             return false;
         }}
     >
-        <Card image={image} origin={origin} />
+        <Card baseCard={baseCard} origin={origin} phase={phase} cornerBack />
     </DraggableCardContainer>;
 };

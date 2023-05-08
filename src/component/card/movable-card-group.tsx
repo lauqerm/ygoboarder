@@ -134,11 +134,11 @@ export const MovableCardGroup = ({
                                     .get(boardId, BoardEntryConverter())
                                     .get('boardCardList', List<BoardCard>())
                                     .filter(entry => cardIdInGroupSet.has(entry.get('card', CardImageConverter()).get('_id', '')))
-                                    .map(entry => entry.get('card'))
+                                    .map(entry => ({ card: entry.get('card'), phase: entry.get('phase') }))
                                     .toArray();
 
                                 addToDeck(id, cardImageList, type);
-                                removeFromBoard(boardId, cardImageList.map(entry => entry.get('_id')));
+                                removeFromBoard(boardId, cardImageList.map(entry => entry.card.get('_id')));
                                 foundValidBeacon = true;
                             }
                         }

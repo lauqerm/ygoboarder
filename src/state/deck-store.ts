@@ -1,11 +1,11 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, BoardMapping, CardImage, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey, PhaseType } from 'src/model';
+import { BeaconAction, BoardMapping, BaseCard, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey, PhaseType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/service';
 
 export type BaseDeckCard = {
-    card: CardImage,
+    card: BaseCard,
     origin: string,
     preset: CardPreset,
     phase: PhaseType,
@@ -18,10 +18,13 @@ export const DeckCardConverter = ImmutableRecord<BaseDeckCard>({
     phase: 'up',
 });
 
+export type PhaseBehavior = 'always-up' | 'always-down' | 'keep';
+
 export type BaseDeckList = {
     name: string,
     type: DeckType,
-    phaseBehavior: 'always-up' | 'always-down' | 'keep',
+    phaseBehavior: PhaseBehavior,
+    defaultPhase: PhaseType,
     cardList: List<DeckCard>,
 };
 export type DeckList = ImmutableRecord<BaseDeckList>;
@@ -30,16 +33,18 @@ export const DeckListConverter = ImmutableRecord<BaseDeckList>({
     cardList: List(),
     type: DeckType['none'],
     phaseBehavior: 'keep',
+    defaultPhase: 'down',
 });
 export type DeckState = {
     deckMap: Map<string, DeckList>,
-    register: (deckId: string, type: DeckType) => void,
-    add: (deckId: string, cardList: CardImage[], position?: BeaconAction) => void,
+    register: (deckId: string, type: DeckType, defaultPhase: PhaseType, phaseBehavior: PhaseBehavior) => void,
+    add: (deckId: string, addInfo: { card: BaseCard, phase?: PhaseType }[], position?: BeaconAction) => void,
     addToPosition: (deckId: string, cardWithPositionList: { position: number, card: DeckCard }[]) => void,
     delete: (deckId: string, idList: string[]) => void,
     duplicate: (deckId: string, cardList: DeckCard[]) => void,
     reorder: (deckId: string, changeList: { prevIndex: number, nextIndex: number }[]) => void,
-    shuffle: (deckId: string,) => void,
+    flip: (deckId: string, changeList: { id: string, phase: PhaseType | 'toggle' }[]) => void,
+    shuffle: (deckId: string) => void,
     reset: () => void,
 }
 export const useDeckStore = create<DeckState>((set) => ({
@@ -50,12 +55,14 @@ export const useDeckStore = create<DeckState>((set) => ({
             type: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].type,
         }),
     }),
-    register: (deckId, type) => set(state => {
+    register: (deckId, type, defaultPhase, phaseBehavior) => set(state => {
         if (state.deckMap.has(deckId)) return state;
         const newDeck = DeckListConverter({
             cardList: List(),
             name: deckId,
             type,
+            defaultPhase,
+            phaseBehavior,
         });
 
         return {
@@ -63,14 +70,43 @@ export const useDeckStore = create<DeckState>((set) => ({
             deckMap: state.deckMap.set(deckId, newDeck),
         };
     }),
-    add: (deckId, cardList, position = 'bottom') => set(state => {
+    add: (deckId, addInfo, position = 'bottom') => set(state => {
         const targetDeck = state.deckMap.get(deckId, DeckListConverter());
         let newList = targetDeck.get('cardList');
+        const phaseBehavior = targetDeck.get('phaseBehavior');
+        const resolvePhase = (phase: PhaseType = targetDeck.get('defaultPhase')): PhaseType => {
+            return phaseBehavior === 'keep'
+                ? phase
+                : phaseBehavior === 'always-down'
+                    ? 'down'
+                    : 'up';
+        };
         if (newList) {
-            if (position === 'bottom') cardList.forEach(card => { newList = newList.push(DeckCardConverter({ card, origin: deckId })) });
-            if (position === 'top') cardList.forEach(card => { newList = newList.unshift(DeckCardConverter({ card, origin: deckId })) });
+            if (position === 'bottom') addInfo.forEach(info => {
+                const { card, phase } = info;
+                newList = newList.push(DeckCardConverter({
+                    card,
+                    origin: deckId,
+                    phase: resolvePhase(phase),
+                }));
+            });
+            if (position === 'top') addInfo.forEach(info => {
+                const { card, phase } = info;
+                newList = newList.unshift(DeckCardConverter({
+                    card,
+                    origin: deckId,
+                    phase: resolvePhase(phase),
+                }));
+            });
             if (position === 'shuffle') {
-                cardList.forEach(card => { newList = newList.push(DeckCardConverter({ card, origin: deckId })) });
+                addInfo.forEach(info => {
+                    const { card, phase } = info;
+                    newList = newList.push(DeckCardConverter({
+                        card,
+                        origin: deckId,
+                        phase: resolvePhase(phase),
+                    }));
+                });
                 newList = shuffleDeck(newList);
             }
         }
@@ -134,6 +170,36 @@ export const useDeckStore = create<DeckState>((set) => ({
                 const toBeRemovedItem = newList.get(prevIndex);
                 const listAfterRemove = newList.remove(prevIndex);
                 if (toBeRemovedItem) newList = listAfterRemove.splice(nextIndex, 0, toBeRemovedItem);
+            });
+        }
+        const newDeck = state.deckMap.get(deckId, DeckListConverter()).set('cardList', newList);
+
+        return {
+            ...state,
+            deckMap: state.deckMap.set(deckId, newDeck),
+        };
+    }),
+    flip: (deckId, changeList) => set(state => {
+        let newList = state.deckMap.get(deckId, DeckListConverter()).get('cardList');
+        const changeMap = changeList.reduce((prev, curr) => {
+            return { ...prev, [curr.id]: curr.phase };
+        }, {} as Record<string, PhaseType | 'toggle'>);
+
+        if (newList) {
+            newList = newList.map(entry => {
+                const newPhase = changeMap[entry.get('card').get('_id')];
+
+                if (newPhase) {
+                    const currentPhase = entry.get('phase');
+
+                    return entry.set(
+                        'phase',
+                        newPhase === 'toggle'
+                            ? (currentPhase === 'down' ? 'up' : 'down')
+                            : newPhase,
+                    );
+                }
+                return entry;
             });
         }
         const newDeck = state.deckMap.get(deckId, DeckListConverter()).set('cardList', newList);

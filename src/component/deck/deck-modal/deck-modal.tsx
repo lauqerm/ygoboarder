@@ -18,9 +18,19 @@ import {
     PropDOMEntityVisible,
     DECK_ROW_COUNT,
     MODAL_WRAPPER_ID,
+    PhaseType,
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
-import { DeckCard, DeckListConverter, ZIndexInstanceConverter, useCountStore, useDeckStore, useZIndexState, useDOMEntityStateStore } from 'src/state';
+import {
+    DeckCard,
+    DeckListConverter,
+    ZIndexInstanceConverter,
+    useCountStore,
+    useDeckStore,
+    useZIndexState,
+    useDOMEntityStateStore,
+    PhaseBehavior,
+} from 'src/state';
 import { DeckImporter, DeckImporterRef } from './deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
@@ -88,6 +98,8 @@ export type DeckModal = {
     displayName: string,
     isVisible?: boolean,
     type: DeckType,
+    defaultPhase: PhaseType,
+    phaseBehavior: PhaseBehavior,
     onClose?: () => void,
     beaconList?: BeaconAction[],
 };
@@ -97,6 +109,8 @@ export const DeckModal = React.forwardRef(({
     displayName,
     isVisible = false,
     type,
+    defaultPhase,
+    phaseBehavior,
     onClose,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
@@ -116,6 +130,7 @@ export const DeckModal = React.forwardRef(({
         deleteFromList,
         duplicateInList,
         shuffleList,
+        flipInList,
     } = useDeckStore(
         state => ({
             register: state.register,
@@ -123,6 +138,7 @@ export const DeckModal = React.forwardRef(({
             deleteFromList: state.delete,
             duplicateInList: state.duplicate,
             shuffleList: state.shuffle,
+            flipInList: state.flip,
         }),
         () => true,
     );
@@ -186,7 +202,7 @@ export const DeckModal = React.forwardRef(({
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     useEffect(() => {
-        register(deckId, type);
+        register(deckId, type, defaultPhase, phaseBehavior);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -343,7 +359,6 @@ export const DeckModal = React.forwardRef(({
                                         {deckRow.map(entry => {
                                             const { card: deckCard, index } = entry;
                                             const card = deckCard.get('card');
-                                            const origin = deckCard.get('origin');
                                             const _id = card.get('_id');
                                             const cardId = `${deckId}-${_id}`;
 
@@ -355,9 +370,13 @@ export const DeckModal = React.forwardRef(({
                                                     return <DraggableCard
                                                         dragRef={dragProvided.innerRef}
                                                         uniqueId={cardId}
-                                                        image={card}
-                                                        origin={origin}
+                                                        baseCard={card}
+                                                        origin={deckCard.get('origin')}
+                                                        phase={deckCard.get('phase')}
                                                         isDragging={snapshot.isDragging}
+                                                        onFlip={() => {
+                                                            flipInList(deckId, [{ id: _id, phase: 'toggle' }]);
+                                                        }}
                                                         onDelete={() => {
                                                             deleteFromList(deckId, [_id]);
                                                         }}

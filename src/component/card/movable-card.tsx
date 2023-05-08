@@ -29,7 +29,7 @@ export type MovableCard = {
 export const MovableCard = ({
     uniqueId,
     fake,
-    image,
+    baseCard,
     size = 'sm',
     initialX = 0,
     initialY = 0,
@@ -134,7 +134,7 @@ export const MovableCard = ({
             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
             if (movedDistance <= 5 && boardId) {
                 if (originEntity === 'board' && phase) {
-                    changePhase(boardId, [{ id: image.get('_id') }]);
+                    changePhase(boardId, [{ id: baseCard.get('_id') }]);
                 }
                 for (const DOMEntity of DOMEntityList) {
                     const { element, beaconList } = DOMEntity;
@@ -170,12 +170,12 @@ export const MovableCard = ({
                             const deckButtonId = GetDeckButtonRegex.exec(uniqueId)?.[1];
                             if (type && id) {
                                 if (boardId) {
-                                    addToDeck(id, [image], type);
-                                    removeFromBoard(boardId, [image.get('_id')]);
+                                    addToDeck(id, [{ card: baseCard, phase }], type);
+                                    removeFromBoard(boardId, [baseCard.get('_id')]);
                                     foundValidBeacon = true;
                                 } else if (deckButtonId && name !== deckButtonId) {
-                                    addToDeck(id, [image], type);
-                                    deleteFromDeck(deckButtonId, [image.get('_id')]);
+                                    addToDeck(id, [{ card: baseCard, phase }], type);
+                                    deleteFromDeck(deckButtonId, [baseCard.get('_id')]);
                                     foundValidBeacon = true;
                                 }
                             }
@@ -194,10 +194,10 @@ export const MovableCard = ({
             }
         };
         const openPreview = () => {
-            if (image.get('type') === 'external') {
-                preview(image.get('dataURL'), 'external');
+            if (baseCard.get('type') === 'external') {
+                preview('external', baseCard.get('dataURL'), baseCard.get('description'));
             } else {
-                preview(image.get('data'), 'internal');
+                preview('internal', baseCard.get('data'), baseCard.get('description'));
             }
         };
         if (target && once.current === false) {
@@ -244,9 +244,10 @@ export const MovableCard = ({
             style={{ zIndex, ...style }}
         >
             <Card
-                image={image}
+                baseCard={baseCard}
                 origin={origin}
                 fake={fake}
+                flashing={true}
                 phase={phase}
                 position={position}
                 onContextMenu={e => {
@@ -273,7 +274,7 @@ export const MovableCard = ({
                         } catch (e) {
                             console.error('MovableCard: Missing coordinate or variable', e);
                         }
-                        changePosition(boardId, [{ id: image.get('_id') }]);
+                        changePosition(boardId, [{ id: baseCard.get('_id') }]);
                     }
                 }}
             />

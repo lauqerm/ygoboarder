@@ -164,6 +164,8 @@ export const DeckButton = ({
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
     action,
     actionPlacement,
+    defaultPhase,
+    phaseBehavior,
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
@@ -341,7 +343,7 @@ export const DeckButton = ({
                     {topDeckCard
                         ? <MovableCard key={topDeckCard.get('card').get('_id')}
                             uniqueId={`[DECKBUTTON-${name}]-[ID-${topDeckCard.get('card').get('_id')}]`}
-                            image={topDeckCard.get('card')}
+                            baseCard={topDeckCard.get('card')}
                             origin={topDeckCard.get('origin')}
                             originEntity={DOMEntityType['deckButton']}
                             initialX={offsetLeft}
@@ -392,6 +394,8 @@ export const DeckButton = ({
                 deckId={name}
                 displayName={displayName}
                 type={type}
+                defaultPhase={defaultPhase}
+                phaseBehavior={phaseBehavior}
                 beaconList={beaconList}
                 onClose={() => {
                     setVisible(false);

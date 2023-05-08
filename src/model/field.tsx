@@ -1,3 +1,4 @@
+import { PhaseBehavior } from 'src/state';
 import { PhaseType } from './card';
 import { CardPreset, DeckType } from './deck';
 
@@ -52,6 +53,7 @@ export type BoardComponent = {
     actionPlacement: ActionListPlacement,
     action: BoardComponentAction[],
     defaultPhase: PhaseType,
+    phaseBehavior: PhaseBehavior,
 };
 export const BoardMapping: {
     fieldList: FieldKey[],
@@ -84,6 +86,7 @@ export const BoardMapping: {
                     action: ['view', 'get-top', 'excavate-top-faceup', 'shuffle'],
                     actionPlacement: 'left',
                     defaultPhase: 'down',
+                    phaseBehavior: 'always-down',
                 },
                 [FieldComponentKey.extraDeck]: {
                     fieldKey: FieldKey.your,
@@ -96,6 +99,7 @@ export const BoardMapping: {
                     action: ['view', 'get-random-faceup', 'get-random-facedown'],
                     actionPlacement: 'right',
                     defaultPhase: 'down',
+                    phaseBehavior: 'keep',
                 },
                 [FieldComponentKey.trunk]: {
                     fieldKey: FieldKey.your,
@@ -108,6 +112,7 @@ export const BoardMapping: {
                     action: ['view', 'shuffle'],
                     actionPlacement: 'right',
                     defaultPhase: 'up',
+                    phaseBehavior: 'always-up',
                 },
                 [FieldComponentKey.gy]: {
                     fieldKey: FieldKey.your,
@@ -120,6 +125,7 @@ export const BoardMapping: {
                     action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'left',
                     defaultPhase: 'up',
+                    phaseBehavior: 'always-up',
                 },
                 [FieldComponentKey.banishedPile]: {
                     fieldKey: FieldKey.your,
@@ -132,6 +138,7 @@ export const BoardMapping: {
                     action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'left',
                     defaultPhase: 'up',
+                    phaseBehavior: 'keep',
                 },
             },
         },
@@ -156,6 +163,7 @@ export const BoardMapping: {
                     action: ['view', 'get-top', 'excavate-top-faceup', 'shuffle'],
                     actionPlacement: 'right',
                     defaultPhase: 'down',
+                    phaseBehavior: 'always-down',
                 },
                 [FieldComponentKey.extraDeck]: {
                     fieldKey: FieldKey.opponent,
@@ -168,6 +176,7 @@ export const BoardMapping: {
                     action: ['view', 'get-random-faceup', 'get-random-facedown'],
                     actionPlacement: 'left',
                     defaultPhase: 'down',
+                    phaseBehavior: 'keep',
                 },
                 [FieldComponentKey.trunk]: {
                     fieldKey: FieldKey.opponent,
@@ -180,6 +189,7 @@ export const BoardMapping: {
                     action: ['view', 'shuffle'],
                     actionPlacement: 'left',
                     defaultPhase: 'up',
+                    phaseBehavior: 'always-up',
                 },
                 [FieldComponentKey.gy]: {
                     fieldKey: FieldKey.opponent,
@@ -192,6 +202,7 @@ export const BoardMapping: {
                     action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'right',
                     defaultPhase: 'up',
+                    phaseBehavior: 'always-up',
                 },
                 [FieldComponentKey.banishedPile]: {
                     fieldKey: FieldKey.opponent,
@@ -204,6 +215,7 @@ export const BoardMapping: {
                     action: ['view', 'excavate-top-faceup'],
                     actionPlacement: 'right',
                     defaultPhase: 'up',
+                    phaseBehavior: 'keep',
                 },
             },
         },

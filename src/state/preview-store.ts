@@ -5,16 +5,18 @@ export type PreviewState = {
         type: 'internal' | 'external',
         data: string,
         dataURL: string,
+        description: string,
     },
-    setCardPreview: (data: string, type: 'internal' | 'external') => void,
+    setCardPreview: (type: 'internal' | 'external', data: string, description?: string) => void,
 };
 export const usePreviewStore = create<PreviewState>((set) => ({
     cardPreview: {
         type: 'internal',
         data: '',
         dataURL: '',
+        description: '',
     },
-    setCardPreview: (data, type) => set(state => {
+    setCardPreview: (type, data, description = '') => set(state => {
         if ((data ?? '').length <= 0) return state;
         if (type === 'external') return {
             ...state,
@@ -22,6 +24,7 @@ export const usePreviewStore = create<PreviewState>((set) => ({
                 dataURL: data,
                 data: '',
                 type: 'external',
+                description,
             },
         };
         return {
@@ -30,6 +33,7 @@ export const usePreviewStore = create<PreviewState>((set) => ({
                 dataURL: '',
                 data,
                 type: 'internal',
+                description,
             },
         };
     }),

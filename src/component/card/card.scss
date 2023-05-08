@@ -29,5 +29,8 @@
         left: 0;
         width: var(--card-width);
         height: var(--card-height);
+        &.card-back-clipped {
+            clip-path: polygon(0 70%, 0% 100%, 30% 100%);
+        }
     }
 }

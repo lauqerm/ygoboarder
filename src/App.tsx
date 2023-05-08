@@ -188,7 +188,7 @@ function App() {
                         deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
                         addToDeck(
                             beaconOrigin,
-                            [targetDeckCard.get('card')],
+                            [{ card: targetDeckCard.get('card'), phase: targetDeckCard.get('phase') }],
                             dropType,
                         );
                     }
@@ -262,7 +262,7 @@ function App() {
                             /** Drag từ Deck này sang Deck khác thông qua Beacon */
                             addToDeck(
                                 destinationDeckID,
-                                [targetDeckCard.get('card')],
+                                [{ card: targetDeckCard.get('card'), phase: targetDeckCard.get('phase') }],
                                 dropActionType as BeaconAction,
                             );
                         } else {
@@ -295,7 +295,7 @@ function App() {
         return () => {
             document.removeEventListener('mousemove', getMousePosition);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hardResetCnt]);
 
     useLayoutEffect(() => {
@@ -318,13 +318,21 @@ function App() {
                 <ImportButton onImport={importedData => {
                     resetDeck();
                     resetBoard();
-                    Object.entries(importedData).forEach(([deckName, { type, value }]) => {
-                        registerDeck(deckName, type);
-                        addToDeck(deckName, value.filter(entry => entry.length > 0).map(cardURL => CardImageConverter({
-                            _id: uuidv4(),
-                            dataURL: cardURL,
-                            type: 'external',
-                        })));
+                    Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior }]) => {
+                        registerDeck(deckName, type, defaultPhase, phaseBehavior);
+                        addToDeck(
+                            deckName,
+                            value
+                                .filter(entry => (entry.imageURL ?? '').length > 0)
+                                .map(({ imageURL, description }) => ({
+                                    card: CardImageConverter({
+                                        _id: uuidv4(),
+                                        dataURL: imageURL,
+                                        type: 'external',
+                                        description,
+                                    }),
+                                })),
+                        );
                     });
                     setHardReset(cnt => cnt + 1);
                 }} />
