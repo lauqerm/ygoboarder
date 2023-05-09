@@ -1,21 +1,34 @@
 import { useEffect } from 'react';
-import { BaseCard, CardPreset, PhaseType, Position } from 'src/model';
+import { BaseCard, PhaseType, Position } from 'src/model';
 import { useCountStore } from 'src/state';
 import { mergeClass } from 'src/util';
 import { DelayedImage } from './card-image';
-import './card.scss';
 import { CardBack } from '../atom';
+import styled from 'styled-components';
+import { RollbackOutlined } from '@ant-design/icons';
+import './card.scss';
 
+const CardCornerFront = styled.div`
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    line-height: 0;
+    padding: var(--spacing-xs);
+    border: var(--bd);
+    background: #ffffff88;
+    border-top-right-radius: var(--br);
+    cursor: pointer;
+`;
 export type Card = {
     baseCard: BaseCard,
     size?: 'sm' | 'md' | 'lg',
     origin: string,
     phase?: PhaseType,
     position?: Position,
-    preset?: CardPreset,
     /** Fake card là card ảo, không được đếm và chỉ là copy của một card thật khác */
     fake?: boolean,
     cornerBack?: boolean,
+    onCornerClick?: React.MouseEventHandler<HTMLImageElement>,
     flashing?: boolean,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const Card = ({
@@ -23,11 +36,11 @@ export const Card = ({
     size = 'sm',
     origin,
     phase,
-    preset,
     position,
     fake,
     flashing,
     cornerBack,
+    onCornerClick,
     ...rest
 }: Card) => {
     const changeCount = useCountStore(state => state.set);
@@ -37,6 +50,7 @@ export const Card = ({
         : type === 'internal'
             ? baseCard.get('data')
             : undefined;
+    const preset = baseCard.get('preset');
 
     useEffect(() => {
         if (!fake) changeCount(origin, 1);
@@ -49,10 +63,19 @@ export const Card = ({
 
     return <div {...rest} className={mergeClass('ygo-card', `ygo-card-size-${size}`, `ygo-card-position-${position}`)}>
         <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />
-        {phase === 'down' && <CardBack
-            className={cornerBack ? 'card-back-clipped' : ''}
-            preset={preset}
-            flashing={flashing}
-        />}
+        {phase === 'down'
+            ? <CardBack
+                cornerBack={cornerBack}
+                preset={preset}
+                flashing={flashing}
+                onClick={onCornerClick}
+            />
+            : cornerBack
+                ? <CardCornerFront
+                    onClick={onCornerClick}
+                >
+                    <RollbackOutlined />
+                </CardCornerFront>
+                : null}
     </div>;
 };

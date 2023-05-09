@@ -1,6 +1,6 @@
 import { Button, Drawer, Input, Modal, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { CardImageConverter, ImgurResponse, PhaseType } from 'src/model';
+import { CardImageConverter, CardPreset, ImgurResponse, PhaseType } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
 import { useDeckStore } from 'src/state';
 import { ExtractProps } from 'src/type';
@@ -21,9 +21,11 @@ export type DeckImporterRef = {
 }
 export type DeckImporter = {
     deckId: string,
+    preset: CardPreset,
 };
 export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
     deckId,
+    preset,
 }: DeckImporter, ref) => {
     const [isOpened, setOpen] = useState(false);
     const imageQueueMap = useRef<Record<string, RcFile>>({});
@@ -72,6 +74,7 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                 data: '',
                                 dataURL: url,
                                 description: '',
+                                preset,
                             }),
                         }],
                     );
@@ -98,6 +101,7 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                     name: entry,
                                     dataURL: entry,
                                     data: '',
+                                    preset,
                                 }),
                             })),
                     );
@@ -154,6 +158,7 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                                 type: 'external',
                                                 data: '',
                                                 dataURL: dataAsURL,
+                                                preset,
                                             }),
                                         }],
                                     );
@@ -173,6 +178,7 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
                                                 type: 'internal',
                                                 data: dataAsString,
                                                 dataURL: '',
+                                                preset,
                                             }),
                                         }],
                                     );

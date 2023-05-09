@@ -159,7 +159,7 @@ export const DeckButton = ({
     owner,
     type,
     fieldComponentKey,
-    preset = 'normal',
+    preset = 'your',
     offsetTop, offsetLeft,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
     action,
@@ -396,6 +396,7 @@ export const DeckButton = ({
                 type={type}
                 defaultPhase={defaultPhase}
                 phaseBehavior={phaseBehavior}
+                preset={preset}
                 beaconList={beaconList}
                 onClose={() => {
                     setVisible(false);

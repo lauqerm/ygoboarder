@@ -1,4 +1,5 @@
 import { Record as ImmutableRecord } from 'immutable';
+import { CardPreset } from './deck';
 
 type BaseCardRecord = {
     _id: string,
@@ -7,6 +8,7 @@ type BaseCardRecord = {
     data: string,
     dataURL: string,
     description: string,
+    preset: CardPreset,
 };
 export type BaseCard = ImmutableRecord<BaseCardRecord>;
 export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
@@ -16,6 +18,7 @@ export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
     data: '',
     dataURL: '',
     description: '',
+    preset: 'your',
 });
 
 export const DROP_TYPE_DECK = 'DECK';

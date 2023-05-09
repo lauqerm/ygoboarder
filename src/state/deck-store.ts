@@ -7,14 +7,12 @@ import { shuffleDeck } from 'src/service';
 export type BaseDeckCard = {
     card: BaseCard,
     origin: string,
-    preset: CardPreset,
     phase: PhaseType,
 };
 export type DeckCard = ImmutableRecord<BaseDeckCard>;
 export const DeckCardConverter = ImmutableRecord<BaseDeckCard>({
     card: CardImageConverter(),
     origin: '',
-    preset: CardPreset['normal'],
     phase: 'up',
 });
 
@@ -25,6 +23,7 @@ export type BaseDeckList = {
     type: DeckType,
     phaseBehavior: PhaseBehavior,
     defaultPhase: PhaseType,
+    preset: CardPreset,
     cardList: List<DeckCard>,
 };
 export type DeckList = ImmutableRecord<BaseDeckList>;
@@ -34,10 +33,11 @@ export const DeckListConverter = ImmutableRecord<BaseDeckList>({
     type: DeckType['none'],
     phaseBehavior: 'keep',
     defaultPhase: 'down',
+    preset: 'your',
 });
 export type DeckState = {
     deckMap: Map<string, DeckList>,
-    register: (deckId: string, type: DeckType, defaultPhase: PhaseType, phaseBehavior: PhaseBehavior) => void,
+    register: (deckId: string, info: { type: DeckType, defaultPhase: PhaseType, phaseBehavior: PhaseBehavior, preset: CardPreset }) => void,
     add: (deckId: string, addInfo: { card: BaseCard, phase?: PhaseType }[], position?: BeaconAction) => void,
     addToPosition: (deckId: string, cardWithPositionList: { position: number, card: DeckCard }[]) => void,
     delete: (deckId: string, idList: string[]) => void,
@@ -55,8 +55,9 @@ export const useDeckStore = create<DeckState>((set) => ({
             type: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].type,
         }),
     }),
-    register: (deckId, type, defaultPhase, phaseBehavior) => set(state => {
+    register: (deckId, deckInfo) => set(state => {
         if (state.deckMap.has(deckId)) return state;
+        const { type, defaultPhase, phaseBehavior } = deckInfo;
         const newDeck = DeckListConverter({
             cardList: List(),
             name: deckId,

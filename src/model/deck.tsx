@@ -25,7 +25,8 @@ export const DeckType = Object.freeze({
 export type DeckType = keyof typeof DeckType;
 
 export const CardPreset = Object.freeze({
-    normal: 'normal' as const,
+    your: 'your' as const,
     opp: 'opp' as const,
+    
 });
 export type CardPreset = keyof typeof CardPreset;

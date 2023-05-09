@@ -318,8 +318,8 @@ function App() {
                 <ImportButton onImport={importedData => {
                     resetDeck();
                     resetBoard();
-                    Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior }]) => {
-                        registerDeck(deckName, type, defaultPhase, phaseBehavior);
+                    Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior, preset }]) => {
+                        registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
                         addToDeck(
                             deckName,
                             value
@@ -330,6 +330,7 @@ function App() {
                                         dataURL: imageURL,
                                         type: 'external',
                                         description,
+                                        preset,
                                     }),
                                 })),
                         );

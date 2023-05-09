@@ -19,6 +19,7 @@ import {
     DECK_ROW_COUNT,
     MODAL_WRAPPER_ID,
     PhaseType,
+    CardPreset,
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import {
@@ -100,6 +101,7 @@ export type DeckModal = {
     type: DeckType,
     defaultPhase: PhaseType,
     phaseBehavior: PhaseBehavior,
+    preset: CardPreset,
     onClose?: () => void,
     beaconList?: BeaconAction[],
 };
@@ -111,6 +113,7 @@ export const DeckModal = React.forwardRef(({
     type,
     defaultPhase,
     phaseBehavior,
+    preset,
     onClose,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
@@ -202,7 +205,7 @@ export const DeckModal = React.forwardRef(({
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     useEffect(() => {
-        register(deckId, type, defaultPhase, phaseBehavior);
+        register(deckId, { type, defaultPhase, phaseBehavior, preset });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -403,7 +406,7 @@ export const DeckModal = React.forwardRef(({
                     </div>
                     <Button type="ghost" onClick={close}>Close</Button>
                     <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                    <DeckImporter ref={deckImpoterRef} deckId={deckId} />
+                    <DeckImporter ref={deckImpoterRef} deckId={deckId} preset={preset} />
                 </div>
             </ModalContainer>
         </>,

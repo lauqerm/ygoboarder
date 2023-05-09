@@ -35,9 +35,6 @@ export const DraggableCard = ({
         data-countable-card-id={uniqueId}
         className={mergeClass('ygo-card-wrapper', 'ygo-draggable-card', `ygo-card-size-${size}`, className)}
         {...rest}
-        onClick={() => {
-            onFlip();
-        }}
         onContextMenu={e => {
             e.preventDefault();
             onDelete();
@@ -48,6 +45,15 @@ export const DraggableCard = ({
             return false;
         }}
     >
-        <Card baseCard={baseCard} origin={origin} phase={phase} cornerBack />
+        <Card
+            baseCard={baseCard}
+            origin={origin}
+            phase={phase}
+            onCornerClick={e => {
+                e.stopPropagation();
+                onFlip();
+            }}
+            cornerBack
+        />
     </DraggableCardContainer>;
 };

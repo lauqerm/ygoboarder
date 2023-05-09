@@ -88,7 +88,7 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
     return <img
         {...rest}
         alt="card"
-        src={actualSrc ?? '/asset/img/ygo-card-back-grey.png'}
+        src={actualSrc ?? '/asset/img/ygo-card-back-neutral.png'}
         onLoad={() => {
             imageSourceMap.resolve(actualSrc);
         }}
