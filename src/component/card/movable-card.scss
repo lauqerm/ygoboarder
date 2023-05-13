@@ -1,6 +1,7 @@
 .ygo-card.ygo-movable-card {
     position: absolute;
     transform: none !important;
+    cursor: grab;
     .moveable-control-box {
         visibility: hidden!important;
     }

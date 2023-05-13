@@ -4,9 +4,16 @@ import { DelayedImage } from './card-image';
 import { CardBack } from '../atom';
 
 const CardPreviewContainer = styled.div`
-    .card-preview-image {
+    .card-preview-image-container {
         width: var(--card-width-md);
         height: var(--card-height-md);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        > img {
+            max-width: 100%;
+            max-height: 100%;
+        }
     }
 `;
 export const CardPreviewer = () => {

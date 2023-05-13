@@ -16,6 +16,9 @@
             transform: rotate(-90deg) translateX(-100%);
         }
     }
+    &.ygo-card-partial-down {
+        filter: brightness(0.75);
+    }
     .card-image {
         width: var(--card-width);
         height: var(--card-height);

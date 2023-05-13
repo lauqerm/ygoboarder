@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { BaseCard, PhaseType, Position } from 'src/model';
-import { useCountStore } from 'src/state';
+import { useCountStore, usePreviewStore } from 'src/state';
 import { mergeClass } from 'src/util';
 import { DelayedImage } from './card-image';
 import { CardBack } from '../atom';
@@ -18,6 +18,9 @@ const CardCornerFront = styled.div`
     background: #ffffff88;
     border-top-right-radius: var(--br);
     cursor: pointer;
+    &:hover {
+        background: #ffffff;
+    }
 `;
 export type Card = {
     baseCard: BaseCard,
@@ -51,17 +54,38 @@ export const Card = ({
             ? baseCard.get('data')
             : undefined;
     const preset = baseCard.get('preset');
+    const cardContainerRef = useRef<HTMLDivElement>(null);
+    const preview = usePreviewStore(state => state.setCardPreview);
 
     useEffect(() => {
         if (!fake) changeCount(origin, 1);
 
+        const target = cardContainerRef.current;
+        const openPreview = () => {
+            if (baseCard.get('type') === 'external') {
+                preview('external', baseCard.get('dataURL'), baseCard.get('description'));
+            } else {
+                preview('internal', baseCard.get('data'), baseCard.get('description'));
+            }
+        };
+        if (target) target.addEventListener('mouseenter', openPreview);
+
         return () => {
             if (!fake) changeCount(origin, -1);
+            if (target) target.removeEventListener('mouseenter', openPreview);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    return <div {...rest} className={mergeClass('ygo-card', `ygo-card-size-${size}`, `ygo-card-position-${position}`)}>
+    return <div ref={cardContainerRef}
+        {...rest}
+        className={mergeClass(
+            'ygo-card',
+            `ygo-card-size-${size}`,
+            `ygo-card-position-${position}`,
+            (phase === 'down' && cornerBack) ? 'ygo-card-partial-down' : '',
+        )}
+    >
         <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />
         {phase === 'down'
             ? <CardBack
