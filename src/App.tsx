@@ -21,7 +21,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from './state';
+import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 
@@ -36,6 +36,7 @@ function App() {
     const addToBoard = useBoardStore(state => state.add);
     const addToDeckInPosition = useDeckStore(state => state.addToPosition);
     const addToDeck = useDeckStore(state => state.add);
+    const addDescription = useDescriptionStore(state => state.set);
     const registerDeck = useDeckStore(state => state.register);
     const resetDeck = useDeckStore(state => state.reset);
     const resetBoard = useBoardStore(state => state.reset);
@@ -319,20 +320,23 @@ function App() {
                     resetDeck();
                     resetBoard();
                     Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior, preset }]) => {
+                        const validEntryList = value.filter(entry => (entry.imageURL ?? '').length > 0);
                         registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
                         addToDeck(
                             deckName,
-                            value
-                                .filter(entry => (entry.imageURL ?? '').length > 0)
-                                .map(({ imageURL, description }) => ({
+                            validEntryList
+                                .map(({ imageURL }) => ({
                                     card: CardImageConverter({
                                         _id: uuidv4(),
                                         dataURL: imageURL,
                                         type: 'external',
-                                        description,
                                         preset,
                                     }),
                                 })),
+                        );
+                        addDescription(
+                            validEntryList.map(({ imageURL, description }) => ({ key: imageURL, description })),
+                            true,
                         );
                     });
                     setHardReset(cnt => cnt + 1);

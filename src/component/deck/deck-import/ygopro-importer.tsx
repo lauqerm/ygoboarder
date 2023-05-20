@@ -2,7 +2,7 @@ import { Input } from 'antd';
 import axios from 'axios';
 import queryString from 'query-string';
 import { useEffect, useRef, useState } from 'react';
-import { YGOProCardResponse } from 'src/model';
+import { YGOProCardResponse, ygoproCardToDescription } from 'src/model';
 import throttle from 'lodash.throttle';
 import { AttributeText, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
@@ -89,7 +89,7 @@ const YGOImporterContainer = styled.div`
 `;
 
 export type YGOProImporter = {
-    onSelect: (name: string, url: string) => void,
+    onSelect: (name: string, url: string, description: string) => void,
 }
 export const YGOProImporter = ({
     onSelect,
@@ -146,7 +146,10 @@ export const YGOProImporter = ({
                     const isXyzMonster = frameType === 'xyz';
                     const isLinkMonster = frameType === 'link';
 
-                    return <div key={id} className="ygopro-card-entry" onClick={() => onSelect(name, image_url_small)}>
+                    return <div key={id}
+                        className="ygopro-card-entry"
+                        onClick={() => onSelect(name, image_url_small, ygoproCardToDescription(card))}
+                    >
                         <div className="card-entry-image">
                             <div className="image-container">
                                 <RestrictionText limit={ban_ocg} />

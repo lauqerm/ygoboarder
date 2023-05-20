@@ -32,7 +32,7 @@ import {
     useDOMEntityStateStore,
     PhaseBehavior,
 } from 'src/state';
-import { DeckImporter, DeckImporterRef } from './deck-import';
+import { DeckImporter, DeckImporterRef } from '../deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { ExtractProps } from 'src/type';

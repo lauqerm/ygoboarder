@@ -7,7 +7,6 @@ type BaseCardRecord = {
     type: 'internal' | 'external',
     data: string,
     dataURL: string,
-    description: string,
     preset: CardPreset,
 };
 export type BaseCard = ImmutableRecord<BaseCardRecord>;
@@ -17,7 +16,6 @@ export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
     type: 'internal',
     data: '',
     dataURL: '',
-    description: '',
     preset: 'your',
 });
 

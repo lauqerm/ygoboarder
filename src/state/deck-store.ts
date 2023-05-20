@@ -2,7 +2,7 @@ import { List, Record as ImmutableRecord, Map } from 'immutable';
 import { BeaconAction, BoardMapping, BaseCard, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey, PhaseType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
-import { shuffleDeck } from 'src/service';
+import { shuffleDeck } from 'src/util';
 
 export type BaseDeckCard = {
     card: BaseCard,

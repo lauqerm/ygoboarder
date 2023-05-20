@@ -1,6 +1,6 @@
 import { Record as ImmutableRecord, Map } from 'immutable';
 import { MIN_ABSOLUTE_INDEX, MIN_CARD_INDEX, MIN_MODAL_INDEX } from 'src/model';
-import { createIndexQueue } from 'src/service';
+import { createIndexQueue } from 'src/util';
 import create from 'zustand';
 
 export const cardIndexQueue = createIndexQueue(10);

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { BaseCard, PhaseType, Position } from 'src/model';
-import { useCountStore, usePreviewStore } from 'src/state';
+import { useCountStore, useDescriptionStore, usePreviewStore } from 'src/state';
 import { mergeClass } from 'src/util';
 import { DelayedImage } from './card-image';
 import { CardBack } from '../atom';
@@ -63,9 +63,13 @@ export const Card = ({
         const target = cardContainerRef.current;
         const openPreview = () => {
             if (baseCard.get('type') === 'external') {
-                preview('external', baseCard.get('dataURL'), baseCard.get('description'));
+                preview(
+                    'external',
+                    baseCard.get('dataURL'),
+                    useDescriptionStore.getState().descriptionMap[baseCard.get('dataURL')],
+                );
             } else {
-                preview('internal', baseCard.get('data'), baseCard.get('description'));
+                preview('internal', baseCard.get('data'));
             }
         };
         if (target) target.addEventListener('mouseenter', openPreview);

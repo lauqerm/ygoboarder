@@ -1,4 +1,4 @@
-export const getDefaultImgurRespones = () => ({
+export const getDefaultImgurData = () => ({
     id: '',
     title: null,
     description: null,
@@ -28,4 +28,11 @@ export const getDefaultImgurRespones = () => ({
     name: '',
     link: '',
 });
-export type ImgurResponse = ReturnType<typeof getDefaultImgurRespones>;
+export type ImgurData = ReturnType<typeof getDefaultImgurData>;
+
+export const getDefaultImgurResponse = () => ({
+    data: getDefaultImgurData(),
+    status: 0,
+    success: false,
+});
+export type ImgurResponse = ReturnType<typeof getDefaultImgurResponse>;
