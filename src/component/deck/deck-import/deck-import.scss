@@ -1,15 +1,11 @@
-.deck-import-modal {
-    .ant-upload-list:not(:empty) {
-        margin-top: var(--spacing);
-    }
-    .deck-import-dragger {
-        margin-top: var(--spacing-xs);
-    }
-    .file-item-grid {
-        margin: var(--spacing-sm) 0;
-        display: grid;
-        grid-template-columns: repeat(auto-fit, 88px);
-        column-gap: var(--spacing-sm);
-        row-gap: var(--spacing-sm);
+.deck-import-drawer {
+    .ant-drawer-body {
+        background-color: var(--dim);
+        padding: var(--spacing-lg);
+        padding-top: 0;
+        .ant-tabs-content-holder {
+            border-top: var(--bd-faint);
+            padding-top: var(--spacing);
+        }
     }
 }

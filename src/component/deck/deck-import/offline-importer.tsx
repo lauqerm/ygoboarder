@@ -1,29 +1,27 @@
-import { Alert, Button, Drawer, Input, Modal, Tooltip, Upload } from 'antd';
+import { Alert, Button, Input, Tooltip, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { CardImageConverter, CardPreset, ImgurResponse, PhaseType } from 'src/model';
+import { CardImageConverter, CardPreset, ImgurResponse } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
 import { useDeckStore, useDescriptionStore } from 'src/state';
 import { ExtractProps } from 'src/type';
-import { InboxOutlined, StopOutlined, WarningOutlined } from '@ant-design/icons';
+import { InboxOutlined, StopOutlined, WarningOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Loading } from '../../loading';
-import { YGOProImporter } from './ygopro-importer';
 import styled from 'styled-components';
-import axios, { AxiosError } from 'axios';
+import axios from 'axios';
 import { CardBack } from 'src/component/atom';
-import TextArea from 'antd/lib/input';
 
 const { Dragger } = Upload;
 type RcFile = Parameters<NonNullable<ExtractProps<typeof Dragger>['beforeUpload']>>[0];
 
 const FileItemContainer = styled.div`
-    display: inline-block;
-    border: var(--bd-faint);
-    border-radius: var(--br-sm);
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    column-gap: var(--spacing);
+    margin: var(--spacing) 0;
     .file-status {
         text-align: center;
         color: var(--color-faint);
         font-size: var(--fs-sm);
-        border-bottom: var(--bd-faint);
     }
     .file-image {
         position: relative;
@@ -35,8 +33,8 @@ const FileItemContainer = styled.div`
             max-height: 100%;
         }
     }
-    .file-action {
-        border-top: var(--bd-faint);
+    .ant-input {
+        height: 100%;
     }
     .file-action-cancel {
         text-align: center;
@@ -47,12 +45,22 @@ const FileItemContainer = styled.div`
             background-color: var(--main-danger);
         }
     }
+    .file-action-retry {
+        text-align: center;
+        color: var(--main-info);
+        cursor: pointer;
+        &:hover {
+            color: var(--contrast-info);
+            background-color: var(--main-info);
+        }
+    }
 `;
 type FileItem = {
     fileData: RcFile,
     onFinish: (dataAsString: string, name: string) => void,
     onOfflineFinish: (dataAsString: string, name: string) => void,
     onCancel: (name: string) => void,
+    onRemove: () => void,
 }
 type FileItemRef = {
     getDescription: () => string | undefined,
@@ -62,11 +70,16 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
     onFinish,
     onOfflineFinish,
     onCancel,
+    onRemove,
 }: FileItem, ref) => {
     const [thumb, setThumb] = useState<string>('');
-    const [cancel, setCancel] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [finish, setFinish] = useState(false);
     const [error, setError] = useState<any>();
+    const [retry, setRetry] = useState(0);
+    // const [refreshCnt, setRefreshCnt] = useState(0);
+    // const refresh = () => setRefreshCnt(cur => cur + 1);
+    const cancel = useRef(false);
     const description = useRef('');
 
     useImperativeHandle(ref, () => ({
@@ -84,54 +97,79 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
                     setThumb(result);
                     setLoading(true);
                     /** Bật phần này khi cần test offline */
-                    if (!cancel) onOfflineFinish(result, fileData.name);
-                    else onCancel(fileData.name);
-
-                    // const imgurFormData = new FormData();
-                    // imgurFormData.append('image', fileData);
-
-                    // try {
-                    //     const response = await axios.post<ImgurResponse>(
-                    //         'https://api.imgur.com/3/image',
-                    //         imgurFormData,
-                    //         {
-
-                    //             headers: {
-                    //                 'Authorization': 'Client-ID f9bbe0da263580e',
-                    //             },
-                    //         },
-                    //     );
-                    //     if (!cancel) onFinish(response.data.data.link, fileData.name);
-                    //     else onCancel(fileData.name);
-                    // } catch (e: any) {
-                    //     setError(e.message);
-                    //     onCancel(fileData.name);
+                    // if (!cancel.current) {
+                    //     onOfflineFinish(result, fileData.name);
+                    //     setFinish(true);
                     // }
+                    // else onCancel(fileData.name);
+
+                    const imgurFormData = new FormData();
+                    imgurFormData.append('image', fileData);
+
+                    try {
+                        const response = await axios.post<ImgurResponse>(
+                            'https://api.imgur.com/3/image',
+                            imgurFormData,
+                            {
+
+                                headers: {
+                                    'Authorization': 'Client-ID f9bbe0da263580e',
+                                },
+                            },
+                        );
+                        if (!cancel.current) {
+                            onFinish(response.data.data.link, fileData.name);
+                            setFinish(true);
+                        }
+                        else onCancel(fileData.name);
+                    } catch (e: any) {
+                        setError(e.message);
+                        onCancel(fileData.name);
+                    }
                     setLoading(false);
                 }
             }
         };
         reader.readAsDataURL(fileData);
-    }, []);
+
+        return () => {
+            setLoading(false);
+        };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [retry]);
 
     return <FileItemContainer className="file-item">
         <div>
-            <div className="file-status">
-                {error
-                    ? <>Error <Tooltip overlay={`${error}`}><WarningOutlined /></Tooltip></>
-                    : loading
-                        ? 'Uploading'
-                        : 'Finished'}
-            </div>
             <div className="file-image">
                 {thumb
                     ? <img src={thumb} alt={fileData.name} />
                     : <CardBack />}
                 {loading && <Loading.FullView size="small" />}
             </div>
-            {loading && <div className="file-action">
-                <div className="file-action-cancel" onClick={() => setCancel(true)}><StopOutlined /> Cancel</div>
-            </div>}
+            <div className="file-action">
+                {loading && <div className="file-action-cancel" onClick={() => {
+                    cancel.current = true;
+                    setLoading(false);
+                }}>
+                    <StopOutlined /> Cancel
+                </div>}
+                {(finish || error) && <div className="file-action-cancel" onClick={() => onRemove()}><DeleteOutlined /> Remove</div>}
+                {(cancel.current || error) && <div className="file-action-retry" onClick={() => {
+                    cancel.current = false;
+                    setRetry(cur => cur + 1);
+                }}>
+                    <ReloadOutlined /> Retry
+                </div>}
+            </div>
+            <div className="file-status">
+                {error
+                    ? <>Error <Tooltip overlay={`${error}`}><WarningOutlined /></Tooltip></>
+                    : loading
+                        ? 'Uploading'
+                        : cancel.current
+                            ? 'Canceled'
+                            : 'Finished'}
+            </div>
         </div>
         <div>
             <Input.TextArea
@@ -142,6 +180,36 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
     </FileItemContainer>;
 });
 
+const OfflineImporterContainer = styled.div`
+    .ant-alert {
+        margin-bottom: var(--spacing);
+    }
+    .deck-import-dragger {
+        margin-top: var(--spacing-xs);
+    }
+    .action-button {
+        display: grid;
+        height: 100%;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr min-content;
+        .description-textarea {
+            grid-column: span 2;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-bottom: none;
+        }
+        .add-button {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        .add-close-button {
+            border-top-left-radius: 0;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+    }
+`;
 export type OfflineFile = {
     status: 'finished' | 'canceled' | 'loading' | 'init',
     fileData: RcFile,
@@ -150,10 +218,12 @@ export type OfflineFile = {
 export type OfflineImporter = {
     deckId: string,
     preset: CardPreset,
+    onClose: () => void,
 }
 export const OfflineImporter = ({
     deckId,
     preset,
+    onClose,
 }: OfflineImporter) => {
     const imageQueueMap = useRef<Record<string, RcFile>>({});
     const addToList = useDeckStore(state => state.add);
@@ -161,10 +231,39 @@ export const OfflineImporter = ({
     const [fileList, setFileList] = useState<OfflineFile[]>([]);
 
     const addDescription = useDescriptionStore(state => state.set);
+    const submit = () => {
+        const finalFileList = fileList.filter(entry => entry.status === 'finished');
+        addToList(
+            deckId,
+            finalFileList.map(({ fileData, resultURL }) => ({
+                card: CardImageConverter({
+                    _id: uuidv4(),
+                    name: fileData.name,
+                    type: 'external',
+                    data: '',
+                    dataURL: resultURL,
+                    preset,
+                }),
+            })),
+        );
+        addDescription(finalFileList.map(({ fileData, resultURL }) => ({
+            key: resultURL,
+            description: refMap.current[fileData.uid]?.getDescription(),
+        })));
+        setFileList([]);
+    };
 
-    return <div className="offline-importer">
+    return <OfflineImporterContainer className="offline-importer">
         <h2>Upload offline images</h2>
-        <i>Offline images will be uploaded to <a target="_blank" href="https://www.imgur.com" rel="noreferrer">imgur.com</a> to store online.</i>
+        <Alert
+            showIcon
+            type="info"
+            message={<>
+                Offline images will be uploaded to <a target="_blank" href="https://www.imgur.com" rel="noreferrer">imgur.com</a> to store online.
+                <br />
+                Duplications of the same image will be treated as different images altogether, and descriptions will not be synced correctly.
+            </>}
+        />
         <Dragger
             className="deck-import-dragger"
             type="drag"
@@ -186,17 +285,15 @@ export const OfflineImporter = ({
             </p>
             <p className="ant-upload-text">{'Choose or drag image(s) to this area to upload'}</p>
         </Dragger>
-        <Alert
-            showIcon
-            type="info"
-            message="If many descriptions are bound with the same image link, only the latest description will be saved."
-        />
         <div className="file-item-grid">
             {fileList
                 // .filter(({ status }) => status !== 'finished')
                 .map(({ fileData }) => {
                     return <FileItem key={fileData.uid} ref={ref => refMap.current[fileData.uid] = ref}
                         fileData={fileData}
+                        onRemove={() => {
+                            setFileList(list => list.filter(entry => entry.fileData.uid !== fileData.uid));
+                        }}
                         onCancel={name => {
                             setFileList(list => list.map(entry => {
                                 return entry.fileData.name === name
@@ -238,31 +335,23 @@ export const OfflineImporter = ({
                     />;
                 })}
         </div>
-        {fileList.length > 0 && <Button
-            type="primary"
-            disabled={fileList.some(entry => entry.status !== 'finished' && entry.status !== 'canceled')}
-            onClick={() => {
-                addToList(
-                    deckId,
-                    fileList.map(({ fileData, resultURL }) => ({
-                        card: CardImageConverter({
-                            _id: uuidv4(),
-                            name: fileData.name,
-                            type: 'external',
-                            data: '',
-                            dataURL: resultURL,
-                            preset,
-                        }),
-                    })),
-                );
-                addDescription(fileList.map(({ fileData, resultURL }) => ({
-                    key: resultURL,
-                    description: refMap.current[fileData.uid]?.getDescription(),
-                })));
-                setFileList([]);
-            }}
-        >
-            {'Add'}
-        </Button>}
-    </div>;
+        {fileList.length > 0 && <div className="action-button">
+            <Button
+                className="add-button"
+                onClick={submit}
+            >
+                Add
+            </Button>
+            <Button
+                type="primary"
+                className="add-close-button"
+                onClick={() => {
+                    submit();
+                    onClose();
+                }}
+            >
+                Add and Close
+            </Button>
+        </div>}
+    </OfflineImporterContainer>;
 };

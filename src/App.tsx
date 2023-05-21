@@ -24,6 +24,7 @@ import { ExtractProps } from './type';
 import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
+import { AppMenuContainer } from './styled';
 
 function App() {
     const appRef = useRef<HTMLDivElement>(null);
@@ -314,35 +315,35 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
-            <div>
-                <ExportButton />
-                <ImportButton onImport={importedData => {
-                    resetDeck();
-                    resetBoard();
-                    Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior, preset }]) => {
-                        const validEntryList = value.filter(entry => (entry.imageURL ?? '').length > 0);
-                        registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
-                        addToDeck(
-                            deckName,
-                            validEntryList
-                                .map(({ imageURL }) => ({
-                                    card: CardImageConverter({
-                                        _id: uuidv4(),
-                                        dataURL: imageURL,
-                                        type: 'external',
-                                        preset,
-                                    }),
-                                })),
-                        );
-                        addDescription(
-                            validEntryList.map(({ imageURL, description }) => ({ key: imageURL, description })),
-                            true,
-                        );
-                    });
-                    setHardReset(cnt => cnt + 1);
-                }} />
-            </div>
             <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
+                <AppMenuContainer>
+                    <ExportButton />
+                    <ImportButton onImport={importedData => {
+                        resetDeck();
+                        resetBoard();
+                        Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior, preset }]) => {
+                            const validEntryList = value.filter(entry => (entry.imageURL ?? '').length > 0);
+                            registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
+                            addToDeck(
+                                deckName,
+                                validEntryList
+                                    .map(({ imageURL }) => ({
+                                        card: CardImageConverter({
+                                            _id: uuidv4(),
+                                            dataURL: imageURL,
+                                            type: 'external',
+                                            preset,
+                                        }),
+                                    })),
+                            );
+                            addDescription(
+                                validEntryList.map(({ imageURL, description }) => ({ key: imageURL, description })),
+                                true,
+                            );
+                        });
+                        setHardReset(cnt => cnt + 1);
+                    }} />
+                </AppMenuContainer>
                 <CardPreviewer />
                 <Board boardName="main-board" />
                 <div className="padding" />

@@ -1,4 +1,4 @@
-import { Input } from 'antd';
+import { Input, Radio } from 'antd';
 import axios from 'axios';
 import queryString from 'query-string';
 import { useEffect, useRef, useState } from 'react';
@@ -7,6 +7,8 @@ import throttle from 'lodash.throttle';
 import { AttributeText, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
+import { usePreviewStore } from 'src/state';
+import { mergeClass } from 'src/util';
 import './ygopro-importer.scss';
 
 type RequestorPayload = {
@@ -29,23 +31,32 @@ const requestor = async (payload: RequestorPayload) => {
 };
 
 const YGOImporterContainer = styled.div`
+    .display-mode {
+        width: 100%;
+        margin-bottom: var(--spacing);
+    }
     .ygopro-card-entry {
         position: relative;
         display: grid;
         grid-template-columns: 86px 1fr;
         column-gap: var(--spacing);
-        margin-top: var(--spacing-xs);
+        margin: var(--spacing) 0;
         cursor: pointer;
         &:hover {
-            background-color: var(--sub-antd);
+            .card-statistic b {
+                color: var(--sub-antd);
+                text-decoration: underline;
+            }
         }
         .image-container {
             position: relative;
         }
         .card-entry-image {
-            width: 86px;
+            width: var(--card-width-sm);
+            height: var(--card-height-sm);
             img {
                 max-width: 100%;
+                max-height: 100%;
             }
             .stat-list {
                 position: absolute;
@@ -86,6 +97,27 @@ const YGOImporterContainer = styled.div`
             white-space: pre-line;
         }
     }
+    .ygopro-card-list.grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, 168px);
+        gap: var(--spacing);
+        margin-top: var(--spacing);
+        .stat-list,
+        .card-statistic {
+            display: none;
+        }
+        /** Size của ygopro */
+        .ygopro-card-entry {
+            margin: 0;
+            &:hover {
+                outline: 4px solid var(--main-antd);
+            }
+        }
+        .card-entry-image {
+            width: 168px;
+            height: 246px;
+        }
+    }
 `;
 
 export type YGOProImporter = {
@@ -96,7 +128,9 @@ export const YGOProImporter = ({
 }: YGOProImporter) => {
     const [payload, setPayload] = useState<RequestorPayload>({});
     const [cardResponseList, setCardResponseList] = useState<YGOProCardResponse[]>([]);
+    const [displayMode, setDisplayMode] = useState('grid');
     const throttledRequest = useRef(throttle(requestor, 100));
+    const preview = usePreviewStore(state => state.setCardPreview);
     useEffect(() => {
         let relevant = true;
 
@@ -116,12 +150,25 @@ export const YGOProImporter = ({
     }, [payload]);
 
     return <YGOImporterContainer className="ygopro-importer">
+        <h2>Import from YGOPRODeck</h2>
+        <Radio.Group
+            className="display-mode"
+            options={[
+                { label: 'List Mode', value: 'list' },
+                { label: 'Grid Mode', value: 'grid' },
+            ]}
+            onChange={e => setDisplayMode(e.target.value)}
+            value={displayMode}
+            optionType="button"
+            buttonStyle="solid"
+        />
         <Input.Search
+            addonBefore="Name"
             onSearch={async value => {
                 setPayload(curr => ({ ...curr, fname: value }));
             }}
         />
-        <div className="ygopro-card-list">
+        <div className={mergeClass('ygopro-card-list', displayMode)}>
             {cardResponseList
                 .slice(0, 20)
                 .map(card => {
@@ -140,7 +187,7 @@ export const YGOProImporter = ({
                         banlist_info,
                     } = card;
                     const { ban_ocg } = banlist_info ?? {};
-                    const { image_url_small } = card_images[0];
+                    const { image_url_small, image_url } = card_images[0];
                     const isMonster = type.toLowerCase().includes('monster')
                         || type.toLowerCase().includes('token');
                     const isXyzMonster = frameType === 'xyz';
@@ -158,6 +205,9 @@ export const YGOProImporter = ({
                                     : <DelayedImage key={id}
                                         type="URL"
                                         src={image_url_small}
+                                        onMouseEnter={() => {
+                                            if (displayMode === 'grid') preview('external', image_url, ygoproCardToDescription(card));
+                                        }}
                                     />}
                                 <div className="stat-list">
                                     <div className="stat">{atk}</div>

@@ -4,6 +4,7 @@ import {
     ExtraDeckIcon,
     TrunkIcon,
     GraveyardIcon,
+    BanishedIcon,
 } from './board-icon';
 import styled from 'styled-components';
 
@@ -25,7 +26,7 @@ const BoardIconMap: Record<FieldComponentKey, any> = {
     'deck': DeckIcon,
     'extraDeck': ExtraDeckIcon,
     'gy': GraveyardIcon,
-    'banishedPile': undefined,
+    'banishedPile': BanishedIcon,
     'trunk': TrunkIcon,
 };
 export type BoardIcon = {

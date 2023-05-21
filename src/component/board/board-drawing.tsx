@@ -3,6 +3,7 @@ import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent 
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
 import { DeckListConverter, useDeckStore } from 'src/state';
+import { TurnWidget } from '../widget';
 
 const BoardContainer = styled.div`
     --field-card-height-sm: calc(var(--card-height-sm) + 2px);
@@ -59,6 +60,10 @@ const BoardContainer = styled.div`
         &.pile {
             border-color: var(--main-primaryLighter);
         }
+        &.trunk {
+            border-color: var(--main-primaryLighter);
+            background-color: var(--main-primary);
+        }
     }
     .empty-zone {
         width: var(--field-card-height-sm);
@@ -70,6 +75,14 @@ const BoardContainer = styled.div`
             width: 60%;
             color: #fafafa;
             margin: auto;
+        }
+    }
+
+    .left-extra-section {
+        display: flex;
+        align-items: center;
+        .turn-widget {
+            flex: 1;
         }
     }
 `;
@@ -147,7 +160,7 @@ export const BoardDrawing = ({
             </div>
             <div className="padding" />
             <div className="side-col-component side-col-bot">
-                <div ref={yourTrunkRef} className="vertical-zone">
+                <div ref={yourTrunkRef} className="vertical-zone trunk">
                     {deckCountMap.get(yourTrunkBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={yourTrunkBoardComponent.preset} />
                         : null}
@@ -181,7 +194,9 @@ export const BoardDrawing = ({
                 <div className="square-zone" />
             </div>
             <div className="main-col-component main-col-center">
-                <div className="empty-zone left-extra-section" />
+                <div className="empty-zone left-extra-section">
+                    <TurnWidget />
+                </div>
                 <div className="square-zone" />
                 <div className="empty-zone main-extra-section" />
                 <div className="square-zone" />
@@ -215,7 +230,7 @@ export const BoardDrawing = ({
                 <div className="vertical-zone with-icon">
                     <FieldIcon />
                 </div>
-                <div ref={oppTrunkRef} className="vertical-zone">
+                <div ref={oppTrunkRef} className="vertical-zone trunk">
                     {deckCountMap.get(oppTrunkBoardComponent.name, DeckListConverter()).get('cardList').size > 1
                         ? <CardBack preset={oppTrunkBoardComponent.preset} />
                         : null}

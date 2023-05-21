@@ -24,7 +24,6 @@ const BoardContainer = styled.div`
     border: var(--bd);
     position: relative;
     display: inline-block;
-    flex: 0;
 `;
 
 export type Board = {

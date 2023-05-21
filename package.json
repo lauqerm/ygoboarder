@@ -17,6 +17,7 @@
     "immutable": "^4.1.0",
     "lodash.debounce": "^4.0.8",
     "lodash.throttle": "^4.1.1",
+    "mathjs": "^11.8.0",
     "query-string": "^8.1.0",
     "react": "^18.2.0",
     "react-beautiful-dnd": "^13.1.1",

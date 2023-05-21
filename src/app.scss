@@ -18,6 +18,7 @@
 
   --color-faint: rgba(40, 40, 40, 0.85);
   --color-contrast: #fff;
+  --color: rgba(0, 0, 0, 0.85);
 
   --main-contrast: #fff;
 
@@ -28,18 +29,31 @@
   --main-secondaryDarker: #1a1a1a;
   --main-secondary: #2a2a2a;
   --main-secondaryLighter: #3a3a3a;
+  --contrast-secondaryLighter: #fff;
 
   --dim-metal: #223;
   --main-metal: #334;
   --sub-metal: #445;
+  --contrast-metal: #fff;
 
   --main-danger: #f22;
   --sub-danger: #f44;
   --contrast-danger: #fff;
 
   --main-info: #2bd;
-  --sub-info: #2df;
+  --sub-info: #2cf;
   --contrast-info: #fff;
+
+  --main-antd: #1890ff;
+  --sub-antd: #40a9ff;
+  --contrast-antd: #fff;
+
+  --white: #fff;
+  --dim: #efefef;
+
+  --gradient-hovered: #edededee;
+
+  --bs-inset: 0 0 2px 0 #333 inset;
 
   --bdSize: 1px;
 
@@ -69,6 +83,11 @@
     --card-width: var(--card-width-sm);
     --card-height: var(--card-height-sm);
   }
+  input {
+    &:focus {
+      outline: none;
+    }
+  }
   h2 {
     font-size: var(--fs-lg);
     line-height: 1.5;
@@ -93,6 +112,15 @@
 
 .app-wrapper {
   display: flex;
+  height: 100vh;
+  width: 100vw;
+  .card-preview {
+    flex: 0 0 auto;
+    width: 30%;
+  }
+  .play-board {
+    flex: 0;
+  }
 }
 
 .padding {

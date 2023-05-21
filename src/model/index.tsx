@@ -71,3 +71,4 @@ export * from './deck';
 export * from './field';
 export * from './imgur';
 export * from './ygopro';
+export * from './game';

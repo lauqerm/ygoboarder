@@ -60,3 +60,4 @@ export const RestrictionText = ({
 export * from './board-atom';
 export * from './board-icon';
 export * from './card-back';
+export * from './credit';
