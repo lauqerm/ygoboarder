@@ -32,4 +32,20 @@ export const shuffleDeck = (currentDeckList: List<any>) => {
     return currentDeckList.map((_value, key) => nativeDeckList[key]);
 };
 
+export const exportAsJson = (content: any) => {
+    const filename = `${new Date().toISOString()}-board.json`;
+    const jsonStr = typeof content === 'string' ? content : JSON.stringify(content);
+
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(jsonStr));
+    element.setAttribute('download', filename);
+
+    element.style.display = 'none';
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
+};
+
 export { createIndexQueue } from './index-queue';

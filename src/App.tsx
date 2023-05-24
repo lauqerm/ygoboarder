@@ -321,13 +321,13 @@ function App() {
                     <ImportButton onImport={importedData => {
                         resetDeck();
                         resetBoard();
-                        Object.entries(importedData).forEach(([deckName, { type, value, defaultPhase, phaseBehavior, preset }]) => {
-                            const validEntryList = value.filter(entry => (entry.imageURL ?? '').length > 0);
+                        Object.entries(importedData.deckList).forEach(([deckName, { type, cardList, defaultPhase, phaseBehavior, preset }]) => {
+                            const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
                             registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
                             addToDeck(
                                 deckName,
                                 validEntryList
-                                    .map(({ imageURL }) => ({
+                                    .map(imageURL => ({
                                         card: CardImageConverter({
                                             _id: uuidv4(),
                                             dataURL: imageURL,
@@ -336,11 +336,11 @@ function App() {
                                         }),
                                     })),
                             );
-                            addDescription(
-                                validEntryList.map(({ imageURL, description }) => ({ key: imageURL, description })),
-                                true,
-                            );
                         });
+                        addDescription(
+                            Object.entries(importedData.descriptionList).map(([url, description]) => ({ key: url, description })),
+                            true,
+                        );
                         setHardReset(cnt => cnt + 1);
                     }} />
                 </AppMenuContainer>
