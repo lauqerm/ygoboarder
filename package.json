@@ -23,6 +23,7 @@
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.2.0",
     "react-moveable": "^0.40.0",
+    "react-resize-detector": "^9.1.0",
     "react-scripts": "5.0.1",
     "react-selecto": "^1.22.1",
     "sass": "^1.55.0",

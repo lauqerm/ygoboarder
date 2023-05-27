@@ -1,10 +1,10 @@
 import Selecto from 'react-selecto';
 import styled from 'styled-components';
 import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore } from 'src/state';
-import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType } from 'src/model';
+import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType, PROP_BOARD_NAME, PROP_CARD_BOARD_NAME } from 'src/model';
 import { List } from 'immutable';
 import { MovableCard, MovableCardGroup } from '../card';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './play-board.scss';
 
 const BoardCardContainer = styled.div`
@@ -31,12 +31,32 @@ export const CardBoard = ({
         (oldState, newState) => oldState.equals(newState),
     );
 
+    const boardCardRef = useRef<HTMLDivElement>(null);
+
+    const oldCoord = useRef({ x: NaN, y: NaN });
+    const offset = useRef({ x: 0, y: 0 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        const correspondingBoardDrawing = document.querySelector(`[${PROP_BOARD_NAME}="${boardName}"]`);
+        if (correspondingBoardDrawing) {
+            const { x, y } = correspondingBoardDrawing.getBoundingClientRect();
+            if (!isNaN(oldCoord.current.x) && !isNaN(oldCoord.current.y)) {
+                offset.current = {
+                    x: x - oldCoord.current.x,
+                    y: y - oldCoord.current.y,
+                };
+                if (offset.current.x !== 0 || offset.current.y !== 0) setCardGroupKey(cnt => cnt + 1);
+            }
+            oldCoord.current = { x, y };
+        }
+    });
+
     useEffect(() => {
         setCardGroupKey(cnt => cnt + 1);
     }, [currentBoardList]);
 
-    return <BoardCardContainer
-        data-card-board-name={boardName}
+    return <BoardCardContainer ref={boardCardRef}
+        {...{ [PROP_CARD_BOARD_NAME]: boardName }}
         className="play-card-board"
     >
         {currentBoardList.map(boardCard => {
@@ -46,6 +66,8 @@ export const CardBoard = ({
                 origin={boardCard.get('origin')}
                 initialX={boardCard.get('initialX')}
                 initialY={boardCard.get('initialY')}
+                offsetX={offset.current.x}
+                offsetY={offset.current.y}
                 phase={boardCard.get('phase')}
                 position={boardCard.get('position')}
                 originEntity={DOMEntityType['board']}

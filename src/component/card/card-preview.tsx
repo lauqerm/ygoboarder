@@ -31,11 +31,16 @@ const CardPreviewContainer = styled.div`
         }
     }
     .card-preview-description {
+        display: flex;
+        flex-direction: column;
         background-color: var(--main-secondaryLighter);
         border-top: var(--bd);
         flex: 1 1 auto;
-        padding: var(--spacing);
+        padding: var(--spacing-xl);
         overflow: hidden;
+        > div {
+            flex: 1;
+        }
     }
     .card-preview-description-read {
         height: 100%;

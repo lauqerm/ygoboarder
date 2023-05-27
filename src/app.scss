@@ -110,13 +110,17 @@
   }
 }
 
+html {
+  overflow-y: scroll;
+  overflow-x: hidden;
+}
 .app-wrapper {
   display: flex;
-  height: 100vh;
-  width: 100vw;
+  min-height: 100vh;
   .card-preview {
     flex: 0 0 auto;
     width: 30%;
+    min-height: 100vh;
   }
   .play-board {
     flex: 0;

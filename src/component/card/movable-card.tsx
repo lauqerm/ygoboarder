@@ -21,6 +21,8 @@ export type MovableCard = {
     uniqueId: string,
     initialX?: number,
     initialY?: number,
+    offsetX?: number,
+    offsetY?: number,
     phase?: PhaseType,
     position?: Position,
     originEntity?: DOMEntityType,
@@ -33,6 +35,8 @@ export const MovableCard = ({
     size = 'sm',
     initialX = 0,
     initialY = 0,
+    offsetX = 0,
+    offsetY = 0,
     phase,
     position,
     className,
@@ -84,6 +88,17 @@ export const MovableCard = ({
         target!.style.zIndex = '1000';
         target!.style.transform = transform;
     }, []);
+
+    useEffect(() => {
+        try {
+            if (target) {
+                const left = parseInt(target.style.left ?? '');
+                const top = parseInt(target.style.top ?? '');
+                if (!isNaN(left)) target.style.left = `${left + offsetX}px`;
+                if (!isNaN(top)) target.style.top = `${top + offsetY}px`;
+            }
+        } catch (e) { }
+    }, [offsetX, offsetY, target]);
 
     const once = useRef(false);
     useEffect(() => {

@@ -25,6 +25,7 @@ import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDesc
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
+import { useResizeDetector } from 'react-resize-detector';
 
 function App() {
     const appRef = useRef<HTMLDivElement>(null);
@@ -53,6 +54,13 @@ function App() {
         }),
         (prev, next) => prev.version === next.version,
     );
+    const { ref } = useResizeDetector({
+        refreshMode: 'debounce',
+        refreshRate: 500,
+        onResize: () => {
+            recalculate();
+        },
+    });
     const [hardResetCnt, setHardReset] = useState(0);
     const mousePosition = useRef({ x: 0, y: 0 });
     /**
@@ -307,6 +315,7 @@ function App() {
         recalculate();
     }, [zIndexChange, recalculate, hardResetCnt]);
 
+    const boardName = 'main-board';
     return (
         <DragDropContext
             onBeforeCapture={onBeforeCapture}
@@ -315,7 +324,7 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
-            <div key={`board-${hardResetCnt}`} ref={appRef} className="app-wrapper">
+            <div key={`board-${hardResetCnt}`} ref={ref} className="app-wrapper">
                 <AppMenuContainer>
                     <ExportButton />
                     <ImportButton onImport={importedData => {
@@ -345,10 +354,10 @@ function App() {
                     }} />
                 </AppMenuContainer>
                 <CardPreviewer />
-                <Board boardName="main-board" />
+                <Board boardName={boardName} />
                 <div className="padding" />
             </div>
-            <CardBoard boardName="main-board" />
+            <CardBoard boardName={boardName} />
         </DragDropContext>
     );
 }

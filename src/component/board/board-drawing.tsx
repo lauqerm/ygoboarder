@@ -88,11 +88,13 @@ const BoardContainer = styled.div`
 `;
 
 export type BoardDrawing = {
-    onMount: (boardCoordinateMap: Record<FieldKey, FieldDeckCoordinateMap | undefined>) => void,
+    onCoordinateChnage: (boardCoordinateMap: Record<FieldKey, FieldDeckCoordinateMap | undefined>) => void,
 }
 export const BoardDrawing = ({
-    onMount,
+    onCoordinateChnage,
 }: BoardDrawing) => {
+    const boardRef = useRef<HTMLDivElement>(null);
+
     const oppTrunkRef = useRef<HTMLDivElement>(null);
     const oppExtraDeckRef = useRef<HTMLDivElement>(null);
     const oppBanishedPileRef = useRef<HTMLDivElement>(null);
@@ -107,25 +109,30 @@ export const BoardDrawing = ({
 
     const deckCountMap = useDeckStore(state => state.deckMap);
 
+    const oldCoord = useRef({ x: 0, y: 0 });
     useEffect(() => {
-        onMount({
-            [FieldKey.your]: {
-                [FieldComponentKey.deck]: yourDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.gy]: yourGYRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
-            },
-            [FieldKey.opponent]: {
-                [FieldComponentKey.deck]: oppDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.gy]: oppGYRef.current?.getBoundingClientRect(),
-                [FieldComponentKey.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
-            },
-        });
+        const { x = 0, y = 0 } = boardRef.current?.getBoundingClientRect() ?? {};
+        if (x !== oldCoord.current.x || y !== oldCoord.current.y) {
+            oldCoord.current = { x, y };
+            onCoordinateChnage({
+                [FieldKey.your]: {
+                    [FieldComponentKey.deck]: yourDeckRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.gy]: yourGYRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
+                },
+                [FieldKey.opponent]: {
+                    [FieldComponentKey.deck]: oppDeckRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.gy]: oppGYRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
+                },
+            });
+        }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    });
 
     const oppTrunkBoardComponent = getBoardComponent('opponent', 'trunk');
     const oppExtraDeckBoardComponent = getBoardComponent('opponent', 'extraDeck');
@@ -139,7 +146,7 @@ export const BoardDrawing = ({
     const yourGYBoardComponent = getBoardComponent('your', 'gy');
     const yourDeckBoardComponent = getBoardComponent('your', 'deck');
 
-    return <BoardContainer>
+    return <BoardContainer ref={boardRef}>
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppDeckRef} className="vertical-zone">

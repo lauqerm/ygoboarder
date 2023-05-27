@@ -12,6 +12,7 @@ import {
     PROP_DOM_ENTITY_TYPE,
     BOARD_INDEX,
     BoardComponentList,
+    PROP_BOARD_NAME,
 } from 'src/model';
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
@@ -54,7 +55,6 @@ export const Board = ({
         onMouseOut={e => {
             boardDrawingRef.current?.classList.remove(CLASS_BOARD_ACTIVE);
         }}
-        data-board-name={boardName}
         style={{ zIndex: BOARD_INDEX }}
         className={mergeClass(
             'play-board',
@@ -62,17 +62,18 @@ export const Board = ({
             DOM_ENTITY_CLASS, DOMEntityTypeClass['board'],
         )}
         {...{
+            [PROP_BOARD_NAME]: boardName,
             [PROP_DOM_ENTITY_NAME]: boardName,
             [PROP_DOM_ENTITY_TYPE]: DOMEntityType['board'],
         }}
     >
-        <BoardDrawing onMount={setCoordinateMap} />
+        <BoardDrawing onCoordinateChnage={setCoordinateMap} />
         {BoardComponentList.map(boardComponent => {
             const { fieldComponentKey, fieldKey, ...deckButtonProps } = boardComponent;
             const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
 
             if (top == null || left == null) return null;
-            return <DeckButton key={`${fieldKey}${fieldComponentKey}`}
+            return <DeckButton key={`${fieldKey}${fieldComponentKey}${top}${left}`}
                 {...deckButtonProps}
                 {...boardComponent}
                 owner={boardName}
