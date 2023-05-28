@@ -1,4 +1,4 @@
-Retry when upload
+Drag-n-Drop when scrolling is a mess, should be an edge case though
 
 Entity queue
 

@@ -9,7 +9,7 @@ import {
 } from 'src/model';
 import create from 'zustand';
 
-type DOMEntity = {
+export type DOMEntity = {
     name: string,
     type: DOMEntityType,
     left: number,

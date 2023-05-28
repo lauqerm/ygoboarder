@@ -78,8 +78,8 @@ export const Board = ({
                 {...boardComponent}
                 owner={boardName}
                 /** Dịch 1px cho border */
-                offsetTop={top + window.scrollY + 1}
-                offsetLeft={left + window.scrollX + 1}
+                offsetTop={top + 1}
+                offsetLeft={left + 1}
             />;
         })}
     </BoardContainer>;

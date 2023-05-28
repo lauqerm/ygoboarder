@@ -37,7 +37,12 @@ export const FieldKey = Object.freeze({
     opponent: 'opponent' as const,
 });
 
-export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, DOMRect>>;
+export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, {
+    x: number, y: number,
+    left: number, right: number,
+    top: number, bottom: number,
+    width: number, height: number,
+}>>;
 
 export type BoardComponentAction = 'view' | 'shuffle'
 | 'excavate-top-faceup'

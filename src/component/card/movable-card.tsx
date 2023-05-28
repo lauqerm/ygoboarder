@@ -5,15 +5,17 @@ import {
     GetBoardRegex,
     GetDeckButtonRegex,
     MODAL_WRAPPER_ID,
+    PROP_BOARD_NAME,
+    PROP_CARD_BOARD_NAME,
     PhaseType,
     Position,
     PropDOMEntityVisible,
 } from 'src/model';
-import { isLieInside, mergeClass } from 'src/util';
+import { getAbsoluteRect, isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
-import { useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
+import { DOMEntity, useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
 import { createPortal } from 'react-dom';
 import './movable-card.scss';
 
@@ -25,6 +27,7 @@ export type MovableCard = {
     offsetY?: number,
     phase?: PhaseType,
     position?: Position,
+    movableBoundary?: DOMEntity,
     originEntity?: DOMEntityType,
     onDragToBoard?: (id: string, newCoor: { top: number, left: number }, origin: string, boardName: string) => void,
 } & Card & React.HTMLAttributes<HTMLDivElement>;
@@ -43,6 +46,7 @@ export const MovableCard = ({
     origin,
     originEntity,
     style,
+    movableBoundary,
     onDragToBoard,
     ...rest
 }: MovableCard) => {
@@ -105,7 +109,8 @@ export const MovableCard = ({
         let highlightBeacon = (_e: MouseEvent) => { };
         let currentX = initialX;
         let currentY = initialY;
-        const onMouseDown = ({ clientX, clientY, button }: MouseEvent) => {
+        const onPointerDown = ({ clientX, clientY, button, target: eventTarget, pointerId }: PointerEvent) => {
+            if (eventTarget) (eventTarget as HTMLDivElement).setPointerCapture(pointerId);
             if (button !== 0) return;
             currentX = clientX;
             currentY = clientY;
@@ -138,7 +143,9 @@ export const MovableCard = ({
             };
             document.addEventListener('mousemove', highlightBeacon);
         };
-        const onMouseUp = ({ clientX, clientY, button }: MouseEvent) => {
+        const onPointerUp = ({ clientX, clientY, button, target: eventTarget, pointerId }: PointerEvent) => {
+            /** Capture và release pointer cho phép event trigger ngay cả khi chuột được release bên ngoài component ban đầu */
+            if (eventTarget) (eventTarget as HTMLDivElement).releasePointerCapture(pointerId);
             document.removeEventListener('mousemove', highlightBeacon);
             /** Bỏ qua right click */
             if (button !== 0) return;
@@ -159,6 +166,7 @@ export const MovableCard = ({
                 return;
             }
 
+            /** Drop tại beacon để cho card vào deck khác */
             const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
             const movedInitialDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
             let foundValidDrop = false;
@@ -202,8 +210,10 @@ export const MovableCard = ({
                 if (type === DOMEntityType['board'] && originEntity === DOMEntityType['deckButton'] && movedInitialDistance > 20) {
                     const boardName = DOMElement.getAttribute('data-board-name');
 
-                    /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCard không có thông tin về Deck mà nó thuộc về */
-                    if (boardName) onDragToBoard?.(uniqueId, { top, left }, origin, boardName);
+                    /** Ta không thực hiện thao tác drag vào board ở đây vì MovableCard không có thông tin về Deck mà nó thuộc về.
+                     * Ta phải drop vào tọa độ tuyệt đối vì con trỏ chuột đang phụ thuộc vào viewport
+                     */
+                    if (boardName && target) onDragToBoard?.(uniqueId, getAbsoluteRect(target.getBoundingClientRect()), origin, boardName);
                 }
             }
         };
@@ -215,15 +225,15 @@ export const MovableCard = ({
             if (originEntity === DOMEntityType['board']) focus('card', uniqueId);
         }
         if (target) {
-            target.addEventListener('mousedown', onMouseDown);
-            target.addEventListener('mouseup', onMouseUp);
+            target.addEventListener('pointerdown', onPointerDown);
+            target.addEventListener('pointerup', onPointerUp);
         }
 
         return () => {
             document.removeEventListener('mousemove', highlightBeacon);
             if (target) {
-                target.removeEventListener('mousedown', onMouseDown);
-                target.removeEventListener('mouseup', onMouseUp);
+                target.removeEventListener('pointerdown', onPointerDown);
+                target.removeEventListener('pointerup', onPointerUp);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -302,6 +312,18 @@ export const MovableCard = ({
                     target!.style.zIndex = `${zIndex}`;
                     target!.classList.remove('card-is-dragging');
                 }}
+
+                /** snappable */
+                snappable={true}
+                bounds={movableBoundary
+                    ? {
+                        top: 0,
+                        left: 0,
+                        bottom: movableBoundary.bottom - movableBoundary.top,
+                        right: movableBoundary.right - movableBoundary.left,
+                    }
+                    : null}
+                snapContainer={document.querySelector(`[${PROP_BOARD_NAME}="${movableBoundary?.name}"]`) as HTMLDivElement}
             />}
         </div>,
         portal,

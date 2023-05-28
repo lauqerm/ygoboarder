@@ -48,4 +48,23 @@ export const exportAsJson = (content: any) => {
     document.body.removeChild(element);
 };
 
+export const getAbsoluteRect = (rect: {
+    top?: number, bottom?: number,
+    right?: number, left?: number,
+    x?: number, y?: number,
+    width?: number, height?: number,
+}) => {
+    const { top, right, bottom, left, x, y, width, height } = rect;
+    return {
+        x: (x ?? 0) + window.scrollX,
+        y: (y ?? 0) + window.scrollY,
+        top: (top ?? 0) + window.scrollY,
+        right: (right ?? 0) + window.scrollX,
+        bottom: (bottom ?? 0) + window.scrollY,
+        left: (left ?? 0) + window.scrollX,
+        width: width ?? 0,
+        height: height ?? 0,
+    };
+};
+
 export { createIndexQueue } from './index-queue';

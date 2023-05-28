@@ -1,11 +1,12 @@
 import Selecto from 'react-selecto';
 import styled from 'styled-components';
-import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore } from 'src/state';
+import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore, useDOMEntityStateStore } from 'src/state';
 import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType, PROP_BOARD_NAME, PROP_CARD_BOARD_NAME } from 'src/model';
 import { List } from 'immutable';
 import { MovableCard, MovableCardGroup } from '../card';
 import { useEffect, useRef, useState } from 'react';
 import './play-board.scss';
+import { getAbsoluteRect } from 'src/util';
 
 const BoardCardContainer = styled.div`
     top: 0;
@@ -17,11 +18,9 @@ const BoardCardContainer = styled.div`
 
 export type CardBoard = {
     boardName: string,
-    boardId?: string,
 }
 export const CardBoard = ({
     boardName,
-    boardId = 'board-group',
 }: CardBoard) => {
     const [cardGroupKey, setCardGroupKey] = useState(0);
     const [cardGroupCount, setCardGroupCount] = useState(0);
@@ -30,6 +29,7 @@ export const CardBoard = ({
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
         (oldState, newState) => oldState.equals(newState),
     );
+    const boardBoundary = useDOMEntityStateStore(state => state.DOMEntityMap[DOMEntityType['board']][boardName]);
 
     const boardCardRef = useRef<HTMLDivElement>(null);
 
@@ -39,7 +39,7 @@ export const CardBoard = ({
     useEffect(() => {
         const correspondingBoardDrawing = document.querySelector(`[${PROP_BOARD_NAME}="${boardName}"]`);
         if (correspondingBoardDrawing) {
-            const { x, y } = correspondingBoardDrawing.getBoundingClientRect();
+            const { x, y } = getAbsoluteRect(correspondingBoardDrawing.getBoundingClientRect());
             if (!isNaN(oldCoord.current.x) && !isNaN(oldCoord.current.y)) {
                 offset.current = {
                     x: x - oldCoord.current.x,
@@ -71,6 +71,7 @@ export const CardBoard = ({
                 phase={boardCard.get('phase')}
                 position={boardCard.get('position')}
                 originEntity={DOMEntityType['board']}
+                movableBoundary={boardBoundary}
             />;
         })}
         <MovableCardGroup key={cardGroupKey}
@@ -102,7 +103,7 @@ export const CardBoard = ({
                     el.classList.remove(CLASS_CARD_MOVABLE_ZONED, 'card-is-zoned');
                 });
                 setCardGroupCount(e.selected.length);
-                replaceCardGroup(boardId, e.selected as HTMLElement[]);
+                replaceCardGroup(boardName, e.selected as HTMLElement[]);
             }}
             onDragStart={e => {
                 if (!e.inputEvent.target?.closest(`.${CLASS_BOARD}`)) {

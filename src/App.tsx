@@ -58,6 +58,7 @@ function App() {
         refreshMode: 'debounce',
         refreshRate: 500,
         onResize: () => {
+            console.log('resize');
             recalculate();
         },
     });
@@ -195,6 +196,7 @@ function App() {
                     const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(sourceIndex);
 
                     if (targetDeckCard) {
+                        console.log(targetDeckCard.toJS(), beaconOrigin);
                         deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
                         addToDeck(
                             beaconOrigin,
@@ -234,8 +236,9 @@ function App() {
                             deleteFromDeck(deckID, [targetCard.get('_id')]);
                             addToBoard(boardName, [{
                                 card: targetCard,
-                                initialX: x - 0 - offsetX,
-                                initialY: y - 0 - offsetY,
+                                /** Khi drag lên field thì phải dùng absolute position */
+                                initialX: x - offsetX + window.scrollX,
+                                initialY: y - offsetY + window.scrollY,
                                 origin: deckID,
                                 phase: cardInDeck.get('phase'),
                             }]);
@@ -354,7 +357,9 @@ function App() {
                     }} />
                 </AppMenuContainer>
                 <CardPreviewer />
-                <Board boardName={boardName} />
+                <div className="board-container">
+                    <Board boardName={boardName} />
+                </div>
                 <div className="padding" />
             </div>
             <CardBoard boardName={boardName} />

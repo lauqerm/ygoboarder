@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
 import { DeckListConverter, useDeckStore } from 'src/state';
 import { TurnWidget } from '../widget';
+import { getAbsoluteRect } from 'src/util';
 
 const BoardContainer = styled.div`
     --field-card-height-sm: calc(var(--card-height-sm) + 2px);
@@ -111,23 +112,46 @@ export const BoardDrawing = ({
 
     const oldCoord = useRef({ x: 0, y: 0 });
     useEffect(() => {
-        const { x = 0, y = 0 } = boardRef.current?.getBoundingClientRect() ?? {};
+        /** Coordinate này relative với viewport */
+        const rect = boardRef.current?.getBoundingClientRect();
+        const { x = 0, y = 0 } = rect ? getAbsoluteRect(rect) : {};
         if (x !== oldCoord.current.x || y !== oldCoord.current.y) {
             oldCoord.current = { x, y };
+            console.log('coordinate change', x, y);
             onCoordinateChnage({
                 [FieldKey.your]: {
-                    [FieldComponentKey.deck]: yourDeckRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.extraDeck]: yourExtraDeckRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.trunk]: yourTrunkRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.gy]: yourGYRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.banishedPile]: yourBanishedPileRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.deck]: yourDeckRef.current
+                        ? getAbsoluteRect(yourDeckRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.extraDeck]: yourExtraDeckRef.current
+                        ? getAbsoluteRect(yourExtraDeckRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.trunk]: yourTrunkRef.current
+                        ? getAbsoluteRect(yourTrunkRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.gy]: yourGYRef.current
+                        ? getAbsoluteRect(yourGYRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.banishedPile]: yourBanishedPileRef.current
+                        ? getAbsoluteRect(yourBanishedPileRef.current.getBoundingClientRect())
+                        : undefined,
                 },
                 [FieldKey.opponent]: {
-                    [FieldComponentKey.deck]: oppDeckRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.extraDeck]: oppExtraDeckRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.trunk]: oppTrunkRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.gy]: oppGYRef.current?.getBoundingClientRect(),
-                    [FieldComponentKey.banishedPile]: oppBanishedPileRef.current?.getBoundingClientRect(),
+                    [FieldComponentKey.deck]: oppDeckRef.current
+                        ? getAbsoluteRect(oppDeckRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.extraDeck]: oppExtraDeckRef.current
+                        ? getAbsoluteRect(oppExtraDeckRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.trunk]: oppTrunkRef.current
+                        ? getAbsoluteRect(oppTrunkRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.gy]: oppGYRef.current
+                        ? getAbsoluteRect(oppGYRef.current.getBoundingClientRect())
+                        : undefined,
+                    [FieldComponentKey.banishedPile]: oppBanishedPileRef.current
+                        ? getAbsoluteRect(oppBanishedPileRef.current.getBoundingClientRect())
+                        : undefined,
                 },
             });
         }
@@ -146,7 +170,7 @@ export const BoardDrawing = ({
     const yourGYBoardComponent = getBoardComponent('your', 'gy');
     const yourDeckBoardComponent = getBoardComponent('your', 'deck');
 
-    return <BoardContainer ref={boardRef}>
+    return <BoardContainer ref={boardRef} className="play-board-drawing">
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppDeckRef} className="vertical-zone">

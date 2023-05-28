@@ -351,6 +351,7 @@ export const DeckButton = ({
                             phase={topDeckCard.get('phase')}
                             fake={true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
+                                console.log('🚀 ~ file: index.tsx:354 ~ coord:', coord);
                                 const cardInDeck = deckList.get(0);
 
                                 if (cardInDeck) {
