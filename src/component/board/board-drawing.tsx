@@ -3,7 +3,7 @@ import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent 
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
 import { DeckListConverter, useDeckStore } from 'src/state';
-import { TurnWidget } from '../widget';
+import { LPWidget, TurnWidget } from '../widget';
 import { getAbsoluteRect } from 'src/util';
 
 const BoardContainer = styled.div`
@@ -229,7 +229,9 @@ export const BoardDrawing = ({
                     <TurnWidget />
                 </div>
                 <div className="square-zone" />
-                <div className="empty-zone main-extra-section" />
+                <div className="empty-zone main-extra-section">
+                    <LPWidget />
+                </div>
                 <div className="square-zone" />
                 <div className="empty-zone right-extra-section" />
             </div>

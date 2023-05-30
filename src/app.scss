@@ -48,10 +48,18 @@
   --sub-antd: #40a9ff;
   --contrast-antd: #fff;
 
+  --sub-your-color: #b3ceff;
+  --main-your-color: #005aff;
+  --contrast-your-color: #ffffff;
+  --sub-opp-color: #ffbdbd;
+  --main-opp-color: #ff2222;
+  --contrast-opp-color: #ffffff;
+
   --white: #fff;
   --dim: #efefef;
 
   --gradient-hovered: #edededee;
+  --gradient-hovered-light: linear-gradient(45deg,rgba(29,33,41,0.09),rgba(29,33,41,0.09));;
 
   --bs-inset: 0 0 2px 0 #333 inset;
 

@@ -63,3 +63,9 @@ export const TurnMap: Record<TurnPhase, TurnInfo> = {
     end: EndPhase,
 };
 export const TurnList = Object.values(TurnMap);
+
+export const Player = {
+    your: 'your' as const,
+    opp: 'opp' as const,
+};
+export type Player = keyof typeof Player;

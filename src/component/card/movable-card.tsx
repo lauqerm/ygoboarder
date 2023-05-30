@@ -6,7 +6,6 @@ import {
     GetDeckButtonRegex,
     MODAL_WRAPPER_ID,
     PROP_BOARD_NAME,
-    PROP_CARD_BOARD_NAME,
     PhaseType,
     Position,
     PropDOMEntityVisible,

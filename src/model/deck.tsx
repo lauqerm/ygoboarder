@@ -1,3 +1,5 @@
+import { Player } from './game';
+
 export const DeckType = Object.freeze({
     /** Ví dụ Trunk
      * * Move ra board: Mất origin (có cảnh báo) - Tạo copy
@@ -24,9 +26,5 @@ export const DeckType = Object.freeze({
 });
 export type DeckType = keyof typeof DeckType;
 
-export const CardPreset = Object.freeze({
-    your: 'your' as const,
-    opp: 'opp' as const,
-    
-});
+export const CardPreset = Player;
 export type CardPreset = keyof typeof CardPreset;

@@ -16,12 +16,13 @@ import {
     MODAL_WRAPPER_ID,
     DOMEntityType,
     PropDOMEntityVisible,
+    Player,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useZIndexState } from './state';
+import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useLPStore, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
@@ -42,6 +43,7 @@ function App() {
     const registerDeck = useDeckStore(state => state.register);
     const resetDeck = useDeckStore(state => state.reset);
     const resetBoard = useBoardStore(state => state.reset);
+    const setLP = useLPStore(state => state.set);
     const zIndexChange = useZIndexState(state => state.updateCount);
     const {
         recalculate,
@@ -54,6 +56,7 @@ function App() {
         }),
         (prev, next) => prev.version === next.version,
     );
+    const resetLP = (value = '8000') => [Player.your, Player.opp].map(entry => setLP(entry, value));
     const { ref } = useResizeDetector({
         refreshMode: 'debounce',
         refreshRate: 500,
@@ -303,6 +306,7 @@ function App() {
         document.addEventListener('mousemove', getMousePosition);
         setTimeout(() => {
             recalculate();
+            resetLP();
         }, 500);
 
         return () => {
@@ -333,6 +337,7 @@ function App() {
                     <ImportButton onImport={importedData => {
                         resetDeck();
                         resetBoard();
+                        resetLP();
                         Object.entries(importedData.deckList).forEach(([deckName, { type, cardList, defaultPhase, phaseBehavior, preset }]) => {
                             const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
                             registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
