@@ -3,7 +3,7 @@ import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent 
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
 import { DeckListConverter, useDeckStore } from 'src/state';
-import { LPWidget, TurnWidget } from '../widget';
+import { LPWidget, RandomWidget, TurnWidget } from '../widget';
 import { getAbsoluteRect } from 'src/util';
 
 const BoardContainer = styled.div`
@@ -41,8 +41,17 @@ const BoardContainer = styled.div`
         .main-col-center {
             border-top: none;
             border-bottom: none;
-            border-left-color: var(--main-primaryLighter);
-            border-right-color: var(--main-primaryLighter);
+            border-left-color: transparent;
+            border-right-color: transparent;
+            background-color: transparent;
+            > .square-zone {
+                box-shadow: 0 0 0 var(--bdSize) var(--bdColor-contrast);
+            }
+        }
+        .main-extra-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
         }
     }
     .square-zone {
@@ -68,7 +77,6 @@ const BoardContainer = styled.div`
     }
     .empty-zone {
         width: var(--field-card-height-sm);
-        background-color: var(--main-primaryLighter);
     }
     .with-icon {
         display: flex;
@@ -170,7 +178,12 @@ export const BoardDrawing = ({
     const yourGYBoardComponent = getBoardComponent('your', 'gy');
     const yourDeckBoardComponent = getBoardComponent('your', 'deck');
 
-    return <BoardContainer ref={boardRef} className="play-board-drawing">
+    return <BoardContainer ref={boardRef}
+        className="play-board-drawing"
+        style={{
+            backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/noise.png")`,
+        }}
+    >
         <div className="side-col">
             <div className="side-col-component side-col-top">
                 <div ref={oppDeckRef} className="vertical-zone">
@@ -231,6 +244,7 @@ export const BoardDrawing = ({
                 <div className="square-zone" />
                 <div className="empty-zone main-extra-section">
                     <LPWidget />
+                    <RandomWidget />
                 </div>
                 <div className="square-zone" />
                 <div className="empty-zone right-extra-section" />

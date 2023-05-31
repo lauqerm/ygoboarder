@@ -17,6 +17,11 @@ const CardPreviewContainer = styled.div`
     overflow: hidden;
     max-width: 35rem;
     min-width: calc(var(--card-width-md) + 2 * var(--spacing-xl));
+    .card-preview-header {
+        position: relative;
+        display: flex;
+        width: 100%;
+    }
     .card-preview-image-container {
         width: var(--card-width-md);
         height: var(--card-height-md);
@@ -25,6 +30,7 @@ const CardPreviewContainer = styled.div`
         flex-direction: column;
         justify-content: center;
         align-self: flex-end;
+        margin-left: auto;
         > img {
             max-width: 100%;
             max-height: 100%;
@@ -81,7 +87,10 @@ const CardPreviewContainer = styled.div`
         }
     }
 `;
-export const CardPreviewer = () => {
+export type CardPreviewer = React.PropsWithChildren<{}>;
+export const CardPreviewer = ({
+    children,
+}: CardPreviewer) => {
     const dynamicState = usePreviewStore(
         state => state.cardPreview,
         (prev, next) => {
@@ -113,14 +122,17 @@ export const CardPreviewer = () => {
     };
 
     return <CardPreviewContainer className={mergeClass('card-preview', lockedData ? 'card-preview-locked' : '')}>
-        <div className="card-preview-image-container">
-            {noCard
-                ? <CardBack size="md" className="card-preview-image" />
-                : <DelayedImage
-                    className="card-preview-image"
-                    type={type === 'external' ? 'URL' : 'Base64'}
-                    src={type === 'external' ? dataURL : data}
-                />}
+        <div className="card-preview-header">
+            {children}
+            <div className="card-preview-image-container">
+                {noCard
+                    ? <CardBack size="md" className="card-preview-image" />
+                    : <DelayedImage
+                        className="card-preview-image"
+                        type={type === 'external' ? 'URL' : 'Base64'}
+                        src={type === 'external' ? dataURL : data}
+                    />}
+            </div>
         </div>
         <div className="card-preview-description">
             {lockedData

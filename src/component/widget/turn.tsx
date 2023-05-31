@@ -7,6 +7,7 @@ import { useState } from 'react';
 
 const TurnWidgetContainer = styled.div`
     display: flex;
+    padding: 0 var(--spacing-xs);
     .phase-navigator {
         flex: 1 auto;
         display: flex;

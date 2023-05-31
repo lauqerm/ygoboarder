@@ -1,61 +1,67 @@
 import { notification } from 'antd';
 import { List } from 'immutable';
-import React from 'react';
 import { CardPreset, DeckType, PhaseType } from 'src/model';
 import { PhaseBehavior, useBoardStore, useDeckStore, useDescriptionStore } from 'src/state';
 import { exportAsJson } from 'src/util';
+import styled from 'styled-components';
+
+const JSONUploadInput = styled.input`
+    display: none;
+`;
 
 export const ExportButton = () => {
     const allDeckList = useDeckStore(state => state.deckMap);
     const allBoard = useBoardStore(state => state.boardMap);
     const allDescription = useDescriptionStore(state => state.descriptionMap);
 
-    return <button onClick={() => {
-        const resultDeckList: TransferableData['deckList'] = {};
-        const descriptionMap: Record<string, string> = {};
+    return <div
+        className="menu-button"
+        onClick={() => {
+            const resultDeckList: TransferableData['deckList'] = {};
+            const descriptionMap: Record<string, string> = {};
 
-        allDeckList.forEach(deckList => {
-            const type = deckList.get('type');
-            const name = deckList.get('name');
-            resultDeckList[name] = {
-                type,
-                defaultPhase: deckList.get('defaultPhase'),
-                phaseBehavior: deckList.get('phaseBehavior'),
-                preset: deckList.get('preset'),
-                cardList: [],
-            };
-            deckList.get('cardList', List()).forEach(card => {
-                const cardData = card.get('card').get('dataURL');
-                if (cardData) {
-                    resultDeckList[name].cardList.push(cardData);
-                    descriptionMap[cardData] = allDescription[cardData];
-                }
+            allDeckList.forEach(deckList => {
+                const type = deckList.get('type');
+                const name = deckList.get('name');
+                resultDeckList[name] = {
+                    type,
+                    defaultPhase: deckList.get('defaultPhase'),
+                    phaseBehavior: deckList.get('phaseBehavior'),
+                    preset: deckList.get('preset'),
+                    cardList: [],
+                };
+                deckList.get('cardList', List()).forEach(card => {
+                    const cardData = card.get('card').get('dataURL');
+                    if (cardData) {
+                        resultDeckList[name].cardList.push(cardData);
+                        descriptionMap[cardData] = allDescription[cardData];
+                    }
+                });
             });
-        });
-        allBoard.forEach(boardList => {
-            boardList.get('boardCardList').forEach(card => {
-                const origin = card.get('origin');
+            allBoard.forEach(boardList => {
+                boardList.get('boardCardList').forEach(card => {
+                    const origin = card.get('origin');
 
-                const cardData = card.get('card').get('dataURL');
-                if (cardData && origin) {
-                    resultDeckList[origin].cardList.push(cardData);
-                    descriptionMap[cardData] = allDescription[cardData];
-                }
+                    const cardData = card.get('card').get('dataURL');
+                    if (cardData && origin) {
+                        resultDeckList[origin].cardList.push(cardData);
+                        descriptionMap[cardData] = allDescription[cardData];
+                    }
+                });
             });
-        });
 
-        try {
-            exportAsJson({
-                deckList: resultDeckList,
-                descriptionList: descriptionMap,
-            });
-        } catch (e) {
-            console.error(e);
-            notification.error({
-                message: 'Export failed',
-            });
-        }
-    }}>Export</button>;
+            try {
+                exportAsJson({
+                    deckList: resultDeckList,
+                    descriptionList: descriptionMap,
+                });
+            } catch (e) {
+                console.error(e);
+                notification.error({
+                    message: 'Export failed',
+                });
+            }
+        }}>Export</div>;
 };
 
 type TransferableDeck = {
@@ -135,22 +141,26 @@ export const ImportButton = ({
     };
 
     return <>
-        <button onClick={() => {
-            const importedData = window.prompt('Paste imported data', JSON.stringify(value));
-            try {
-                if (importedData) {
-                    onImport(JSON.parse(importedData));
+        <div
+            className="menu-button"
+            onClick={() => {
+                const importedData = window.prompt('Paste imported data', JSON.stringify(value));
+                try {
+                    if (importedData) {
+                        onImport(JSON.parse(importedData));
+                    }
+                } catch (e) {
+                    console.error(e);
+                    notification.error({
+                        message: 'Import failed',
+                    });
                 }
-            } catch (e) {
-                console.error(e);
-                notification.error({
-                    message: 'Import failed',
-                });
-            }
-        }}>
-            Import by text
-        </button>
-        <input type="file" onChange={e => {
+            }}
+        >
+            Text Import
+        </div>
+        <label className="menu-button" htmlFor="json-upload">File Import</label>
+        <JSONUploadInput id="json-upload" className="json-upload-input" type="file" onChange={e => {
             const reader = new FileReader();
             reader.onload = e => {
                 try {

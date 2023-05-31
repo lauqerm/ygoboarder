@@ -65,6 +65,8 @@
 
   --bdSize: 1px;
 
+  --bdColor-contrast: #ffffff;
+  --bd-contrast: var(--bdSize) solid var(--bdColor-contrast);
   --bdColor-blunt: #555555;
   --bd-blunt: var(--bdSize) solid var(--bdColor-blunt);
   --bdColor: #8a8a8a;

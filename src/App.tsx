@@ -331,37 +331,43 @@ function App() {
             onDragUpdate={onDragUpdate}
             onDragEnd={onDragEnd}
         >
-            <div key={`board-${hardResetCnt}`} ref={ref} className="app-wrapper">
-                <AppMenuContainer>
-                    <ExportButton />
-                    <ImportButton onImport={importedData => {
-                        resetDeck();
-                        resetBoard();
-                        resetLP();
-                        Object.entries(importedData.deckList).forEach(([deckName, { type, cardList, defaultPhase, phaseBehavior, preset }]) => {
-                            const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
-                            registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
-                            addToDeck(
-                                deckName,
-                                validEntryList
-                                    .map(imageURL => ({
-                                        card: CardImageConverter({
-                                            _id: uuidv4(),
-                                            dataURL: imageURL,
-                                            type: 'external',
-                                            preset,
-                                        }),
-                                    })),
+            <div key={`board-${hardResetCnt}`} ref={ref}
+                className="app-wrapper"
+                style={{
+                    backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/debut-dark.png"), linear-gradient(180deg, #00000022, #00000044)`,
+                }}
+            >
+                <CardPreviewer>
+                    <AppMenuContainer>
+                        <ExportButton />
+                        <ImportButton onImport={importedData => {
+                            resetDeck();
+                            resetBoard();
+                            resetLP();
+                            Object.entries(importedData.deckList).forEach(([deckName, { type, cardList, defaultPhase, phaseBehavior, preset }]) => {
+                                const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
+                                registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
+                                addToDeck(
+                                    deckName,
+                                    validEntryList
+                                        .map(imageURL => ({
+                                            card: CardImageConverter({
+                                                _id: uuidv4(),
+                                                dataURL: imageURL,
+                                                type: 'external',
+                                                preset,
+                                            }),
+                                        })),
+                                );
+                            });
+                            addDescription(
+                                Object.entries(importedData.descriptionList).map(([url, description]) => ({ key: url, description })),
+                                true,
                             );
-                        });
-                        addDescription(
-                            Object.entries(importedData.descriptionList).map(([url, description]) => ({ key: url, description })),
-                            true,
-                        );
-                        setHardReset(cnt => cnt + 1);
-                    }} />
-                </AppMenuContainer>
-                <CardPreviewer />
+                            setHardReset(cnt => cnt + 1);
+                        }} />
+                    </AppMenuContainer>
+                </CardPreviewer>
                 <div className="board-container">
                     <Board boardName={boardName} />
                 </div>
