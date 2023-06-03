@@ -26,6 +26,9 @@ export const DeckBeaconWrapper = React.forwardRef(({
             CLASS_BEACON_WRAPPER,
             className,
         )}
+        style={{
+            backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/noise.png")`,
+        }}
         data-beacon-visibility={isVisible}
         data-beacon-index={zIndex}
         {...rest}

@@ -40,6 +40,7 @@ import { List } from 'immutable';
 import { createPortal } from 'react-dom';
 import { mergeClass } from 'src/util';
 import './deck-modal.scss';
+import { PlayerTag } from 'src/component/atom';
 
 const distributeDeckRow = (cardList: List<DeckCard>) => {
     const processedDeckRow: { card: DeckCard, index: number }[][] = [];
@@ -247,7 +248,7 @@ export const DeckModal = React.forwardRef(({
                 onMouseOut={e => e.stopPropagation()}
             >
                 <div className="deck-modal-content">
-                    <div>{displayName}</div>
+                    <div className="deck-modal-title-content"><PlayerTag preset={preset} /> {displayName}</div>
                     <CloseOutlined onClick={close} />
                 </div>
                 <Moveable

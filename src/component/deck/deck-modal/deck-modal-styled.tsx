@@ -9,7 +9,7 @@ export const DECK_MODAL_HEIGHT = 600;
 export const DeckModalHandleContainer = styled.div`
     position: absolute;
     width: ${DECK_MODAL_WIDTH}px;
-    background-color: var(--main-primaryLighter);
+    background-color: var(--dim);
     border: var(--bd);
     border-radius: var(--br) var(--br) 0 0;
     padding: var(--spacing);
@@ -25,6 +25,11 @@ export const DeckModalHandleContainer = styled.div`
                 color: var(--sub-danger);
             }
         }
+    }
+    .deck-modal-title-content {
+        display: flex;
+        align-items: center;
+        column-gap: var(--spacing-sm);
     }
     .moveable-control-box {
         visibility: hidden!important;
@@ -49,7 +54,7 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
     .deck-beacon-wrapper {
         display: grid;
         grid-template-columns: 0 1fr;
-        background: var(--main-primary);
+        background: var(--main-secondaryLighter);
     }
     .deck-result {
         width: calc(${DECK_MODAL_WIDTH}px - 10px);
@@ -66,7 +71,7 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
         align-items: center;
         column-gap: var(--spacing);
         padding: var(--spacing);
-        background: var(--main-primaryLighter);
+        background: var(--dim);
         border-top: var(--bd);
     }
     .deck-modal-beacon-list {

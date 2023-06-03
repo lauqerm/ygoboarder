@@ -125,7 +125,6 @@ export const BoardDrawing = ({
         const { x = 0, y = 0 } = rect ? getAbsoluteRect(rect) : {};
         if (x !== oldCoord.current.x || y !== oldCoord.current.y) {
             oldCoord.current = { x, y };
-            console.log('coordinate change', x, y);
             onCoordinateChnage({
                 [FieldKey.your]: {
                     [FieldComponentKey.deck]: yourDeckRef.current

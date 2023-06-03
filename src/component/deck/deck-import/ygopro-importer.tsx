@@ -1,4 +1,4 @@
-import { Input, Radio } from 'antd';
+import { Radio } from 'antd';
 import axios from 'axios';
 import queryString from 'query-string';
 import { useEffect, useRef, useState } from 'react';
@@ -9,25 +9,46 @@ import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
 import { usePreviewStore } from 'src/state';
 import { mergeClass } from 'src/util';
+import { RequestorPayload, YGOImporterFilter } from './ygo-importer-filter';
 import './ygopro-importer.scss';
 
-type RequestorPayload = {
-    fname?: string,
-}
 const requestor = async (payload: RequestorPayload) => {
-    const normalizedPayload = (payload: RequestorPayload) => {
-        const finalPayload: RequestorPayload = {};
-        const { fname } = payload;
+    const getPayloadList = (payload: RequestorPayload) => {
+        const commonPayload: Record<string, any> = {};
+        const payloadWithName: Record<string, any> = {};
+        const payloadWithDesc: Record<string, any> = {};
+        const { fname, desc } = payload;
 
-        if (typeof fname === 'string' && fname.length > 0) finalPayload.fname = fname;
+        /** Trường hợp đặc biệt với text search, name và description là hai phép search tách biệt nên nếu tồn tại cả hai operator ta cần tách chúng ra làm hai payload riêng */
+        if (typeof fname === 'string' && fname.length > 0) payloadWithName.fname = fname;
+        if (typeof desc === 'string' && desc.length > 0) payloadWithDesc.desc = desc;
 
-        return finalPayload;
+        return [
+            payloadWithName,
+            payloadWithDesc,
+        ]
+            .filter(payload => Object.keys(payload).length > 0)
+            .map(payload => ({ ...payload, ...commonPayload }));
     };
-    const queryParam = queryString.stringify(normalizedPayload(payload));
 
-    if ((queryParam ?? '').length === 0) return undefined;
+    const queryParamList = getPayloadList(payload)
+        .map(processedPayload => queryString.stringify(processedPayload))
+        .filter(stringifiedParam => (stringifiedParam ?? '').length > 0);
 
-    return (await axios<{ data: YGOProCardResponse[] }>(`https://db.ygoprodeck.com/api/v7/cardinfo.php?${queryParam}`)).data.data;
+    if (queryParamList.length === 0) return undefined;
+
+    const matchedCardMap = (await Promise.all(queryParamList
+        .map(param => axios<{ data: YGOProCardResponse[] }>(`https://db.ygoprodeck.com/api/v7/cardinfo.php?${param}`)),
+    ))
+        .map(response => response.data.data)
+        .flat()
+        /** Loại bỏ kết quả trùng */
+        .reduce((prev, curr) => {
+            return { ...prev, [curr.id]: curr };
+        }, {} as Record<string, YGOProCardResponse>);
+    return Object
+        .values(matchedCardMap)
+        .sort((l, r) => l.name.localeCompare(r.name));
 };
 
 const YGOImporterContainer = styled.div`
@@ -35,18 +56,29 @@ const YGOImporterContainer = styled.div`
         width: 100%;
         margin-bottom: var(--spacing);
     }
+    .ygopro-importer-title {
+        display: grid;
+        grid-template-columns: 1fr max-content;
+        .ant-radio-group {
+            font-weight: normal;
+        }
+    }
     .ygopro-card-entry {
         position: relative;
         display: grid;
         grid-template-columns: 86px 1fr;
         column-gap: var(--spacing);
-        margin: var(--spacing) 0;
+        margin-bottom: var(--spacing);
+        padding-top: var(--spacing);
         cursor: pointer;
         &:hover {
             .card-statistic b {
                 color: var(--sub-antd);
                 text-decoration: underline;
             }
+        }
+        + .ygopro-card-entry {
+            border-top: var(--bd-faint);
         }
         .image-container {
             position: relative;
@@ -109,6 +141,8 @@ const YGOImporterContainer = styled.div`
         /** Size của ygopro */
         .ygopro-card-entry {
             margin: 0;
+            padding: 0;
+            border: none;
             &:hover {
                 outline: 4px solid var(--main-antd);
             }
@@ -150,23 +184,23 @@ export const YGOProImporter = ({
     }, [payload]);
 
     return <YGOImporterContainer className="ygopro-importer">
-        <h2>Import from YGOPRODeck</h2>
-        <Radio.Group
-            className="display-mode"
-            options={[
-                { label: 'List Mode', value: 'list' },
-                { label: 'Grid Mode', value: 'grid' },
-            ]}
-            onChange={e => setDisplayMode(e.target.value)}
-            value={displayMode}
-            optionType="button"
-            buttonStyle="solid"
-        />
-        <Input.Search
-            addonBefore="Name"
-            onSearch={async value => {
-                setPayload(curr => ({ ...curr, fname: value }));
-            }}
+        <h2 className="ygopro-importer-title">
+            Import from YGOPRODeck
+            <Radio.Group
+                size="small"
+                className="display-mode"
+                options={[
+                    { label: 'List Mode', value: 'list' },
+                    { label: 'Grid Mode', value: 'grid' },
+                ]}
+                onChange={e => setDisplayMode(e.target.value)}
+                value={displayMode}
+                optionType="button"
+                buttonStyle="solid"
+            />
+        </h2>
+        <YGOImporterFilter
+            onPayloadChange={setPayload}
         />
         <div className={mergeClass('ygopro-card-list', displayMode)}>
             {cardResponseList

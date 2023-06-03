@@ -43,7 +43,7 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
             className="deck-import-drawer"
             open={isOpened}
             onClose={() => setOpen(false)}
-            width={'40%'}
+            width={'730px'}
             mask={false}
             destroyOnClose
         >
