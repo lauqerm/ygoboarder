@@ -1,5 +1,5 @@
 import { Button, Drawer, Tabs } from 'antd';
-import { forwardRef, useImperativeHandle, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { CardImageConverter, CardPreset } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
 import { useDeckStore, useDescriptionStore } from 'src/state';
@@ -14,10 +14,12 @@ export type DeckImporterRef = {
 export type DeckImporter = {
     deckId: string,
     preset: CardPreset,
+    onVisibleChange: (currentStatus: boolean) => void,
 };
 export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
     deckId,
     preset,
+    onVisibleChange,
 }: DeckImporter, ref) => {
     const [isOpened, setOpen] = useState(false);
     const addDescription = useDescriptionStore(state => state.set);
@@ -29,6 +31,11 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
         }),
         () => true,
     );
+
+    useEffect(() => {
+        onVisibleChange(isOpened);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpened]);
 
     useImperativeHandle(ref, () => ({
         close: () => {
@@ -47,40 +54,52 @@ export const DeckImporter = forwardRef<DeckImporterRef, DeckImporter>(({
             mask={false}
             destroyOnClose
         >
-            <Tabs className="deck-import-modal">
-                <Tabs.TabPane key="ygopro" tab="From YGOPro">
-                    <YGOProImporter onSelect={(name, url, description) => {
-                        addToList(
-                            deckId,
-                            [{
-                                card: CardImageConverter({
-                                    _id: uuidv4(),
-                                    name: name,
-                                    type: 'external',
-                                    data: '',
-                                    dataURL: url,
-                                    preset,
-                                }),
-                            }],
-                        );
-                        addDescription([{ key: url, description }]);
-                    }} />
-                </Tabs.TabPane>
-                <Tabs.TabPane key="online" tab="Online Links">
-                    <OnlineImporter
-                        deckId={deckId}
-                        preset={preset}
-                        onClose={() => setOpen(false)}
-                    />
-                </Tabs.TabPane>
-                <Tabs.TabPane key="offline" tab="Offline Images">
-                    <OfflineImporter
-                        deckId={deckId}
-                        preset={preset}
-                        onClose={() => setOpen(false)}
-                    />
-                </Tabs.TabPane>
-            </Tabs>
+            <Tabs
+                className="deck-import-modal"
+                items={[
+                    {
+                        key: 'ygopro',
+                        label: 'From YGOPro',
+                        children: <YGOProImporter
+                            id={deckId}
+                            onSelect={(name, url, description) => {
+                                addToList(
+                                    deckId,
+                                    [{
+                                        card: CardImageConverter({
+                                            _id: uuidv4(),
+                                            name: name,
+                                            type: 'external',
+                                            data: '',
+                                            dataURL: url,
+                                            preset,
+                                        }),
+                                    }],
+                                );
+                                addDescription([{ key: url, description }]);
+                            }}
+                        />,
+                    },
+                    {
+                        key: 'online',
+                        label: 'Online Links',
+                        children: <OnlineImporter
+                            deckId={deckId}
+                            preset={preset}
+                            onClose={() => setOpen(false)}
+                        />,
+                    },
+                    {
+                        key: 'offline',
+                        label: 'Offline Links',
+                        children: <OfflineImporter
+                            deckId={deckId}
+                            preset={preset}
+                            onClose={() => setOpen(false)}
+                        />,
+                    },
+                ]}
+            />
         </Drawer>
     </>;
 });

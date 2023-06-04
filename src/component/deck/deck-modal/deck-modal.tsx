@@ -119,6 +119,7 @@ export const DeckModal = React.forwardRef(({
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
     const [isFocused, setFocused] = useState(false);
+    const [isAddingCard, setAddingCard] = useState(false);
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckStore(
@@ -248,7 +249,7 @@ export const DeckModal = React.forwardRef(({
                 onMouseOut={e => e.stopPropagation()}
             >
                 <div className="deck-modal-content">
-                    <div className="deck-modal-title-content"><PlayerTag preset={preset} /> {displayName}</div>
+                    <div className="deck-modal-title-content"><PlayerTag preset={preset} /> {displayName} ({currentFullDeckList.size} / {deckCount ?? 0})</div>
                     <CloseOutlined onClick={close} />
                 </div>
                 <Moveable
@@ -308,6 +309,7 @@ export const DeckModal = React.forwardRef(({
                 className={mergeClass(
                     'deck-modal-viewer',
                     isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
+                    isAddingCard ? 'deck-modal-adding' : '',
                     DOM_ENTITY_CLASS, DOMEntityTypeClass['deckModal'],
                     className,
                 )}
@@ -403,11 +405,15 @@ export const DeckModal = React.forwardRef(({
                 </DeckBeaconWrapper>
                 <div className="deck-tool-bar">
                     <div>
-                        Card amount: {currentFullDeckList.size} / {deckCount ?? 0}
+                        
                     </div>
                     <Button type="ghost" onClick={close}>Close</Button>
                     <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                    <DeckImporter ref={deckImpoterRef} deckId={deckId} preset={preset} />
+                    <DeckImporter ref={deckImpoterRef}
+                        deckId={deckId}
+                        preset={preset}
+                        onVisibleChange={status => setAddingCard(status)}
+                    />
                 </div>
             </ModalContainer>
         </>,

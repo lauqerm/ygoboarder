@@ -1,60 +1,27 @@
-import { Radio } from 'antd';
-import axios from 'axios';
-import queryString from 'query-string';
-import { useEffect, useRef, useState } from 'react';
+import { Radio, notification } from 'antd';
+import { useEffect, useState } from 'react';
 import { YGOProCardResponse, ygoproCardToDescription } from 'src/model';
-import throttle from 'lodash.throttle';
 import { AttributeText, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
-import { usePreviewStore } from 'src/state';
+import { usePreviewStore, useYGOProFilter } from 'src/state';
 import { mergeClass } from 'src/util';
-import { RequestorPayload, YGOImporterFilter } from './ygo-importer-filter';
+import { YGOImporterFilter } from './ygopro-importer-filter';
+import { LoadingOutlined } from '@ant-design/icons';
+import { YGOProRequestor } from './ygopro-importer-requestor';
 import './ygopro-importer.scss';
 
-const requestor = async (payload: RequestorPayload) => {
-    const getPayloadList = (payload: RequestorPayload) => {
-        const commonPayload: Record<string, any> = {};
-        const payloadWithName: Record<string, any> = {};
-        const payloadWithDesc: Record<string, any> = {};
-        const { fname, desc } = payload;
-
-        /** Trường hợp đặc biệt với text search, name và description là hai phép search tách biệt nên nếu tồn tại cả hai operator ta cần tách chúng ra làm hai payload riêng */
-        if (typeof fname === 'string' && fname.length > 0) payloadWithName.fname = fname;
-        if (typeof desc === 'string' && desc.length > 0) payloadWithDesc.desc = desc;
-
-        return [
-            payloadWithName,
-            payloadWithDesc,
-        ]
-            .filter(payload => Object.keys(payload).length > 0)
-            .map(payload => ({ ...payload, ...commonPayload }));
-    };
-
-    const queryParamList = getPayloadList(payload)
-        .map(processedPayload => queryString.stringify(processedPayload))
-        .filter(stringifiedParam => (stringifiedParam ?? '').length > 0);
-
-    if (queryParamList.length === 0) return undefined;
-
-    const matchedCardMap = (await Promise.all(queryParamList
-        .map(param => axios<{ data: YGOProCardResponse[] }>(`https://db.ygoprodeck.com/api/v7/cardinfo.php?${param}`)),
-    ))
-        .map(response => response.data.data)
-        .flat()
-        /** Loại bỏ kết quả trùng */
-        .reduce((prev, curr) => {
-            return { ...prev, [curr.id]: curr };
-        }, {} as Record<string, YGOProCardResponse>);
-    return Object
-        .values(matchedCardMap)
-        .sort((l, r) => l.name.localeCompare(r.name));
-};
-
 const YGOImporterContainer = styled.div`
+    position: relative;
     .display-mode {
         width: 100%;
         margin-bottom: var(--spacing);
+    }
+    .ygopro-filter {
+        top: 0;
+        position: sticky;
+        background-color: var(--dim);
+        z-index: 1;
     }
     .ygopro-importer-title {
         display: grid;
@@ -112,6 +79,7 @@ const YGOImporterContainer = styled.div`
                 left: 0;
                 border-radius: 0 0 var(--br) 0;
                 border: var(--bd-blunt);
+                box-shadow: 0 0 var(--bdSize) var(--bdSize) white;
             }
         }
         .main-statistic {
@@ -147,6 +115,9 @@ const YGOImporterContainer = styled.div`
                 outline: 4px solid var(--main-antd);
             }
         }
+        .restriction-text {
+            font-size: var(--fs-3xl);
+        }
         .card-entry-image {
             width: 168px;
             height: 246px;
@@ -155,37 +126,82 @@ const YGOImporterContainer = styled.div`
 `;
 
 export type YGOProImporter = {
+    id: string,
     onSelect: (name: string, url: string, description: string) => void,
 }
 export const YGOProImporter = ({
+    id,
     onSelect,
 }: YGOProImporter) => {
-    const [payload, setPayload] = useState<RequestorPayload>({});
     const [cardResponseList, setCardResponseList] = useState<YGOProCardResponse[]>([]);
     const [displayMode, setDisplayMode] = useState('grid');
-    const throttledRequest = useRef(throttle(requestor, 100));
+    const [loading, setLoading] = useState(false);
+    const [ready, setReady] = useState(false);
     const preview = usePreviewStore(state => state.setCardPreview);
+    const payload = useYGOProFilter(state => state.payloadMap[id]);
+    const fullCardList = useYGOProFilter(state => state.fullCardList);
+    const cardListStatus = useYGOProFilter(state => state.status);
+    const initCardList = useYGOProFilter(state => state.init);
+
     useEffect(() => {
         let relevant = true;
 
         (async () => {
             try {
-                const response = await throttledRequest.current(payload);
+                await initCardList();
 
-                if (relevant && response) setCardResponseList(response);
+                if (relevant) setReady(true);
             } catch (e) {
-                console.error(e);
+                if (relevant) {
+                    notification.error({
+                        message: 'Could not load card data',
+                        description: 'Please refresh the page',
+                        placement: 'bottomRight',
+                    });
+                    setReady(true);
+                }
             }
         })();
 
         return () => {
             relevant = false;
         };
-    }, [payload]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        let relevant = true;
+
+        if (cardListStatus === 'loaded') (async () => {
+            try {
+                setLoading(true);
+                const resultCardList = await YGOProRequestor(payload, fullCardList);
+
+                if (relevant) setLoading(false);
+                if (relevant && resultCardList) setCardResponseList(resultCardList);
+            } catch (e: any) {
+                if (e.code === 'ERR_BAD_REQUEST') notification.error({
+                    message: 'No cards match your search',
+                    description: 'Please try different filter',
+                    placement: 'bottomRight',
+                });
+                else console.error(e);
+                if (relevant) {
+                    setLoading(false);
+                }
+            }
+        })();
+
+        return () => {
+            relevant = false;
+        };
+    }, [fullCardList, cardListStatus, payload]);
 
     return <YGOImporterContainer className="ygopro-importer">
         <h2 className="ygopro-importer-title">
-            Import from YGOPRODeck
+            <div>
+                Import from YGOPRODeck&nbsp;&nbsp;{loading && <LoadingOutlined />}
+            </div>
             <Radio.Group
                 size="small"
                 className="display-mode"
@@ -199,9 +215,7 @@ export const YGOProImporter = ({
                 buttonStyle="solid"
             />
         </h2>
-        <YGOImporterFilter
-            onPayloadChange={setPayload}
-        />
+        <YGOImporterFilter id={id} ready={ready} />
         <div className={mergeClass('ygopro-card-list', displayMode)}>
             {cardResponseList
                 .slice(0, 20)
@@ -221,7 +235,7 @@ export const YGOProImporter = ({
                         banlist_info,
                     } = card;
                     const { ban_ocg } = banlist_info ?? {};
-                    const { image_url_small, image_url } = card_images[0];
+                    const { image_url } = card_images[0];
                     const isMonster = type.toLowerCase().includes('monster')
                         || type.toLowerCase().includes('token');
                     const isXyzMonster = frameType === 'xyz';
@@ -229,19 +243,19 @@ export const YGOProImporter = ({
 
                     return <div key={id}
                         className="ygopro-card-entry"
-                        onClick={() => onSelect(name, image_url_small, ygoproCardToDescription(card))}
+                        onClick={() => onSelect(name, image_url, ygoproCardToDescription(card))}
+                        onMouseEnter={() => {
+                            preview('external', image_url, ygoproCardToDescription(card));
+                        }}
                     >
                         <div className="card-entry-image">
                             <div className="image-container">
                                 <RestrictionText limit={ban_ocg} />
-                                {typeof image_url_small !== 'string'
+                                {typeof image_url !== 'string'
                                     ? null
                                     : <DelayedImage key={id}
                                         type="URL"
-                                        src={image_url_small}
-                                        onMouseEnter={() => {
-                                            if (displayMode === 'grid') preview('external', image_url, ygoproCardToDescription(card));
-                                        }}
+                                        src={image_url}
                                     />}
                                 <div className="stat-list">
                                     <div className="stat">{atk}</div>

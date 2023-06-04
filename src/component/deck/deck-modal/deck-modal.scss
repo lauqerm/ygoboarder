@@ -17,4 +17,7 @@
     &.deck-modal-viewer-boost {
         z-index: 5000 !important;
     }
+    &.deck-modal-adding {
+        box-shadow: 0 0 1px 2px var(--main-antd);
+    }
 }

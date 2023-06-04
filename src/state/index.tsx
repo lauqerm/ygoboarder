@@ -7,4 +7,5 @@ export * from './dom-entity-store';
 export * from './event-store';
 export * from './lp-store';
 export * from './preview-store';
+export * from './ygopro-filter';
 export * from './z-index-store';

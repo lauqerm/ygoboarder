@@ -52,3 +52,12 @@ export const getDefaultYGOProCardResponse = () => ({
     banlist_info: getDefaultBanlistInfo() as BanlistInfo,
 });
 export type YGOProCardResponse = ReturnType<typeof getDefaultYGOProCardResponse>;
+
+export type CardType = 'monster' | 'spell' | 'trap';
+export const getDefaultYGOProCard = () => ({
+    ...getDefaultYGOProCardResponse(),
+    card_type: 'monster' as CardType,
+    filterable_name: '',
+    filterable_desc: '',
+});
+export type YGOProCard = ReturnType<typeof getDefaultYGOProCard>;

@@ -87,6 +87,7 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
 
     return <img
         {...rest}
+        loading="lazy"
         alt="card"
         src={actualSrc ?? '/asset/img/ygo-card-back-neutral.png'}
         onLoad={() => {
