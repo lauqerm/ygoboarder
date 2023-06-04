@@ -1,5 +1,7 @@
 import { Button, Checkbox, Input, InputRef, Select } from 'antd';
 import { useRef, useState } from 'react';
+import { CheckboxGroup } from 'src/component/atom';
+import { CardType, CardTypeList } from 'src/model';
 import { YGOProPayloadStringKey, useYGOProFilter } from 'src/state';
 import styled from 'styled-components';
 
@@ -10,6 +12,12 @@ const YGOProFilterContainer = styled.div`
     display: flex;
     column-gap: var(--spacing);
     padding-bottom: var(--spacing);
+    .ant-input-group-addon {
+        padding: 0 var(--spacing-sm);
+    }
+    .ant-select-selection-item {
+        padding-left: var(--spacing-sm);
+    }
     .first-column {
         .ant-btn {
             width: 100%;
@@ -24,11 +32,52 @@ const YGOProFilterContainer = styled.div`
         gap: var(--spacing-sm);
         flex: 1;
         .frame-filter {
-            width: 55rem;
+            flex: 0 0 15rem;
         }
+        .first-row,
         .second-row {
             display: flex;
             gap: var(--spacing-sm);
+        }
+        .card-type-filter {
+            flex: 0 0 auto;
+        }
+        .text-filter {
+            flex: 1;
+            display: flex;
+            .ant-input-affix-wrapper,
+            .ant-input-wrapper {
+                border-left: none;
+            }
+            .ant-input-affix-wrapper {
+                flex: 1;
+                * {
+                    border-top-left-radius: 0;
+                    border-bottom-left-radius: 0;
+                }
+            }
+            .ant-input-group-addon {
+                padding: 0;
+            }
+            .checkbox-group {
+                border-top-right-radius: 0;
+                border-bottom-right-radius: 0;
+            }
+            .ant-tag:last-child {
+                border-radius: 0;
+            }
+        }
+        .image-icon {
+            flex: 0 0 90px;
+            .ant-input-group-addon {
+                line-height: 1;
+                font-weight: bold;
+                img {
+                    /** antd small input height trừ cho border, margin, vv... */
+                    height: 16px;
+                    padding-bottom: var(--spacing-xs);
+                }
+            }
         }
     }
     .text-operator-option {
@@ -38,7 +87,7 @@ const YGOProFilterContainer = styled.div`
     }
 `;
 
-const textOperatorList: YGOProPayloadStringKey[] = ['name', 'desc'];
+const textOperatorList: YGOProPayloadStringKey[] = ['name', 'desc', 'pendDesc'];
 
 export type YGOImporterFilter = {
     id: string,
@@ -48,13 +97,15 @@ export const YGOImporterFilter = ({
     id,
     ready,
 }: YGOImporterFilter) => {
-    const [textMode, setTextMode] = useState<YGOProPayloadStringKey[]>(['name', 'desc']);
-    const [cardModeList, setCardMode] = useState<('monster' | 'spell' | 'trap')[] | undefined>(undefined);
+    const [textModeList, setTextMode] = useState<YGOProPayloadStringKey[]>([...textOperatorList]);
+    const [cardModeList, setCardModeList] = useState<CardType[]>(CardTypeList);
     const [filterKeyMap, setFilterKeyMap] = useState({
-        text: 0,
         atk: 0,
-        def: 0,
         card_type: 0,
+        def: 0,
+        scale: 0,
+        step: 0,
+        text: 0,
     });
     const textInputRef = useRef<InputRef>(null);
     const internalPayload = useRef<Record<string, any>>({});
@@ -87,17 +138,20 @@ export const YGOImporterFilter = ({
     const applySearch = () => {
         setPayload(id, curr => {
             const newPayload = { ...curr };
-            const { text, atk, def, card_type } = internalPayload.current;
+            const { text, atk, def, step, scale, card_type } = internalPayload.current;
 
             if (typeof text === 'string') {
                 textOperatorList.forEach(operator => delete newPayload[operator]);
-                textMode.forEach(operator => newPayload[operator] = text.toLocaleLowerCase());
+                textModeList.forEach(operator => newPayload[operator] = text.toLocaleLowerCase());
             } else {
                 newPayload['name'] = undefined;
                 newPayload['desc'] = undefined;
+                newPayload['pendDesc'] = undefined;
             }
             newPayload['atk'] = normalizeStatValue(atk);
             newPayload['def'] = normalizeStatValue(def);
+            newPayload['step'] = normalizeStatValue(step);
+            newPayload['scale'] = normalizeStatValue(scale);
             newPayload['card_type'] = (card_type ?? []).length === 0 ? undefined : card_type;
 
             return newPayload;
@@ -106,7 +160,7 @@ export const YGOImporterFilter = ({
     const resetSearch = () => {
         internalPayload.current = {};
         setPayload(id, () => ({}));
-        setCardMode(undefined);
+        setCardModeList(CardTypeList);
         setFilterKeyMap(cur => {
             const newKeyMap = { ...cur };
             for (let key in newKeyMap) newKeyMap[key as keyof typeof cur] += 1;
@@ -127,62 +181,87 @@ export const YGOImporterFilter = ({
         </div>
         <div className="second-column truncate">
             <div className="first-row truncate">
-                <Search ref={textInputRef} key={`text-${filterKeyMap['text']}`}
+                <CheckboxGroup key={`card_type-${filterKeyMap['card_type']}`}
                     {...commonProps}
-                    addonBefore={<div className="text-operator-option">
-                        <Checkbox.Group
-                            options={[
-                                { value: 'name', label: 'Name' },
-                                { value: 'desc', label: 'Effect' },
-                            ]}
-                            defaultValue={textMode}
-                            onChange={valueList => {
-                                setTextMode(valueList as YGOProPayloadStringKey[]);
-                                textInputRef.current?.focus();
-                            }}
-                        />
-                    </div>}
-                    onChange={e => internalPayload.current['text'] = e.currentTarget.value}
-                    onSearch={() => applySearch()}
-                    placeholder="Search card text"
-                />
-            </div>
-            <div className="second-row truncate">
-                <Select key={`card_type-${filterKeyMap['card_type']}`}
-                    {...commonProps}
-                    className="frame-filter"
-                    mode="multiple"
-                    placeholder="Card type"
-                    options={[
-                        { value: 'spell', label: 'Spell' },
-                        { value: 'trap', label: 'Trap' },
-                        { value: 'monster', label: 'Monster' },
+                    className="card-type-filter"
+                    optionList={[
+                        { value: 'monster', label: 'Monster', defaultChecked: (cardModeList ?? []).includes('monster') },
+                        { value: 'spell', label: 'Spell', defaultChecked: (cardModeList ?? []).includes('spell') },
+                        { value: 'trap', label: 'Trap', defaultChecked: (cardModeList ?? []).includes('trap') },
                     ]}
+                    onReset={() => { }}
                     onChange={value => {
-                        const normalizedValueList = Array.isArray(value) ? value : [value];
-                        internalPayload.current['card_type'] = normalizedValueList;
-                        if (normalizedValueList.length > 0 && !normalizedValueList.includes('monster')) {
+                        internalPayload.current['card_type'] = value;
+                        if (value.length > 0 && !value.includes('monster')) {
                             delete internalPayload.current['atk'];
                             delete internalPayload.current['def'];
-                            setFilterKeyMap(cur => ({ ...cur, atk: cur.atk + 1, def: cur.def + 1 }));
+                            delete internalPayload.current['scale'];
+                            delete internalPayload.current['step'];
+                            setFilterKeyMap(cur => ({
+                                ...cur,
+                                atk: cur.atk + 1,
+                                def: cur.def + 1,
+                                step: cur.step + 1,
+                                scale: cur.scale + 1,
+                            }));
                         }
-                        setCardMode(normalizedValueList);
+                        setCardModeList(value as typeof cardModeList);
                         applySearch();
                     }}
                 />
-                <Search key={`atk-${filterKeyMap['atk']}`}
+                <div className="text-filter">
+                    <CheckboxGroup className="text-operator-option" key={`text-category-${filterKeyMap['text']}`}
+                        {...commonProps}
+                        optionList={[
+                            { value: 'name', label: 'Name', defaultChecked: (textModeList ?? []).includes('name') },
+                            { value: 'desc', label: 'Card Eff', defaultChecked: (textModeList ?? []).includes('desc') },
+                            { value: 'pendDesc', label: 'Pend Eff', defaultChecked: (textModeList ?? []).includes('pendDesc') },
+                        ]}
+                        onChange={valueList => {
+                            setTextMode(valueList as YGOProPayloadStringKey[]);
+                            textInputRef.current?.focus();
+                        }}
+                    />
+                    <Input ref={textInputRef} key={`text-${filterKeyMap['text']}`}
+                        {...commonProps}
+                        autoFocus
+                        onChange={e => internalPayload.current['text'] = e.currentTarget.value}
+                        onPressEnter={() => applySearch()}
+                        placeholder="Search card text"
+                    />
+                </div>
+            </div>
+            <div className="second-row truncate">
+                <Input key={`atk-${filterKeyMap['atk']}`}
                     {...commonProps}
                     addonBefore="ATK"
-                    disabled={!ready || (Array.isArray(cardModeList) && !cardModeList.includes('monster'))}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
                     onChange={e => internalPayload.current['atk'] = e.currentTarget.value}
-                    onSearch={() => applySearch()}
+                    onPressEnter={() => applySearch()}
                 />
-                <Search key={`def-${filterKeyMap['def']}`}
+                <Input key={`def-${filterKeyMap['def']}`}
                     {...commonProps}
                     addonBefore="DEF"
-                    disabled={!ready || (Array.isArray(cardModeList) && !cardModeList.includes('monster'))}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
                     onChange={e => internalPayload.current['def'] = e.currentTarget.value}
-                    onSearch={() => applySearch()}
+                    onPressEnter={() => applySearch()}
+                />
+                <Input key={`step-${filterKeyMap['step']}`}
+                    {...commonProps}
+                    className="image-icon"
+                    addonBefore={<span>
+                        <img src={`${process.env.PUBLIC_URL}/asset/img/step-filter.png`} alt="step-filter-icon" />L
+                    </span>}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    onChange={e => internalPayload.current['step'] = e.currentTarget.value}
+                    onPressEnter={() => applySearch()}
+                />
+                <Input key={`scale-${filterKeyMap['scale']}`}
+                    {...commonProps}
+                    addonBefore="Scale"
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    onChange={e => internalPayload.current['scale'] = e.currentTarget.value}
+                    onPressEnter={() => applySearch()}
                 />
             </div>
         </div>

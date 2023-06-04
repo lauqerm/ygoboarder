@@ -11,12 +11,15 @@ export type YGOProStatPayload = {
 export type YGOProRequestorPayload = {
     name?: string,
     desc?: string,
+    pendDesc?: string,
     atk?: YGOProStatPayload,
     def?: YGOProStatPayload,
+    step?: YGOProStatPayload,
+    scale?: YGOProStatPayload,
     card_type?: string[],
 };
-export type YGOProPayloadStringKey = Extract<keyof YGOProRequestorPayload, 'name' | 'desc'>;
-export type YGOProPayloadStatKey = Extract<keyof YGOProRequestorPayload, 'atk' | 'def'>;
+export type YGOProPayloadStringKey = Extract<keyof YGOProRequestorPayload, 'name' | 'desc' | 'pendDesc'>;
+export type YGOProPayloadStatKey = Extract<keyof YGOProRequestorPayload, 'atk' | 'def' | 'step' | 'scale'>;
 export type YGOProPayloadArrayKey = Extract<keyof YGOProRequestorPayload, 'card_type'>;
 export type YGOProFilterState = {
     status: 'idling' | 'loading' | 'loaded',
@@ -41,16 +44,31 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
         const fullCardList = await axios<{ data: YGOProCardResponse[] }>('https://db.ygoprodeck.com/api/v7/cardinfo.php');
         const processedCardList: YGOProCard[] = fullCardList.data.data
             .filter(entry => entry.frameType !== 'skill' && entry.frameType !== 'token')
-            .map(entry => ({
-                ...entry,
-                filterable_name: entry.name.toLowerCase(),
-                filterable_desc: entry.desc.toLowerCase(),
-                card_type: entry.frameType === 'spell'
-                    ? 'spell'
-                    : entry.frameType === 'trap'
-                        ? 'trap'
-                        : 'monster',
-            }));
+            .map<YGOProCard>(entry => {
+                const { name, desc, level, linkval, frameType } = entry;
+                const pendulumAnalyzeResult = /\[\s*pendulum\s*effect\s*\]([\w\W]*)\[\s*(?:monster\s*effect|flavor\s*text)\s*\]([\w\W]*)/gi.exec(desc);
+                let cardEff = '', pendEff = '';
+                if (pendulumAnalyzeResult) {
+                    pendEff = pendulumAnalyzeResult[1];
+                    cardEff = pendulumAnalyzeResult[2];
+                } else {
+                    cardEff = desc;
+                }
+
+                return {
+                    ...entry,
+                    is_pendulum: frameType.includes('pendulum'),
+                    step: level ?? linkval,
+                    filterable_name: name.toLowerCase(),
+                    filterable_card_eff: cardEff.toLowerCase(),
+                    filterable_pend_eff: pendEff.toLowerCase(),
+                    card_type: frameType === 'spell'
+                        ? 'spell'
+                        : frameType === 'trap'
+                            ? 'trap'
+                            : 'monster',
+                };
+            });
 
         set(state => {
             return {

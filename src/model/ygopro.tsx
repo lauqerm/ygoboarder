@@ -53,11 +53,16 @@ export const getDefaultYGOProCardResponse = () => ({
 });
 export type YGOProCardResponse = ReturnType<typeof getDefaultYGOProCardResponse>;
 
-export type CardType = 'monster' | 'spell' | 'trap';
+export type CardType = (typeof CardTypeList)[0];
+export const CardTypeList = ['monster' as const, 'spell' as const, 'trap' as const];
 export const getDefaultYGOProCard = () => ({
     ...getDefaultYGOProCardResponse(),
+    /** level, rank, link rating */
+    step: 0 as number | undefined,
     card_type: 'monster' as CardType,
     filterable_name: '',
-    filterable_desc: '',
+    filterable_card_eff: '',
+    filterable_pend_eff: '',
+    is_pendulum: false,
 });
 export type YGOProCard = ReturnType<typeof getDefaultYGOProCard>;
