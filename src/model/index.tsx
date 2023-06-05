@@ -81,3 +81,4 @@ export * from './field';
 export * from './imgur';
 export * from './ygopro';
 export * from './game';
+export * from './localstorage';

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { CardRaceToBitMap, MarkerToBitMap, PickerMode, YGOProCard, YGOProCardResponse } from 'src/model';
+import { CardPoolToBitMap, CardRaceToBitMap, LimitToNumberMap, MarkerToBitMap, PickerMode, YGOProCard, YGOProCardResponse } from 'src/model';
 import create from 'zustand';
 
 export type YGOProStatPayload = {
@@ -9,6 +9,7 @@ export type YGOProStatPayload = {
     secondValue: number | undefined;
 }
 export type YGOProRequestorPayload = {
+    limit?: number[],
     name?: string,
     desc?: string,
     pendDesc?: string,
@@ -23,7 +24,7 @@ export type YGOProRequestorPayload = {
 };
 export type YGOProPayloadStringKey = Extract<keyof YGOProRequestorPayload, 'name' | 'desc' | 'pendDesc'>;
 export type YGOProPayloadStatKey = Extract<keyof YGOProRequestorPayload, 'atk' | 'def' | 'step' | 'scale'>;
-export type YGOProPayloadArrayKey = Extract<keyof YGOProRequestorPayload, 'card_type' | 'attribute'>;
+export type YGOProPayloadArrayKey = Extract<keyof YGOProRequestorPayload, 'card_type' | 'attribute' | 'limit'>;
 export type YGOProPayloadListKey = Extract<keyof YGOProRequestorPayload, 'marker' | 'race'>;
 export type YGOProFilterState = {
     status: 'idling' | 'loading' | 'loaded',
@@ -45,11 +46,13 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
             set(state => ({ ...state, status: 'loading' }));
             return;
         };
-        const fullCardList = await axios<{ data: YGOProCardResponse[] }>('https://db.ygoprodeck.com/api/v7/cardinfo.php');
+        const fullCardList = await axios<{ data: YGOProCardResponse[] }>('https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes');
         const processedCardList: YGOProCard[] = fullCardList.data.data
             .filter(entry => entry.frameType !== 'skill' && entry.frameType !== 'token')
             .map<YGOProCard>(entry => {
-                const { name, desc, level, linkval, frameType, linkmarkers, race } = entry;
+                const { name, desc, level, linkval, frameType, linkmarkers, race, misc_info, banlist_info } = entry;
+                const { ban_ocg, ban_tcg } = banlist_info ?? {};
+                const { formats } = (misc_info ?? [])[0];
                 const pendulumAnalyzeResult = /\[\s*pendulum\s*effect\s*\]([\w\W]*)\[\s*(?:monster\s*effect|flavor\s*text)\s*\]([\w\W]*)/gi.exec(desc);
                 let cardEff = '', pendEff = '';
                 if (pendulumAnalyzeResult) {
@@ -61,10 +64,22 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
                 const link_binary = (linkmarkers ?? []).reduce((acc, markerName) => acc | MarkerToBitMap[markerName], 0);
                 const race_binary = race ? CardRaceToBitMap[race] : 0;
 
+                const normalizedFormatList = formats ?? [];
+                const pool_binary = normalizedFormatList.includes('OCG')
+                    ? normalizedFormatList.includes('TCG')
+                        ? CardPoolToBitMap['BOTH']
+                        : CardPoolToBitMap['OCG']
+                    : CardPoolToBitMap['TCG'];
+                
                 return {
                     ...entry,
                     link_binary,
                     race_binary,
+                    pool_binary,
+                    limit_info: {
+                        tcg: ban_tcg ? LimitToNumberMap[ban_tcg] : 3,
+                        ocg: ban_ocg ? LimitToNumberMap[ban_ocg] : 3,
+                    },
                     is_pendulum: frameType.includes('pendulum'),
                     step: level ?? linkval,
                     filterable_name: name.toLowerCase(),

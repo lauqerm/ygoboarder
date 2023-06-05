@@ -72,3 +72,16 @@ export const MonsterRaceList = [
     'Wyrm',
     'Zombie',
 ];
+export const SpellRaceList = [
+    'Normal',
+    'Field',
+    'Equip',
+    'Continuous',
+    'Quick-Play',
+    'Ritual',
+];
+export const TrapRaceList = [
+    'Normal',
+    'Continuous',
+    'Counter',
+];

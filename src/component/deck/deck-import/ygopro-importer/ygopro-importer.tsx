@@ -1,7 +1,7 @@
 import { Radio, notification } from 'antd';
 import { useEffect, useState } from 'react';
-import { YGOProCardResponse, ygoproCardToDescription } from 'src/model';
-import { AttributeText, RestrictionText } from 'src/component/atom';
+import { CardPoolToBitMap, CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, YGOProCardResponse, ygoproCardToDescription } from 'src/model';
+import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
 import { usePreviewStore, useYGOProFilter } from 'src/state';
@@ -15,7 +15,6 @@ const YGOImporterContainer = styled.div`
     position: relative;
     .display-mode {
         width: 100%;
-        margin-bottom: var(--spacing);
     }
     .ygopro-filter {
         top: 0;
@@ -25,9 +24,22 @@ const YGOImporterContainer = styled.div`
     }
     .ygopro-importer-title {
         display: grid;
-        grid-template-columns: 1fr max-content;
+        grid-template-columns: 1fr max-content max-content max-content;
+        column-gap: var(--spacing);
         .ant-radio-group {
             font-weight: normal;
+        }
+        .filter-with-label {
+            line-height: 1;
+        }
+        .label {
+            font-weight: normal;
+            margin-right: var(--spacing-sm);
+            display: inline;
+            font-size: var(--fs-sm);
+        }
+        .ant-radio-button-wrapper {
+            padding: 0 var(--spacing-sm);
         }
     }
     .ygopro-card-entry {
@@ -116,7 +128,7 @@ const YGOImporterContainer = styled.div`
             }
         }
         .restriction-text {
-            font-size: var(--fs-3xl);
+            font-size: var(--fs-xl);
         }
         .card-entry-image {
             width: 168px;
@@ -133,11 +145,16 @@ export const YGOProImporter = ({
     id,
     onSelect,
 }: YGOProImporter) => {
-    const [cardResponseList, setCardResponseList] = useState<YGOProCardResponse[]>([]);
+    const [cardResponseList, setCardResponseList] = useState<YGOProCard[]>([]);
     const [displayMode, setDisplayMode] = useState('grid');
     const [loading, setLoading] = useState(false);
     const [ready, setReady] = useState(false);
+    const [banlist, setBanlist] = useState<string>(localStorage.getItem(LocalstorageKeyMap.banlist) ?? 'no');
+    const [cardpool, setCardPool] = useState<string[]>(localStorage.getItem(LocalstorageKeyMap.cardpool)
+        ? JSON.parse(localStorage.getItem(LocalstorageKeyMap.cardpool) ?? '[]')
+        : ['BOTH', 'TCG', 'OCG']);
     const preview = usePreviewStore(state => state.setCardPreview);
+
     const payload = useYGOProFilter(state => state.payloadMap[id]);
     const fullCardList = useYGOProFilter(state => state.fullCardList);
     const cardListStatus = useYGOProFilter(state => state.status);
@@ -166,7 +183,7 @@ export const YGOProImporter = ({
         return () => {
             relevant = false;
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -175,7 +192,7 @@ export const YGOProImporter = ({
         if (cardListStatus === 'loaded') (async () => {
             try {
                 setLoading(true);
-                const resultCardList = await YGOProRequestor(payload, fullCardList);
+                const resultCardList = await YGOProRequestor(payload, fullCardList, cardpool, banlist);
 
                 if (relevant) setLoading(false);
                 if (relevant && resultCardList) setCardResponseList(resultCardList);
@@ -195,19 +212,53 @@ export const YGOProImporter = ({
         return () => {
             relevant = false;
         };
-    }, [fullCardList, cardListStatus, payload]);
+    }, [fullCardList, cardListStatus, payload, cardpool, banlist]);
 
     return <YGOImporterContainer className="ygopro-importer">
         <h2 className="ygopro-importer-title">
             <div>
-                Import from YGOPRODeck&nbsp;&nbsp;{loading && <LoadingOutlined />}
+                YGOPRODeck Importer&nbsp;&nbsp;{loading && <LoadingOutlined />}
+            </div>
+            <div className="filter-with-label">
+                <div className="label">Pool</div>
+                <CheckboxGroup
+                    className="cardpool"
+                    optionList={[
+                        { label: 'OCG exclusive', value: 'OCG', defaultChecked: cardpool.includes('OCG') },
+                        { label: 'Both', value: 'BOTH', defaultChecked: cardpool.includes('BOTH') },
+                        { label: 'TCG exclusive', value: 'TCG', defaultChecked: cardpool.includes('TCG') },
+                    ]}
+                    onChange={value => {
+                        setCardPool(value);
+                        localStorage.setItem(LocalstorageKeyMap.cardpool, JSON.stringify(value));
+                    }}
+                />
+            </div>
+            <div className="filter-with-label">
+                <div className="label">Banlist</div>
+                <Radio.Group
+                    size="small"
+                    className="banlist-mode"
+                    options={[
+                        { label: 'OCG', value: 'ocg' },
+                        { label: 'TCG', value: 'tcg' },
+                        { label: 'No', value: 'no' },
+                    ]}
+                    onChange={e => {
+                        setBanlist(e.target.value);
+                        localStorage.setItem(LocalstorageKeyMap.banlist, e.target.value);
+                    }}
+                    value={banlist}
+                    optionType="button"
+                    buttonStyle="solid"
+                />
             </div>
             <Radio.Group
                 size="small"
                 className="display-mode"
                 options={[
-                    { label: 'List Mode', value: 'list' },
-                    { label: 'Grid Mode', value: 'grid' },
+                    { label: 'List', value: 'list' },
+                    { label: 'Grid', value: 'grid' },
                 ]}
                 onChange={e => setDisplayMode(e.target.value)}
                 value={displayMode}
@@ -233,8 +284,9 @@ export const YGOProImporter = ({
                         atk, def,
                         race,
                         banlist_info,
+                        pool_binary,
                     } = card;
-                    const { ban_ocg } = banlist_info ?? {};
+                    const { ban_ocg, ban_tcg } = banlist_info ?? {};
                     const { image_url } = card_images[0];
                     const isMonster = type.toLowerCase().includes('monster')
                         || type.toLowerCase().includes('token');
@@ -250,7 +302,13 @@ export const YGOProImporter = ({
                     >
                         <div className="card-entry-image">
                             <div className="image-container">
-                                <RestrictionText limit={ban_ocg} />
+                                <RestrictionText
+                                    prefix={CardBitToLabelMap[`${pool_binary}`]}
+                                    limitList={[
+                                        { format: 'ocg', limit: ban_ocg },
+                                        { format: 'tcg', limit: ban_tcg },
+                                    ].filter(entry => entry.format === banlist)}
+                                />
                                 {typeof image_url !== 'string'
                                     ? null
                                     : <DelayedImage key={id}

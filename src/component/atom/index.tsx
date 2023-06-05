@@ -31,29 +31,47 @@ export const AttributeText = ({
 
 const RestrictionTextContainer = styled.div`
     display: inline-block;
-    font-weight: bold;
     font-family: 'Courier New', Courier, monospace;
-    padding: 0 var(--spacing-sm);
-    line-height: 1.2;
+    line-height: 1;
+    font-size: 13px;
+    .prefix {
+        font-family: initial;
+        background-color: var(--contrast-antd);
+        padding: 0 var(--spacing-xs);
+    }
+    .restriction-row {
+        padding: 0 var(--spacing-sm);
+    }
+    .prefix:empty,
+    &:empty {
+        display: none;
+    }
 `;
 export type RestrictionText = {
-    limit?: LimitStatus,
+    prefix?: React.ReactNode,
+    limitList?: { format: string, limit?: LimitStatus }[],
 }
 export const RestrictionText = ({
-    limit,
+    prefix,
+    limitList,
 }: RestrictionText) => {
-    let color = '';
-    let background = '';
-    let text = 3;
-    switch (limit) {
-    case 'Banned': color = '#ffffff'; background = '#ff0000'; text = 0; break;
-    case 'Limited': color = '#ffffff'; background = '#ee6600'; text = 1; break;
-    case 'Semi-Limited': color = '#333333'; background = '#eeaa00'; text = 2; break;
-    }
+    return <RestrictionTextContainer className="restriction-text">
+        {prefix && <div className="prefix">{prefix}</div>}
+        {limitList?.map(({ format, limit }, _, arr) => {
+            let color = '';
+            let background = '';
+            let text = 3;
+            switch (limit) {
+            case 'Banned': color = '#ffffff'; background = '#ff0000'; text = 0; break;
+            case 'Limited': color = '#ffffff'; background = '#ee6600'; text = 1; break;
+            case 'Semi-Limited': color = '#333333'; background = '#eeaa00'; text = 2; break;
+            }
 
-    if (!limit || limit === 'Unlimited') return null;
-    return <RestrictionTextContainer className="restriction-text" style={{ color, background }}>
-        {text}
+            if (!limit || limit === 'Unlimited') return null;
+            return <div key={format} className="restriction-row" style={{ color, background }}>
+                {`${arr.length <= 1 ? '' : format.toUpperCase()} ${text}`.trim()}
+            </div>;
+        })}
     </RestrictionTextContainer>;
 };
 

@@ -1,6 +1,6 @@
 import { Tag } from 'antd';
 import styled from 'styled-components';
-import { ClearOutlined } from '@ant-design/icons';
+import { CloseCircleFilled } from '@ant-design/icons';
 import { useState } from 'react';
 import { CardTypeList } from 'src/model';
 import { mergeClass } from 'src/util';
@@ -15,14 +15,15 @@ const CheckboxGroupContainer = styled.div`
     .clear-button {
         cursor: pointer;
         margin: -1px 0;
-        padding: var(--spacing-sm) var(--spacing-xs);
+        padding: 5px var(--spacing-sm);
         border: var(--bd-antd);
         border-left: none;
         border-radius: 0 var(--br-antd) var(--br-antd) 0;
-        color: var(--color-extraFaint);
+        color: var(--color-ghost);
         background-color: var(--main-contrast);
+        font-size: var(--fs-xs);
         &:hover {
-            color: var(--sub-danger);
+            color: var(--color-faint);
         }
     }
     .ant-tag {
@@ -33,6 +34,7 @@ const CheckboxGroupContainer = styled.div`
         box-shadow: 0 0 0 1px var(--bdColor-antd);
         padding: 0 var(--spacing-sm);
         background-color: var(--main-contrast);
+        font-weight: normal;
         &:first-child {
             border-radius: var(--br-antd) 0 0 var(--br-antd);
         }
@@ -69,7 +71,7 @@ export type CheckboxGroup = {
 export const CheckboxGroup = ({
     className,
     optionList,
-    disabled = true,
+    disabled,
     onChange,
     onReset,
 }: CheckboxGroup) => {
@@ -101,7 +103,7 @@ export const CheckboxGroup = ({
                 {label}
             </Tag.CheckableTag>;
         })}
-        {onReset && <ClearOutlined className="clear-button" onClick={() => {
+        {onReset && <CloseCircleFilled className="clear-button" onClick={() => {
             setInternalValue(CardTypeList.reduce((map, value) => {
                 return { ...map, [value]: true };
             }, {} as Record<string, boolean>));

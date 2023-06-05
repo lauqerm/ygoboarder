@@ -1,7 +1,7 @@
 import { Popover } from 'antd';
 import { useState } from 'react';
 import styled from 'styled-components';
-import { ClearOutlined } from '@ant-design/icons';
+import { CloseCircleFilled } from '@ant-design/icons';
 import { mergeClass } from 'src/util';
 import { PickerMode } from 'src/model';
 import { ModePicker } from '../mode-picker';
@@ -26,9 +26,12 @@ const LinkMarkerPickerContainer = styled.div`
     .link-marker-reset {
         cursor: pointer;
         color: var(--color-extraFaint);
-        padding: 0 var(--spacing-xs);
+        padding: 0 var(--spacing-sm);
+        color: var(--color-ghost);
+        background-color: var(--main-contrast);
+        font-size: var(--fs-xs);
         &:hover {
-            color: var(--sub-danger);
+            color: var(--color-faint);
         }
     }
     .link-marker-preview {
@@ -201,7 +204,7 @@ export const LinkMarkerPicker = ({
                 internalOnChange(selectedMarkerList.mode, []);
             }}
         >
-            <ClearOutlined />
+            <CloseCircleFilled />
         </div>
     </LinkMarkerPickerContainer>;
 };

@@ -1,9 +1,17 @@
-import { YGOProCard } from 'src/model';
+import { CardPoolToBitMap, YGOProCard } from 'src/model';
 import { YGOProPayloadStatKey, YGOProRequestorPayload, YGOProStatPayload } from 'src/state';
 
-export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefined, cardList: YGOProCard[]) => {
+export const YGOProRequestor = async (
+    payload: YGOProRequestorPayload | undefined,
+    cardList: YGOProCard[],
+    cardPoolList: string[],
+    banlist: string,
+) => {
     if (!payload) return cardList;
-    let filterMap: Record<string, (value: YGOProCard) => boolean> = {};
+    const cardPoolValue = cardPoolList.reduce((acc, cur) => acc | CardPoolToBitMap[cur], 0);
+    let filterMap: Record<string, (value: YGOProCard) => boolean> = {
+        pool: card => (card.pool_binary | cardPoolValue) === cardPoolValue,
+    };
     const processStatPayload = (statPayload: YGOProStatPayload, statType: YGOProPayloadStatKey = 'atk') => {
         const { firstOperator, firstValue, secondOperator, secondValue } = statPayload;
         const explicitOperatorSearchBuilder = (operator: string, compareValue: number) => {
@@ -42,11 +50,13 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
     };
 
     const {
+        limit,
         name = '', desc = '', pendDesc = '',
         atk, def, step, scale,
         card_type, attribute,
         marker, race,
     } = payload;
+
     /** Trường hợp đặc biệt với text search, name, description và pendulum description là phép search lấy phần hợp */
     if (name !== '' || desc !== '' || pendDesc !== '') {
         let nameFilterPart = (_: YGOProCard) => false;
@@ -59,6 +69,10 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
         filterMap['text'] = entry => nameFilterPart(entry)
             || descFilterPart(entry)
             || pendDescFilterPart(entry);
+    }
+
+    if (Array.isArray(limit)) {
+        filterMap['limit'] = entry => limit.includes(((entry.limit_info ?? {}) as any)[`${banlist}`]);
     }
 
     if (step) processStatPayload(step, 'step');
@@ -87,7 +101,7 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
      * Mode "match exactly": Matched item phải bằng đúng với giá trị được cho, ta chỉ cần dùng so sánh bằng giữa value item và value filter.
      * Mode "match at most": Matched item phải khớp với tối thiểu một giá trị được cho, và không chứa giá trị nào nằm ngoài giá trị được cho. Ta sẽ dùng phép OR giữa value item và value filter, nếu kết quả của phép OR bằng đúng value filter thì có nghĩa là tất cả value item đều nằm trong value filter. */
     if (marker) {
-        const {mode, value} = marker;
+        const { mode, value } = marker;
         switch (mode) {
         case 'exactly': filterMap['marker'] = entry => entry.link_binary === value; break;
         case 'least': filterMap['marker'] = entry => entry.link_binary === (entry.link_binary | value); break;
@@ -97,7 +111,7 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
         filterMap['card_type'] = entry => entry.frameType === 'link';
     }
     if (race) {
-        const {mode, value} = race;
+        const { mode, value } = race;
         switch (mode) {
         case 'exactly': filterMap['race'] = entry => entry.race_binary === value; break;
         case 'least': filterMap['race'] = entry => entry.race_binary === (entry.race_binary | value); break;
@@ -105,11 +119,13 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
         }
     }
 
-    console.log('🚀 ~ file: ygopro-importer-requestor.ts:78 ~ YGOProRequestor ~ payload:', payload);
+    console.log('🚀 ~ file: ygopro-importer-requestor.ts:78', cardPoolList, banlist, payload);
     /** Sắp xếp theo thứ tự cố định với hy vọng số lượng card sau filter giảm nhanh nhất */
     const filterList: ((_: YGOProCard) => boolean)[] = [
         filterMap['card_type'],
         filterMap['sub_type'],
+        filterMap['pool'],
+        filterMap['limit'],
         filterMap['attribute'],
         filterMap['race'],
         filterMap['is_pendulum'],

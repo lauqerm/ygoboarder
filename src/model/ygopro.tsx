@@ -24,7 +24,26 @@ export const getDefaultCardURLImage = () => ({
 });
 export type CardURLImage = ReturnType<typeof getDefaultCardURLImage>;
 
-export type LimitStatus = 'Semi-Limited' | 'Limited' | 'Banned' | 'Unlimited';
+export const getDefaultCardMiscInfo = () => ({
+    downvotes: 0,
+    formats: [] as string[],
+    has_effect: 0,
+    konami_id: 0,
+    ocg_date: '',
+    tcg_date: '',
+    upvotes: 0,
+    views: 0,
+    viewsweek: 0,
+});
+export type CardMiscInfo = ReturnType<typeof getDefaultCardMiscInfo>;
+
+export type LimitStatus = keyof typeof LimitToNumberMap;
+export const LimitToNumberMap = {
+    'Semi-Limited': 2,
+    'Limited': 1,
+    'Banned': 0,
+    'Unlimited': 3,
+};
 export const getDefaultBanlistInfo = () => ({
     ban_tcg: 'Unlimited' as LimitStatus,
     ban_ocg: 'Unlimited' as LimitStatus,
@@ -49,7 +68,8 @@ export const getDefaultYGOProCardResponse = () => ({
     race: '' as string | undefined,
     scale: 0 as number | undefined,
     type: '',
-    banlist_info: getDefaultBanlistInfo() as BanlistInfo,
+    banlist_info: getDefaultBanlistInfo() as BanlistInfo | undefined,
+    misc_info: [] as CardMiscInfo[] | undefined,
 });
 export type YGOProCardResponse = ReturnType<typeof getDefaultYGOProCardResponse>;
 
@@ -57,24 +77,35 @@ export type CardType = (typeof CardTypeList)[0];
 export const CardTypeList = ['monster' as const, 'spell' as const, 'trap' as const];
 
 export const MarkerToBitMap: Record<string, number> = {
-    'Top-Left': 1,
-    'Top': 2,
-    'Top-Right': 4,
-    'Left': 8,
-    'Right': 16,
-    'Bottom-Left': 32,
-    'Bottom': 64,
-    'Bottom-Right': 128,
+    'Top-Left': 2 ** 0,
+    'Top': 2 ** 1,
+    'Top-Right': 2 ** 2,
+    'Left': 2 ** 3,
+    'Right': 2 ** 4,
+    'Bottom-Left': 2 ** 5,
+    'Bottom': 2 ** 6,
+    'Bottom-Right': 2 ** 7,
 };
 export const BitToMarkerMap: Record<string, string> = {
-    '1': 'Top-Left',
-    '2': 'Top',
-    '4': 'Top-Right',
-    '8': 'Left',
-    '16': 'Right',
-    '32': 'Bottom-Left',
-    '64': 'Bottom',
-    '128': 'Bottom-Right',
+    [`${2 ** 0}`]: 'Top-Left',
+    [`${2 ** 1}`]: 'Top',
+    [`${2 ** 2}`]: 'Top-Right',
+    [`${2 ** 3}`]: 'Left',
+    [`${2 ** 4}`]: 'Right',
+    [`${2 ** 5}`]: 'Bottom-Left',
+    [`${2 ** 6}`]: 'Bottom',
+    [`${2 ** 7}`]: 'Bottom-Right',
+};
+
+export const CardPoolToBitMap: Record<string, number> = {
+    'TCG': 2 ** 0,
+    'OCG': 2 ** 1,
+    'BOTH': 2 ** 2,
+};
+export const CardBitToLabelMap: Record<string, string> = {
+    [`${2 ** 0}`]: 'TCG',
+    [`${2 ** 1}`]: 'OCG',
+    [`${2 ** 2}`]: '',
 };
 
 export const getDefaultYGOProCard = () => ({
@@ -90,6 +121,12 @@ export const getDefaultYGOProCard = () => ({
     link_binary: 0,
     /** race được chuyển hóa thành dạng binary để kiểm tra nhanh */
     race_binary: 0,
+    /** card pool (TCG only, OCG only, both) được chuyển hóa thành dạng binary để kiểm tra nhanh */
+    pool_binary: 0,
+    limit_info: {
+        ocg: 3,
+        tcg: 3,
+    },
 });
 export type YGOProCard = ReturnType<typeof getDefaultYGOProCard>;
 

@@ -74,15 +74,21 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
     const [actualSrc, setActualSrc] = useState(type === 'URL' && imageSourceMap.isResolved(src) === false ? undefined : src);
 
     useEffect(() => {
+        let relevant = true;
+
         if (type === 'URL' && imageSourceMap.isResolved(src) === false) {
             imageSourceMap.add(src);
             imageSourceMap.get(src)
                 .then(resolvedSrc => {
-                    setActualSrc(resolvedSrc);
+                    if (relevant) setActualSrc(resolvedSrc);
                 });
         } else {
-            setActualSrc(src);
+            if (relevant) setActualSrc(src);
         }
+
+        return () => {
+            relevant = false;
+        };
     }, [type, src]);
 
     return <img
