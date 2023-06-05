@@ -1,0 +1,67 @@
+.marker-picker-overlay {
+    .ant-popover-inner-content {
+        padding: 0;
+    }
+    .marker-container {
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-rows: 1fr 1fr 1fr;
+		width: 74px;
+		height: 74px;
+		column-gap: var(--bdSize);
+		row-gap: var(--bdSize);
+        .link-marker-button {
+            height: var(--marker-size);
+            width: var(--marker-size);
+        }
+		.link-marker-icon {
+			width: 0;
+			height: 0;
+			border-style: solid;
+			position: absolute;
+			margin: 5px 0;
+			border-width: 0 calc(var(--marker-size) / 2) calc(var(--marker-size) / 2) calc(var(--marker-size) / 2);
+			border-color: transparent transparent #484848 transparent;
+		}
+		.link-marker-button.marker-checked .link-marker-icon {
+			border-color: transparent transparent var(--main-antd) transparent;
+		}
+	}
+	.link-marker-reset,
+	.link-marker-button,
+    .link-marker-button.marker-checked {
+		cursor: pointer;
+		&:hover {
+            .link-marker-icon {
+                border-color: transparent transparent var(--sub-antd) transparent;
+            }
+		}
+	}
+	.link-marker-reset {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.link-marker-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		height: 100%;
+		.anticon {
+			font-size: 20px;
+		}
+	}
+	.marker-checked {
+		color: var(--main-antd);
+	}
+    .link-marker-accept {
+        text-align: center;
+        font-weight: bold;
+        line-height: var(--marker-size);
+        cursor: pointer;
+        &:hover {
+            color: var(--sub-antd);
+        }
+    }
+}

@@ -66,6 +66,15 @@ export const MIN_CARD_INDEX = 10;
 export const MIN_MODAL_INDEX = 610;
 export const MIN_ABSOLUTE_INDEX = 650;
 
+/** Chế độ filter */
+export const PickerMode = ['least' as const, 'exactly' as const, 'most' as const];
+export type PickerMode = typeof PickerMode[0];
+export const GroupPickerMode: { value: PickerMode, tooltip: string, label: React.ReactNode }[] = [
+    { value: 'least', tooltip: 'Match at least', label: '∋' },
+    { value: 'exactly', tooltip: 'Match exactly', label: '=' },
+    { value: 'most', tooltip: 'Match at most', label: '∈' },
+];
+
 export * from './card';
 export * from './deck';
 export * from './field';

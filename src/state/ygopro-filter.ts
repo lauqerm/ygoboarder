@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { YGOProCard, YGOProCardResponse } from 'src/model';
+import { CardRaceToBitMap, MarkerToBitMap, PickerMode, YGOProCard, YGOProCardResponse } from 'src/model';
 import create from 'zustand';
 
 export type YGOProStatPayload = {
@@ -17,10 +17,14 @@ export type YGOProRequestorPayload = {
     step?: YGOProStatPayload,
     scale?: YGOProStatPayload,
     card_type?: string[],
+    attribute?: string[],
+    marker?: { mode: PickerMode, value: number },
+    race?: { mode: PickerMode, value: number },
 };
 export type YGOProPayloadStringKey = Extract<keyof YGOProRequestorPayload, 'name' | 'desc' | 'pendDesc'>;
 export type YGOProPayloadStatKey = Extract<keyof YGOProRequestorPayload, 'atk' | 'def' | 'step' | 'scale'>;
-export type YGOProPayloadArrayKey = Extract<keyof YGOProRequestorPayload, 'card_type'>;
+export type YGOProPayloadArrayKey = Extract<keyof YGOProRequestorPayload, 'card_type' | 'attribute'>;
+export type YGOProPayloadListKey = Extract<keyof YGOProRequestorPayload, 'marker' | 'race'>;
 export type YGOProFilterState = {
     status: 'idling' | 'loading' | 'loaded',
     payloadMap: Record<string, YGOProRequestorPayload>,
@@ -45,7 +49,7 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
         const processedCardList: YGOProCard[] = fullCardList.data.data
             .filter(entry => entry.frameType !== 'skill' && entry.frameType !== 'token')
             .map<YGOProCard>(entry => {
-                const { name, desc, level, linkval, frameType } = entry;
+                const { name, desc, level, linkval, frameType, linkmarkers, race } = entry;
                 const pendulumAnalyzeResult = /\[\s*pendulum\s*effect\s*\]([\w\W]*)\[\s*(?:monster\s*effect|flavor\s*text)\s*\]([\w\W]*)/gi.exec(desc);
                 let cardEff = '', pendEff = '';
                 if (pendulumAnalyzeResult) {
@@ -54,9 +58,13 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
                 } else {
                     cardEff = desc;
                 }
+                const link_binary = (linkmarkers ?? []).reduce((acc, markerName) => acc | MarkerToBitMap[markerName], 0);
+                const race_binary = race ? CardRaceToBitMap[race] : 0;
 
                 return {
                     ...entry,
+                    link_binary,
+                    race_binary,
                     is_pendulum: frameType.includes('pendulum'),
                     step: level ?? linkval,
                     filterable_name: name.toLowerCase(),

@@ -44,7 +44,8 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
     const {
         name = '', desc = '', pendDesc = '',
         atk, def, step, scale,
-        card_type,
+        card_type, attribute,
+        marker, race,
     } = payload;
     /** Trường hợp đặc biệt với text search, name, description và pendulum description là phép search lấy phần hợp */
     if (name !== '' || desc !== '' || pendDesc !== '') {
@@ -76,18 +77,48 @@ export const YGOProRequestor = async (payload: YGOProRequestorPayload | undefine
     if (Array.isArray(card_type)) {
         filterMap['card_type'] = entry => card_type.includes(entry.card_type);
     }
+    if (Array.isArray(attribute)) {
+        filterMap['attribute'] = entry => attribute.includes(entry.attribute ?? '');
+        /** Mặc định search monster */
+        filterMap['card_type'] = entry => entry.card_type === 'monster';
+    }
+    /**
+     * Mode "match at least": Matched item phải khớp với tất cả giá trị được cho, nhưng có thể chứa giá trị nằm ngoài giá trị được cho. Ta sẽ dùng phép OR giữa value item và value filter, nếu kết quả của phép OR bằng đúng value item thì có nghĩa là value item chứa tất cả giá trị nằm trong value filter.
+     * Mode "match exactly": Matched item phải bằng đúng với giá trị được cho, ta chỉ cần dùng so sánh bằng giữa value item và value filter.
+     * Mode "match at most": Matched item phải khớp với tối thiểu một giá trị được cho, và không chứa giá trị nào nằm ngoài giá trị được cho. Ta sẽ dùng phép OR giữa value item và value filter, nếu kết quả của phép OR bằng đúng value filter thì có nghĩa là tất cả value item đều nằm trong value filter. */
+    if (marker) {
+        const {mode, value} = marker;
+        switch (mode) {
+        case 'exactly': filterMap['marker'] = entry => entry.link_binary === value; break;
+        case 'least': filterMap['marker'] = entry => entry.link_binary === (entry.link_binary | value); break;
+        case 'most': filterMap['marker'] = entry => value === (entry.link_binary | value); break;
+        }
+        /** Mặc định search monster link */
+        filterMap['card_type'] = entry => entry.frameType === 'link';
+    }
+    if (race) {
+        const {mode, value} = race;
+        switch (mode) {
+        case 'exactly': filterMap['race'] = entry => entry.race_binary === value; break;
+        case 'least': filterMap['race'] = entry => entry.race_binary === (entry.race_binary | value); break;
+        case 'most': filterMap['race'] = entry => value === (entry.race_binary | value); break;
+        }
+    }
 
     console.log('🚀 ~ file: ygopro-importer-requestor.ts:78 ~ YGOProRequestor ~ payload:', payload);
     /** Sắp xếp theo thứ tự cố định với hy vọng số lượng card sau filter giảm nhanh nhất */
     const filterList: ((_: YGOProCard) => boolean)[] = [
         filterMap['card_type'],
         filterMap['sub_type'],
+        filterMap['attribute'],
+        filterMap['race'],
         filterMap['is_pendulum'],
         filterMap['text'],
         filterMap['step'],
         filterMap['atk'],
         filterMap['def'],
         filterMap['scale'],
+        filterMap['marker'],
     ].filter(entry => entry !== undefined);
     /** Lặp qua từng filter một, kết quả của lần filter này trở thành đầu vào của lần kế tiếp */
     let inputList = cardList;

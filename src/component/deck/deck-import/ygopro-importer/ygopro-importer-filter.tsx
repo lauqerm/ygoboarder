@@ -1,12 +1,12 @@
 import { Button, Checkbox, Input, InputRef, Select } from 'antd';
 import { useRef, useState } from 'react';
-import { CheckboxGroup } from 'src/component/atom';
-import { CardType, CardTypeList } from 'src/model';
+import { CheckboxGroup, LinkMarkerPicker, SelectGroup } from 'src/component/atom';
+import { CardRaceList, CardRaceToBitMap, CardType, CardTypeList, GroupPickerMode, MarkerToBitMap, MonsterRaceList, PickerMode } from 'src/model';
 import { YGOProPayloadStringKey, useYGOProFilter } from 'src/state';
 import styled from 'styled-components';
 
 const { Search } = Input;
-type SearchProps = React.ComponentProps<typeof Search>
+type SearchProps = React.ComponentProps<typeof Search>;
 
 const YGOProFilterContainer = styled.div`
     display: flex;
@@ -17,6 +17,12 @@ const YGOProFilterContainer = styled.div`
     }
     .ant-select-selection-item {
         padding-left: var(--spacing-sm);
+    }
+    .ant-input-affix-wrapper {
+        padding: 0 var(--spacing-xs);
+        .ant-input-clear-icon-hidden {
+            display: none;
+        }
     }
     .first-column {
         .ant-btn {
@@ -35,7 +41,8 @@ const YGOProFilterContainer = styled.div`
             flex: 0 0 15rem;
         }
         .first-row,
-        .second-row {
+        .second-row,
+        .third-row {
             display: flex;
             gap: var(--spacing-sm);
         }
@@ -68,7 +75,7 @@ const YGOProFilterContainer = styled.div`
             }
         }
         .image-icon {
-            flex: 0 0 90px;
+            flex: 0 0 85px;
             .ant-input-group-addon {
                 line-height: 1;
                 font-weight: bold;
@@ -84,6 +91,20 @@ const YGOProFilterContainer = styled.div`
         .ant-checkbox + span {
             padding: 0 var(--spacing-sm);
         }
+    }
+    .attribute-filter {
+        flex: 0 0 auto;
+        .ant-tag {
+            line-height: 0;
+        }
+        img {
+            /** antd small input height trừ cho border, margin, vv... */
+            height: 20px;
+            padding: var(--spacing-xxs);
+        }
+    }
+    .race-filter {
+        flex: 1 1 auto;
     }
 `;
 
@@ -102,16 +123,29 @@ export const YGOImporterFilter = ({
     const [filterKeyMap, setFilterKeyMap] = useState({
         atk: 0,
         card_type: 0,
+        attribute: 0,
         def: 0,
         scale: 0,
         step: 0,
         text: 0,
+        marker: 0,
+        race: 0,
     });
     const textInputRef = useRef<InputRef>(null);
-    const internalPayload = useRef<Record<string, any>>({});
+    const internalPayload = useRef({
+        text: '' as string | undefined,
+        atk: '' as string | undefined,
+        def: '' as string | undefined,
+        step: '' as string | undefined,
+        scale: '' as string | undefined,
+        card_type: [] as string[] | undefined,
+        attribute: [] as string[] | undefined,
+        marker: undefined as { mode: PickerMode, value: number[] } | undefined,
+        race: undefined as { mode: PickerMode, value: number[] } | undefined,
+    });
     const setPayload = useYGOProFilter(state => state.set);
     const normalizeStatValue = (value: any) => {
-        if (typeof value !== 'string') return undefined;
+        if (typeof value !== 'string' || value === '') return undefined;
         const normalizeValue = (value: any): [string | undefined, number | undefined] => {
             if (typeof value !== 'string') return [undefined, undefined];
             const numericPart = parseInt(value.replaceAll(/\D/gi, ''));
@@ -138,7 +172,12 @@ export const YGOImporterFilter = ({
     const applySearch = () => {
         setPayload(id, curr => {
             const newPayload = { ...curr };
-            const { text, atk, def, step, scale, card_type } = internalPayload.current;
+            const {
+                text,
+                atk, def, step, scale,
+                card_type, attribute,
+                marker, race,
+            } = internalPayload.current;
 
             if (typeof text === 'string') {
                 textOperatorList.forEach(operator => delete newPayload[operator]);
@@ -152,13 +191,38 @@ export const YGOImporterFilter = ({
             newPayload['def'] = normalizeStatValue(def);
             newPayload['step'] = normalizeStatValue(step);
             newPayload['scale'] = normalizeStatValue(scale);
+            newPayload['attribute'] = (attribute ?? []).length === 0 ? undefined : attribute;
             newPayload['card_type'] = (card_type ?? []).length === 0 ? undefined : card_type;
+            if (marker) {
+                const { mode, value } = marker;
+
+                newPayload['marker'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+            } else {
+                newPayload['marker'] = undefined;
+            }
+            if (race) {
+                const { mode, value } = race;
+
+                newPayload['race'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+            } else {
+                newPayload['race'] = undefined;
+            }
 
             return newPayload;
         });
     };
     const resetSearch = () => {
-        internalPayload.current = {};
+        internalPayload.current = {
+            atk: undefined,
+            attribute: undefined,
+            card_type: undefined,
+            def: undefined,
+            marker: undefined,
+            race: undefined,
+            scale: undefined,
+            step: undefined,
+            text: undefined,
+        };
         setPayload(id, () => ({}));
         setCardModeList(CardTypeList);
         setFilterKeyMap(cur => {
@@ -194,15 +258,21 @@ export const YGOImporterFilter = ({
                         internalPayload.current['card_type'] = value;
                         if (value.length > 0 && !value.includes('monster')) {
                             delete internalPayload.current['atk'];
+                            delete internalPayload.current['attribute'];
                             delete internalPayload.current['def'];
+                            delete internalPayload.current['marker'];
+                            delete internalPayload.current['race'];
                             delete internalPayload.current['scale'];
                             delete internalPayload.current['step'];
                             setFilterKeyMap(cur => ({
                                 ...cur,
                                 atk: cur.atk + 1,
+                                attribute: cur.atk + 1,
                                 def: cur.def + 1,
-                                step: cur.step + 1,
+                                marker: cur.marker + 1,
+                                race: cur.race + 1,
                                 scale: cur.scale + 1,
+                                step: cur.step + 1,
                             }));
                         }
                         setCardModeList(value as typeof cardModeList);
@@ -232,6 +302,31 @@ export const YGOImporterFilter = ({
                 </div>
             </div>
             <div className="second-row truncate">
+                <CheckboxGroup key={`attribute-${filterKeyMap['attribute']}`}
+                    {...commonProps}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    className="attribute-filter"
+                    optionList={[
+                        'light',
+                        'dark',
+                        'water',
+                        'fire',
+                        'earth',
+                        'wind',
+                        'divine',
+                    ].map(attribute => {
+                        return {
+                            value: attribute.toUpperCase(),
+                            label: <img src={`${process.env.PUBLIC_URL}/asset/img/attribute/attr-${attribute}.png`} alt={`${attribute}-icon`} />,
+                            defaultChecked: true,
+                        };
+                    })}
+                    onReset={() => { }}
+                    onChange={value => {
+                        internalPayload.current['attribute'] = value;
+                        applySearch();
+                    }}
+                />
                 <Input key={`atk-${filterKeyMap['atk']}`}
                     {...commonProps}
                     addonBefore="ATK"
@@ -263,6 +358,39 @@ export const YGOImporterFilter = ({
                     onChange={e => internalPayload.current['scale'] = e.currentTarget.value}
                     onPressEnter={() => applySearch()}
                 />
+            </div>
+            <div className="third-row truncate">
+                <LinkMarkerPicker key={`marker-${filterKeyMap['marker']}`}
+                    {...commonProps}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    defaultMode={PickerMode[1]}
+                    onChange={(mode, value) => {
+                        if (value.length > 0) {
+                            internalPayload.current['marker'] = {
+                                mode,
+                                value: value.map(entry => MarkerToBitMap[entry]),
+                            };
+                        } else internalPayload.current['marker'] = undefined;
+                    }}
+                />
+                {cardModeList.includes('monster') && <SelectGroup key={`race-${filterKeyMap['race']}`}
+                    {...commonProps}
+                    outerClassName="race-filter"
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    defaultPickerMode={PickerMode[2]}
+                    pickerModeList={[GroupPickerMode[1], GroupPickerMode[2]]}
+                    placeholder="Monster Type"
+                    mode="multiple"
+                    onChange={(mode, value) => {
+                        if (value.length > 0) {
+                            internalPayload.current['race'] = {
+                                mode,
+                                value: (value ?? []).map((entry: string) => CardRaceToBitMap[entry]),
+                            };
+                        } else internalPayload.current['race'] = undefined;
+                    }}
+                    options={MonsterRaceList.map(entry => ({ value: entry, label: entry }))}
+                />}
             </div>
         </div>
     </YGOProFilterContainer>;

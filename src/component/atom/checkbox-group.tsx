@@ -15,11 +15,10 @@ const CheckboxGroupContainer = styled.div`
     .clear-button {
         cursor: pointer;
         margin: -1px 0;
-        padding: 3px var(--spacing-xs);
+        padding: var(--spacing-sm) var(--spacing-xs);
         border: var(--bd-antd);
         border-left: none;
         border-radius: 0 var(--br-antd) var(--br-antd) 0;
-        font-size: var(--fs);
         color: var(--color-extraFaint);
         background-color: var(--main-contrast);
         &:hover {
