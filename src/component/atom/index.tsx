@@ -30,12 +30,10 @@ export const AttributeText = ({
 };
 
 const RestrictionTextContainer = styled.div`
-    display: inline-block;
-    font-family: 'Courier New', Courier, monospace;
-    line-height: 1;
+    display: inline-flex;
     font-size: 13px;
+    overflow: hidden;
     .prefix {
-        font-family: initial;
         background-color: var(--contrast-antd);
         padding: 0 var(--spacing-xs);
     }

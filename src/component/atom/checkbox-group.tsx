@@ -1,8 +1,7 @@
 import { Tag } from 'antd';
 import styled from 'styled-components';
-import { CloseCircleFilled } from '@ant-design/icons';
+import { CloseCircleFilled, CheckSquareFilled } from '@ant-design/icons';
 import { useState } from 'react';
-import { CardTypeList } from 'src/model';
 import { mergeClass } from 'src/util';
 
 const CheckboxGroupContainer = styled.div`
@@ -12,7 +11,7 @@ const CheckboxGroupContainer = styled.div`
     align-items: center;
     padding: var(--bdSize);
     column-gap: var(--bdSize);
-    .clear-button {
+    .action-button {
         cursor: pointer;
         margin: -1px 0;
         padding: 5px var(--spacing-sm);
@@ -26,13 +25,32 @@ const CheckboxGroupContainer = styled.div`
             color: var(--color-faint);
         }
     }
+    .check-all-button {
+        color: var(--color-extraFaint);
+    }
+    &.checkbox-all-selected {
+        .action-button {
+            border-color: var(--main-antd);
+        }
+    }
+    &.checkbox-group-disabled {
+        .action-button {
+            color: var(--color-ghost);
+            border-color: var(--bdColor-antd);
+            cursor: not-allowed;
+            background-color: #f5f5f5;
+            &:hover {
+                color: var(--color-ghost);
+            }
+        }
+    }
     .ant-tag {
         margin: 0;
         border-radius: 0;
         border-color: transparent;
         user-select: none;
         box-shadow: 0 0 0 1px var(--bdColor-antd);
-        padding: 0 var(--spacing-sm);
+        padding: 0 var(--spacing-xs);
         background-color: var(--main-contrast);
         font-weight: normal;
         &:first-child {
@@ -82,15 +100,21 @@ export const CheckboxGroup = ({
         }, {} as Record<string, boolean>),
     );
 
-    return <CheckboxGroupContainer className={mergeClass('checkbox-group', className)}>
+    return <CheckboxGroupContainer className={mergeClass(
+        'checkbox-group',
+        className,
+        disabled ? 'checkbox-group-disabled' : '',
+        optionList.length === Object.keys(internalValue).length ? 'checkbox-all-selected' : '',
+    )}>
         {(optionList ?? []).map(entry => {
-            const { label, value, disabled: individualDisabled = disabled } = entry;
+            const { label, value, disabled: individualDisabled } = entry;
+            const combinedDisable = disabled ?? individualDisabled;
 
             return <Tag.CheckableTag key={value}
-                className={individualDisabled ? 'checkbox-disabled' : ''}
+                className={combinedDisable ? 'checkbox-disabled' : ''}
                 checked={internalValue[value]}
                 onChange={status => {
-                    if (!individualDisabled) setInternalValue(cur => {
+                    if (!combinedDisable) setInternalValue(cur => {
                         const newMap = { ...cur };
                         if (status) newMap[value] = status;
                         else delete newMap[value];
@@ -103,12 +127,22 @@ export const CheckboxGroup = ({
                 {label}
             </Tag.CheckableTag>;
         })}
-        {onReset && <CloseCircleFilled className="clear-button" onClick={() => {
-            setInternalValue(CardTypeList.reduce((map, value) => {
-                return { ...map, [value]: true };
-            }, {} as Record<string, boolean>));
-            onChange(CardTypeList);
-            onReset?.();
-        }} />}
+        {onReset && <>
+            {Object.keys(internalValue).length > 0
+                ? <CloseCircleFilled className="action-button clear-button" onClick={() => {
+                    if (!disabled) {
+                        setInternalValue({});
+                        onChange([]);
+                    }
+                }} />
+                : <CheckSquareFilled className="action-button check-all-button" onClick={() => {
+                    if (!disabled) {
+                        setInternalValue(optionList.reduce((map, { value }) => {
+                            return { ...map, [value]: true };
+                        }, {} as Record<string, boolean>));
+                        onChange(optionList.map(entry => entry.value));
+                    }
+                }} />}
+        </>}
     </CheckboxGroupContainer>;
 };

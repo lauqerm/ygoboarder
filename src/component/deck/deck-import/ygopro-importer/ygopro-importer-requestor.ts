@@ -13,38 +13,51 @@ export const YGOProRequestor = async (
         pool: card => (card.pool_binary | cardPoolValue) === cardPoolValue,
     };
     const processStatPayload = (statPayload: YGOProStatPayload, statType: YGOProPayloadStatKey = 'atk') => {
-        const { firstOperator, firstValue, secondOperator, secondValue } = statPayload;
+        const {
+            firstOperator, firstValue, secondOperator, secondValue,
+            question, regex,
+        } = statPayload;
         const explicitOperatorSearchBuilder = (operator: string, compareValue: number) => {
             switch (operator) {
             case 'lt': return (value: YGOProCard) => (value[statType] ?? 0) < compareValue;
             case 'lte': return (value: YGOProCard) => (value[statType] ?? 0) <= compareValue;
             case 'gt': return (value: YGOProCard) => (value[statType] ?? Infinity) > compareValue;
             case 'gte': return (value: YGOProCard) => (value[statType] ?? Infinity) >= compareValue;
+            case 'qt': return (value: YGOProCard) => ((value.misc_info as any)[`question_${statType}`] ?? 0) === 1;
             }
             return (_: YGOProCard) => true;
         };
-        /** Nếu tồn tại 2 value, 2 phép search này lấy phần giao */
         let firstValueSearcher = (_: YGOProCard) => true;
-        if (typeof firstValue === 'number') {
-            if (firstOperator) {
-                firstValueSearcher = explicitOperatorSearchBuilder(firstOperator, firstValue);
-            } else {
-                firstValueSearcher = value => (value[statType] ?? Infinity) >= firstValue;
+        /** Search đích danh cho chỉ số không xác định */
+        if (question) {
+            return filterMap[statType] = entry => ((entry.misc_info?.[0] as any)[`question_${statType}`] ?? 0) === 1;
+        } else if (regex) {
+            console.log('🚀 ~ file: ygopro-importer-requestor.ts:35 ~ processStatPayload ~ regex:', regex);
+            /** Search bằng regex */
+            return filterMap[statType] = entry => regex.test(`${entry[statType]}`);
+        } else {
+            /** Nếu tồn tại 2 value, 2 phép search này lấy phần giao */
+            if (typeof firstValue === 'number') {
+                if (firstOperator) {
+                    firstValueSearcher = explicitOperatorSearchBuilder(firstOperator, firstValue);
+                } else {
+                    firstValueSearcher = value => (value[statType] ?? Infinity) >= firstValue;
+                }
             }
-        }
-        let secondValueSearcher = (_: YGOProCard) => true;
-        if (typeof secondValue === 'number') {
-            if (secondOperator) {
-                secondValueSearcher = explicitOperatorSearchBuilder(secondOperator, secondValue);
-            } else {
-                secondValueSearcher = value => (value[statType] ?? 0) <= secondValue;
+            let secondValueSearcher = (_: YGOProCard) => true;
+            if (typeof secondValue === 'number') {
+                if (secondOperator) {
+                    secondValueSearcher = explicitOperatorSearchBuilder(secondOperator, secondValue);
+                } else {
+                    secondValueSearcher = value => (value[statType] ?? 0) <= secondValue;
+                }
             }
+            /** Nếu chỉ tồn tại đúng 1 value và không quy định operator, ta tự suy thành operator = thay vì operator >= */
+            if (typeof firstValue === 'number' && !firstOperator && typeof secondValue !== 'number') {
+                firstValueSearcher = value => (value[statType] ?? Infinity) === firstValue;
+            }
+            filterMap[statType] = entry => firstValueSearcher(entry) && secondValueSearcher(entry);
         }
-        /** Nếu chỉ tồn tại đúng 1 value và không quy định operator, ta tự suy thành operator = thay vì operator >= */
-        if (typeof firstValue === 'number' && !firstOperator && typeof secondValue !== 'number') {
-            firstValueSearcher = value => (value[statType] ?? Infinity) === firstValue;
-        }
-        filterMap[statType] = entry => firstValueSearcher(entry) && secondValueSearcher(entry);
         /** Mặc định search dạng monster */
         filterMap['card_type'] = entry => entry.card_type === 'monster';
     };
@@ -54,7 +67,7 @@ export const YGOProRequestor = async (
         name = '', desc = '', pendDesc = '',
         atk, def, step, scale,
         card_type, attribute,
-        marker, race,
+        marker, race, ability, frame, st_race,
     } = payload;
 
     /** Trường hợp đặc biệt với text search, name, description và pendulum description là phép search lấy phần hợp */
@@ -80,7 +93,7 @@ export const YGOProRequestor = async (
     if (def) {
         processStatPayload(def, 'def');
         /** Mặc định search monster khác link */
-        filterMap['sub_type'] = entry => entry.frameType !== 'link';
+        filterMap['frame'] = entry => entry.frameType !== 'link';
     }
     if (scale) {
         processStatPayload(scale, 'scale');
@@ -105,30 +118,60 @@ export const YGOProRequestor = async (
         switch (mode) {
         case 'exactly': filterMap['marker'] = entry => entry.link_binary === value; break;
         case 'least': filterMap['marker'] = entry => entry.link_binary === (entry.link_binary | value); break;
-        case 'most': filterMap['marker'] = entry => value === (entry.link_binary | value); break;
+        case 'most': filterMap['marker'] = entry => entry.link_binary !== 0 && value === (entry.link_binary | value); break;
         }
         /** Mặc định search monster link */
-        filterMap['card_type'] = entry => entry.frameType === 'link';
+        filterMap['frame'] = entry => entry.frameType === 'link';
+    }
+    if (ability) {
+        const { mode, value } = ability;
+        switch (mode) {
+        case 'exactly': filterMap['ability'] = entry => entry.ability_binary === value; break;
+        case 'least': filterMap['ability'] = entry => entry.ability_binary === (entry.ability_binary | value); break;
+        case 'most': filterMap['ability'] = entry => entry.ability_binary !== 0 && value === (entry.ability_binary | value); break;
+        }
+        /** Mặc định search monster */
+        filterMap['card_type'] = entry => entry.card_type === 'monster';
     }
     if (race) {
         const { mode, value } = race;
         switch (mode) {
         case 'exactly': filterMap['race'] = entry => entry.race_binary === value; break;
         case 'least': filterMap['race'] = entry => entry.race_binary === (entry.race_binary | value); break;
-        case 'most': filterMap['race'] = entry => value === (entry.race_binary | value); break;
+        case 'most': filterMap['race'] = entry => entry.race_binary !== 0 && value === (entry.race_binary | value); break;
+        }
+    }
+    if (st_race) {
+        const { mode, value } = st_race;
+        switch (mode) {
+        case 'exactly': filterMap['st_race'] = entry => entry.race_binary === value; break;
+        case 'least': filterMap['st_race'] = entry => entry.race_binary === (entry.race_binary | value); break;
+        case 'most': filterMap['st_race'] = entry => entry.race_binary !== 0 && value === (entry.race_binary | value); break;
+        }
+        /** Không cần force card_type vì card_type đã được chọn trước đó */
+    }
+    if (frame) {
+        const { mode, value } = frame;
+        switch (mode) {
+        case 'exactly': filterMap['frame'] = entry => entry.frame_binary === value; break;
+        case 'least': filterMap['frame'] = entry => entry.frame_binary === (entry.frame_binary | value); break;
+        case 'most': filterMap['frame'] = entry => entry.frame_binary !== 0 && value === (entry.frame_binary | value); break;
         }
     }
 
     console.log('🚀 ~ file: ygopro-importer-requestor.ts:78', cardPoolList, banlist, payload);
+    console.log(cardList.slice(0, 20));
     /** Sắp xếp theo thứ tự cố định với hy vọng số lượng card sau filter giảm nhanh nhất */
     const filterList: ((_: YGOProCard) => boolean)[] = [
         filterMap['card_type'],
-        filterMap['sub_type'],
+        filterMap['frame'],
         filterMap['pool'],
         filterMap['limit'],
         filterMap['attribute'],
         filterMap['race'],
+        filterMap['st_race'],
         filterMap['is_pendulum'],
+        filterMap['ability'],
         filterMap['text'],
         filterMap['step'],
         filterMap['atk'],

@@ -29,8 +29,9 @@ const YGOImporterContainer = styled.div`
         .ant-radio-group {
             font-weight: normal;
         }
-        .filter-with-label {
+        .title-filter {
             line-height: 1;
+            margin-top: var(--spacing-xs);
         }
         .label {
             font-weight: normal;
@@ -80,16 +81,18 @@ const YGOImporterContainer = styled.div`
                 background-color: #333333dd;
                 padding: var(--spacing-xs);
                 column-gap: var(--spacing-xs);
+                transform: translateY(100%);
                 .stat {
                     background-color: #fafafadd;
                     padding: 0 var(--spacing-xs);
+                    line-height: 1.15;
                 }
             }
             .restriction-text {
                 position: absolute;
-                top: 0;
+                bottom: 0;
                 left: 0;
-                border-radius: 0 0 var(--br) 0;
+                border-radius: 0 var(--br) 0 0;
                 border: var(--bd-blunt);
                 box-shadow: 0 0 var(--bdSize) var(--bdSize) white;
             }
@@ -129,6 +132,7 @@ const YGOImporterContainer = styled.div`
         }
         .restriction-text {
             font-size: var(--fs-xl);
+            border-radius: 0 var(--br) 0 0;
         }
         .card-entry-image {
             width: 168px;
@@ -217,9 +221,9 @@ export const YGOProImporter = ({
     return <YGOImporterContainer className="ygopro-importer">
         <h2 className="ygopro-importer-title">
             <div>
-                YGOPRODeck Importer&nbsp;&nbsp;{loading && <LoadingOutlined />}
+                YGOPRO Importer&nbsp;&nbsp;{loading && <LoadingOutlined />}
             </div>
-            <div className="filter-with-label">
+            <div className="title-filter">
                 <div className="label">Pool</div>
                 <CheckboxGroup
                     className="cardpool"
@@ -234,7 +238,7 @@ export const YGOProImporter = ({
                     }}
                 />
             </div>
-            <div className="filter-with-label">
+            <div className="title-filter">
                 <div className="label">Banlist</div>
                 <Radio.Group
                     size="small"
@@ -255,7 +259,7 @@ export const YGOProImporter = ({
             </div>
             <Radio.Group
                 size="small"
-                className="display-mode"
+                className="display-mode title-filter"
                 options={[
                     { label: 'List', value: 'list' },
                     { label: 'Grid', value: 'grid' },

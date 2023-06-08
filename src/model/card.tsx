@@ -43,6 +43,8 @@ export const CardRaceToBitMap: Record<string, number> = {
     'Ritual': 2 ** 30,
 
     'Counter': 2 ** 31,
+
+    'Illusionist': 2 ** 32,
 };
 export const CardRaceList = Object.keys(CardRaceToBitMap);
 export const MonsterRaceList = [
@@ -57,6 +59,7 @@ export const MonsterRaceList = [
     'Fairy',
     'Fiend',
     'Fish',
+    'Illusionist',
     'Insect',
     'Machine',
     'Plant',
@@ -73,15 +76,72 @@ export const MonsterRaceList = [
     'Zombie',
 ];
 export const SpellRaceList = [
-    'Normal',
-    'Field',
-    'Equip',
     'Continuous',
+    'Equip',
+    'Field',
+    'Normal',
     'Quick-Play',
     'Ritual',
 ];
 export const TrapRaceList = [
-    'Normal',
     'Continuous',
     'Counter',
+    'Normal',
 ];
+export const SpellTrapRaceList = [
+    'Continuous',
+    'Counter',
+    'Equip',
+    'Field',
+    'Normal',
+    'Quick-Play',
+    'Ritual',
+];
+
+export const MonsterFrameToBitMap: Record<string, number> = {
+    'Fusion': 2 ** 10,
+    'Synchro': 2 ** 11,
+    'XYZ': 2 ** 12, /** không hiểu sao in hoa */
+    'Link': 2 ** 13,
+    'Ritual': 2 ** 14,
+};
+export const MonsterFrameList = Object.keys(MonsterFrameToBitMap);
+
+export const MonsterAbilitySubtypeToBitMap: Record<string, number> = {
+    'Effect': 2 ** 0,
+    'Normal': 2 ** 1,
+    'Pendulum': 2 ** 2,
+    'Special Summon': 2 ** 3,
+    'Tuner': 2 ** 4,
+
+    'Flip': 2 ** 5,
+    'Gemini': 2 ** 6,
+    'Spirit': 2 ** 7,
+    'Toon': 2 ** 8,
+    'Union': 2 ** 9,
+};
+export const MonsterAbilitySubtypeList = Object.keys(MonsterAbilitySubtypeToBitMap);
+export const MonsterAbilitySubtypeGroup = {
+    'Classification': [
+        'Effect',
+        'Normal',
+        'Pendulum',
+        'Special Summon',
+        'Tuner',
+    ],
+    'Ability': [
+        'Flip',
+        'Gemini',
+        'Spirit',
+        'Toon',
+        'Union',
+    ],
+};
+/** Nếu monster có ability này thì mặc nhiên imply subtype / ability khác */
+export const MonsterAbilityImplicationMap: Record<string, number> = {
+    'Flip': MonsterAbilitySubtypeToBitMap['Effect'],
+    'Gemini': MonsterAbilitySubtypeToBitMap['Effect'],
+    'Spirit': MonsterAbilitySubtypeToBitMap['Effect'],
+    'Toon': MonsterAbilitySubtypeToBitMap['Effect'],
+    'Union': MonsterAbilitySubtypeToBitMap['Effect'],
+};

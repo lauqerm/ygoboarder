@@ -22,6 +22,12 @@ const LinkMarkerPickerContainer = styled.div`
         .title-content {
             padding: 0 var(--spacing-sm);
         }
+        &:hover {
+            color: var(--sub-antd);
+            .link-marker-preview {
+                outline: var(--bdSize) solid var(--sub-antd);
+            }
+        }
     }
     .link-marker-reset {
         cursor: pointer;
@@ -30,6 +36,7 @@ const LinkMarkerPickerContainer = styled.div`
         color: var(--color-ghost);
         background-color: var(--main-contrast);
         font-size: var(--fs-xs);
+        margin-left: var(--spacing-xxs);
         &:hover {
             color: var(--color-faint);
         }

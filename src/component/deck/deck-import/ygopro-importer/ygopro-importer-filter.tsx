@@ -1,7 +1,24 @@
 import { Button, Checkbox, Input, InputRef, Select } from 'antd';
 import { useRef, useState } from 'react';
 import { CheckboxGroup, LinkMarkerPicker, SelectGroup } from 'src/component/atom';
-import { CardRaceList, CardRaceToBitMap, CardType, CardTypeList, GroupPickerMode, MarkerToBitMap, MonsterRaceList, PickerMode, SpellRaceList, TrapRaceList } from 'src/model';
+import {
+    CardRaceList,
+    CardRaceToBitMap,
+    CardType,
+    CardTypeList,
+    GroupPickerMode,
+    MarkerToBitMap,
+    MonsterAbilitySubtypeGroup,
+    MonsterAbilitySubtypeList,
+    MonsterAbilitySubtypeToBitMap,
+    MonsterFrameList,
+    MonsterFrameToBitMap,
+    MonsterRaceList,
+    PickerMode,
+    SpellRaceList,
+    SpellTrapRaceList,
+    TrapRaceList,
+} from 'src/model';
 import { YGOProPayloadStringKey, useYGOProFilter } from 'src/state';
 import styled from 'styled-components';
 
@@ -24,32 +41,25 @@ const YGOProFilterContainer = styled.div`
             display: none;
         }
     }
-    .first-column {
-        display: flex;
-        flex-direction: column;
-        row-gap: var(--spacing-sm);
-        flex: 0 0 auto;
-        .ant-btn {
-            width: 100%;
-        }
-    }
-    .second-column {
+    .filter-column {
         display: flex;
         flex-direction: column;
         gap: var(--spacing-sm);
         flex: 1;
-        .frame-filter {
-            flex: 0 0 15rem;
-        }
         .filter-row {
-            display: flex;
+            display: grid;
             gap: var(--spacing-sm);
-        }
-        .card-type-filter {
-            flex: 0 0 auto;
+            &.first-row {
+                grid-template-columns: 75px 75px max-content 1fr;
+            }
+            &.second-row {
+                grid-template-columns: max-content 4fr 4fr 3fr 3fr max-content;
+            }
+            &.third-row {
+                grid-template-columns: max-content 5fr 4fr 5fr;
+            }
         }
         .text-filter {
-            flex: 1;
             display: flex;
             .ant-input-affix-wrapper,
             .ant-input-wrapper {
@@ -73,8 +83,14 @@ const YGOProFilterContainer = styled.div`
                 border-radius: 0;
             }
         }
+        .st-race-filter {
+            flex: 1;
+            text-align: center;
+            .ant-tag {
+                flex: 1;
+            }
+        }
         .image-icon {
-            flex: 0 0 85px;
             .ant-input-group-addon {
                 line-height: 1;
                 font-weight: bold;
@@ -92,7 +108,6 @@ const YGOProFilterContainer = styled.div`
         }
     }
     .attribute-filter {
-        flex: 0 0 auto;
         .ant-tag {
             line-height: 0;
         }
@@ -101,9 +116,6 @@ const YGOProFilterContainer = styled.div`
             height: 20px;
             padding: var(--spacing-xxs);
         }
-    }
-    .ant-select {
-        flex: 1 1 auto;
     }
 `;
 
@@ -118,15 +130,18 @@ export const YGOImporterFilter = ({
     ready,
 }: YGOImporterFilter) => {
     const [textModeList, setTextMode] = useState<YGOProPayloadStringKey[]>([...textOperatorList]);
-    const [cardModeList, setCardModeList] = useState<CardType[]>(CardTypeList);
+    const [cardModeList, setCardModeList] = useState<CardType[]>([]);
     const [filterKeyMap, setFilterKeyMap] = useState({
+        ability: 0,
         atk: 0,
         attribute: 0,
         card_type: 0,
         def: 0,
+        frame: 0,
         limit: 0,
         marker: 0,
         race: 0,
+        st_race: 0,
         scale: 0,
         step: 0,
         text: 0,
@@ -141,8 +156,11 @@ export const YGOImporterFilter = ({
         scale: '' as string | undefined,
         card_type: [] as string[] | undefined,
         attribute: [] as string[] | undefined,
+        ability: undefined as { mode: PickerMode, value: number[] } | undefined,
+        frame: undefined as { mode: PickerMode, value: number[] } | undefined,
         marker: undefined as { mode: PickerMode, value: number[] } | undefined,
         race: undefined as { mode: PickerMode, value: number[] } | undefined,
+        st_race: undefined as { mode: PickerMode, value: number[] } | undefined,
     });
     const setPayload = useYGOProFilter(state => state.set);
     const normalizeStatValue = (value: any) => {
@@ -151,6 +169,7 @@ export const YGOImporterFilter = ({
             if (typeof value !== 'string') return [undefined, undefined];
             const numericPart = parseInt(value.replaceAll(/\D/gi, ''));
 
+            if (value.startsWith('?')) return ['qt', numericPart];
             if (value.startsWith('>=')) return ['gte', numericPart];
             if (value.startsWith('<=')) return ['lte', numericPart];
             if (value.startsWith('=')) return [undefined, numericPart];
@@ -159,6 +178,19 @@ export const YGOImporterFilter = ({
             return [undefined, numericPart];
         };
         const trimmedValue = (value ?? '').replaceAll(' ', '');
+        if (trimmedValue.includes('?')) {
+            return {
+                question: true,
+            };
+        } else if (trimmedValue.includes('|') || trimmedValue.includes('*')) {
+            return {
+                regex: new RegExp('^('
+                    + trimmedValue
+                        .replaceAll(/\*+\*/gi, '*') // *** => *
+                        .replaceAll(/\*/gi, '.*') // * => .*
+                    + ')$'),
+            };
+        }
         const [firstHalf, secondHalf] = trimmedValue.split('-');
         const [firstOperator, firstValue] = normalizeValue(firstHalf);
         const [secondOperator, secondValue] = normalizeValue(secondHalf);
@@ -178,7 +210,7 @@ export const YGOImporterFilter = ({
                 text,
                 atk, def, step, scale,
                 card_type, attribute,
-                marker, race,
+                marker, race, ability, frame, st_race,
             } = internalPayload.current;
 
             newPayload['limit'] = (limit ?? []).length > 0 ? limit?.map(value => parseInt(value)) : undefined;
@@ -210,20 +242,44 @@ export const YGOImporterFilter = ({
             } else {
                 newPayload['race'] = undefined;
             }
+            if (st_race) {
+                const { mode, value } = st_race;
+
+                newPayload['st_race'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+            } else {
+                newPayload['st_race'] = undefined;
+            }
+            if (ability) {
+                const { mode, value } = ability;
+
+                newPayload['ability'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+            } else {
+                newPayload['ability'] = undefined;
+            }
+            if (frame) {
+                const { mode, value } = frame;
+
+                newPayload['frame'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+            } else {
+                newPayload['frame'] = undefined;
+            }
 
             return newPayload;
         });
     };
     const resetSearch = () => {
         internalPayload.current = {
+            ability: undefined,
             atk: undefined,
             attribute: undefined,
             card_type: undefined,
             def: undefined,
+            frame: undefined,
             limit: undefined,
             marker: undefined,
             race: undefined,
             scale: undefined,
+            st_race: undefined,
             step: undefined,
             text: undefined,
         };
@@ -243,55 +299,49 @@ export const YGOImporterFilter = ({
         disabled: !ready,
     };
     return <YGOProFilterContainer className="ygopro-filter">
-        <div className="first-column">
-            <CheckboxGroup key={`limit-${filterKeyMap['limit']}`}
-                {...commonProps}
-                className="card-limit-filter"
-                optionList={[
-                    { value: '0', label: <span style={{ color: '#ff0000', fontWeight: 'bold' }}>0</span>, defaultChecked: true },
-                    { value: '1', label: <span style={{ color: '#ee6600', fontWeight: 'bold' }}>1</span>, defaultChecked: true },
-                    { value: '2', label: <span style={{ color: '#eeaa00', fontWeight: 'bold' }}>2</span>, defaultChecked: true },
-                    { value: '3', label: <span style={{ color: '#00bb00', fontWeight: 'bold' }}>3</span>, defaultChecked: true },
-                ]}
-                onReset={() => { }}
-                onChange={value => {
-                    internalPayload.current['limit'] = value;
-                    applySearch();
-                }}
-            />
-            <Button size="small" disabled={!ready} type="primary" onClick={applySearch}>Search</Button>
-            <Button size="small" disabled={!ready} onClick={resetSearch}>Clear</Button>
-        </div>
-        <div className="second-column truncate">
+        <div className="filter-column truncate">
             <div className="filter-row first-row truncate">
+                <Button size="small" disabled={!ready} type="primary" onClick={applySearch}>Search</Button>
+                <Button size="small" disabled={!ready} onClick={resetSearch}>Clear</Button>
                 <CheckboxGroup key={`card_type-${filterKeyMap['card_type']}`}
                     {...commonProps}
                     className="card-type-filter"
                     optionList={[
-                        { value: 'monster', label: 'Monster', defaultChecked: (cardModeList ?? []).includes('monster') },
-                        { value: 'spell', label: 'Spell', defaultChecked: (cardModeList ?? []).includes('spell') },
-                        { value: 'trap', label: 'Trap', defaultChecked: (cardModeList ?? []).includes('trap') },
+                        { value: 'monster', label: 'Monster' },
+                        { value: 'spell', label: 'Spell' },
+                        { value: 'trap', label: 'Trap' },
                     ]}
                     onReset={() => { }}
                     onChange={value => {
                         internalPayload.current['card_type'] = value;
-                        if (value.length > 0 && !value.includes('monster')) {
+                        if (value.length === 0 || !value.includes('monster')) {
+                            delete internalPayload.current['ability'];
                             delete internalPayload.current['atk'];
                             delete internalPayload.current['attribute'];
                             delete internalPayload.current['def'];
+                            delete internalPayload.current['frame'];
                             delete internalPayload.current['marker'];
                             delete internalPayload.current['race'];
                             delete internalPayload.current['scale'];
                             delete internalPayload.current['step'];
                             setFilterKeyMap(cur => ({
                                 ...cur,
+                                ability: cur.ability + 1,
                                 atk: cur.atk + 1,
                                 attribute: cur.atk + 1,
                                 def: cur.def + 1,
+                                frame: cur.frame + 1,
                                 marker: cur.marker + 1,
                                 race: cur.race + 1,
                                 scale: cur.scale + 1,
                                 step: cur.step + 1,
+                            }));
+                        }
+                        if (value.length === 0 || value.includes('monster')) {
+                            delete internalPayload.current['st_race'];
+                            setFilterKeyMap(cur => ({
+                                ...cur,
+                                st_race: cur.st_race + 1,
                             }));
                         }
                         setCardModeList(value as typeof cardModeList);
@@ -337,7 +387,6 @@ export const YGOImporterFilter = ({
                         return {
                             value: attribute.toUpperCase(),
                             label: <img src={`${process.env.PUBLIC_URL}/asset/img/attribute/attr-${attribute}.png`} alt={`${attribute}-icon`} />,
-                            defaultChecked: true,
                         };
                     })}
                     onReset={() => { }}
@@ -372,13 +421,14 @@ export const YGOImporterFilter = ({
                 />
                 <Input key={`scale-${filterKeyMap['scale']}`}
                     {...commonProps}
-                    addonBefore="Scale"
+                    className="image-icon"
+                    addonBefore={<span>
+                        <img src={`${process.env.PUBLIC_URL}/asset/img/scale-icon.png`} alt="scale-icon" />
+                    </span>}
                     disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
                     onChange={e => internalPayload.current['scale'] = e.currentTarget.value}
                     onPressEnter={() => applySearch()}
                 />
-            </div>
-            <div className="filter-row third-row truncate">
                 <LinkMarkerPicker key={`marker-${filterKeyMap['marker']}`}
                     {...commonProps}
                     disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
@@ -392,9 +442,29 @@ export const YGOImporterFilter = ({
                         } else internalPayload.current['marker'] = undefined;
                     }}
                 />
+            </div>
+            <div className="filter-row third-row truncate">
+                <CheckboxGroup key={`limit-${filterKeyMap['limit']}`}
+                    {...commonProps}
+                    className="card-limit-filter"
+                    optionList={[
+                        { value: '0', label: <span style={{ color: '#ff0000', fontWeight: 'bold' }}>0</span> },
+                        { value: '1', label: <span style={{ color: '#ee6600', fontWeight: 'bold' }}>1</span> },
+                        { value: '2', label: <span style={{ color: '#eeaa00', fontWeight: 'bold' }}>2</span> },
+                        { value: '3', label: <span style={{ color: '#00bb00', fontWeight: 'bold' }}>3</span> },
+                    ]}
+                    onReset={() => { }}
+                    onChange={value => {
+                        internalPayload.current['limit'] = value;
+                        applySearch();
+                    }}
+                />
                 <Select key={`race-${filterKeyMap['race']}`}
                     {...commonProps}
                     disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    listHeight={384}
+                    virtual={false}
+                    maxTagCount={1}
                     placeholder="Monster Type"
                     mode="multiple"
                     onChange={value => {
@@ -407,39 +477,69 @@ export const YGOImporterFilter = ({
                     }}
                     options={MonsterRaceList.map(entry => ({ value: entry, label: entry }))}
                 />
-            </div>
-            <div className="filter-row fourth-row truncate">
-                <CheckboxGroup key={`race-spell-${filterKeyMap['race']}`}
+                <Select key={`frame-${filterKeyMap['frame']}`}
                     {...commonProps}
-                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('spell'))}
-                    className="race-filter"
-                    optionList={SpellRaceList.map(entry => ({ value: entry, label: entry.toUpperCase() }))}
-                    onReset={() => { }}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    virtual={false}
+                    maxTagCount={1}
+                    placeholder="Monster Card Type"
+                    mode="multiple"
                     onChange={value => {
                         if (Array.isArray(value) && value.length > 0) {
-                            internalPayload.current['race'] = {
+                            internalPayload.current['frame'] = {
                                 mode: 'most',
-                                value: (value ?? []).map((entry: string) => CardRaceToBitMap[entry]),
+                                value: (value ?? []).map((entry: string) => MonsterFrameToBitMap[entry]),
                             };
-                        } else internalPayload.current['race'] = undefined;
-                        applySearch();
+                        } else internalPayload.current['frame'] = undefined;
                     }}
+                    options={MonsterFrameList.map(entry => ({ value: entry, label: entry.charAt(0).toUpperCase() + entry.toLowerCase().slice(1) }))}
+                />
+                <SelectGroup key={`ability-${filterKeyMap['ability']}`}
+                    {...commonProps}
+                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('monster'))}
+                    listHeight={384}
+                    virtual={false}
+                    maxTagCount={'responsive'}
+                    placeholder="Ability / Subtype"
+                    mode="multiple"
+                    defaultPickerMode="least"
+                    onChange={(mode, value) => {
+                        if (Array.isArray(value) && value.length > 0) {
+                            internalPayload.current['ability'] = {
+                                mode,
+                                value: (value ?? []).map((entry: string) => MonsterAbilitySubtypeToBitMap[entry]),
+                            };
+                        } else internalPayload.current['ability'] = undefined;
+                    }}
+                    options={Object
+                        .entries(MonsterAbilitySubtypeGroup)
+                        .map(([name, list]) => {
+                            return {
+                                label: name,
+                                options: list.map(entry => ({ value: entry, label: entry })),
+                            };
+                        })}
                 />
             </div>
-            <div className="filter-row fifth-row truncate">
-                <CheckboxGroup key={`race-trap-${filterKeyMap['race']}`}
+            <div className="filter-row fourth-row truncate">
+                <CheckboxGroup key={`race-spell-${filterKeyMap['st_race']}`}
                     {...commonProps}
-                    disabled={!ready || (cardModeList.length === 0 || !cardModeList.includes('trap'))}
-                    className="race-filter"
-                    optionList={TrapRaceList.map(entry => ({ value: entry, label: entry.toUpperCase() }))}
+                    disabled={!ready || cardModeList.length === 0 || cardModeList.includes('monster')}
+                    className="st-race-filter"
+                    optionList={SpellTrapRaceList.map(entry => ({
+                        value: entry,
+                        label: entry.toUpperCase(),
+                        disabled: (cardModeList.includes('spell') && !SpellRaceList.includes(entry))
+                        || (cardModeList.includes('trap') && !TrapRaceList.includes(entry)),
+                    }))}
                     onReset={() => { }}
                     onChange={value => {
                         if (Array.isArray(value) && value.length > 0) {
-                            internalPayload.current['race'] = {
+                            internalPayload.current['st_race'] = {
                                 mode: 'most',
                                 value: (value ?? []).map((entry: string) => CardRaceToBitMap[entry]),
                             };
-                        } else internalPayload.current['race'] = undefined;
+                        } else internalPayload.current['st_race'] = undefined;
                         applySearch();
                     }}
                 />

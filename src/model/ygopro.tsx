@@ -34,6 +34,8 @@ export const getDefaultCardMiscInfo = () => ({
     upvotes: 0,
     views: 0,
     viewsweek: 0,
+    question_atk: 0,
+    question_def: 0,
 });
 export type CardMiscInfo = ReturnType<typeof getDefaultCardMiscInfo>;
 
@@ -123,6 +125,10 @@ export const getDefaultYGOProCard = () => ({
     race_binary: 0,
     /** card pool (TCG only, OCG only, both) được chuyển hóa thành dạng binary để kiểm tra nhanh */
     pool_binary: 0,
+    /** ability (toon, tuner, etc...) được chuyển hóa thành dạng binary để kiểm tra nhanh */
+    ability_binary: 0,
+    /** monster frame (xyz, fusion, etc...) được chuyển hóa thành dạng binary để kiểm tra nhanh */
+    frame_binary: 0,
     limit_info: {
         ocg: 3,
         tcg: 3,
@@ -140,7 +146,9 @@ export const ygoproCardToDescription = (card: YGOProCardResponse) => {
         race,
         type,
         desc,
+        misc_info,
     } = card;
+    const { question_atk, question_def } = misc_info?.[0] ?? {};
     const isMonster = type.toLowerCase().includes('monster')
         || type.toLowerCase().includes('token');
     const isXyzMonster = frameType === 'xyz';
@@ -153,7 +161,7 @@ export const ygoproCardToDescription = (card: YGOProCardResponse) => {
                 ? `LEVEL ${level}`
                 : null;
     const stat = isMonster
-        ? `ATK: ${atk}${isLinkMonster ? '' : ` / DEF: ${def}`}`
+        ? `ATK: ${question_atk === 1 ? '?' : atk}${isLinkMonster ? '' : ` / DEF: ${question_def === 1 ? '?' : def}`}`
         : undefined;
     const category = `${race} ${type}`;
     const normalizedLinkMarkerList = Array.isArray(linkmarkers)

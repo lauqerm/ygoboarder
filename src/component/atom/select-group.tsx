@@ -1,5 +1,5 @@
 import { Select, SelectProps } from 'antd';
-import { PickerMode } from 'src/model';
+import { GroupPickerMode, PickerMode } from 'src/model';
 import styled from 'styled-components';
 import { ModePicker } from './mode-picker';
 import { useState } from 'react';
@@ -26,12 +26,12 @@ export type SelectGroup = {
 }
 & Omit<SelectProps, 'onChange'>
 & {
-    pickerModeList: ModePicker['optionList']
+    pickerModeList?: ModePicker['optionList'],
 };
 export const SelectGroup = ({
     outerClassName,
     defaultPickerMode = 'least',
-    pickerModeList,
+    pickerModeList = GroupPickerMode,
     onChange,
     ...rest
 }: SelectGroup) => {
