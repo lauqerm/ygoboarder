@@ -1,6 +1,6 @@
 import { Radio, notification } from 'antd';
 import { useEffect, useState } from 'react';
-import { CardPoolToBitMap, CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, YGOProCardResponse, ygoproCardToDescription } from 'src/model';
+import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescription } from 'src/model';
 import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
@@ -65,23 +65,22 @@ const YGOImporterContainer = styled.div`
         }
         .card-entry-image {
             width: var(--card-width-sm);
-            height: var(--card-height-sm);
+            .image-container {
+                height: var(--card-height-sm);
+            }
             img {
                 max-width: 100%;
                 max-height: 100%;
             }
             .stat-list {
-                position: absolute;
                 display: grid;
                 grid-template-columns: 1fr 1fr;
                 font-family: monospace;
-                bottom: 0;
                 width: 100%;
                 text-align: right;
                 background-color: #333333dd;
                 padding: var(--spacing-xs);
                 column-gap: var(--spacing-xs);
-                transform: translateY(100%);
                 .stat {
                     background-color: #fafafadd;
                     padding: 0 var(--spacing-xs);
@@ -137,6 +136,9 @@ const YGOImporterContainer = styled.div`
         .card-entry-image {
             width: 168px;
             height: 246px;
+            .image-container {
+                height: unset;
+            }
         }
     }
 `;
@@ -229,7 +231,7 @@ export const YGOProImporter = ({
                     className="cardpool"
                     optionList={[
                         { label: 'OCG exclusive', value: 'OCG', defaultChecked: cardpool.includes('OCG') },
-                        { label: 'Both', value: 'BOTH', defaultChecked: cardpool.includes('BOTH') },
+                        { label: 'Global', value: 'BOTH', defaultChecked: cardpool.includes('BOTH') },
                         { label: 'TCG exclusive', value: 'TCG', defaultChecked: cardpool.includes('TCG') },
                     ]}
                     onChange={value => {
@@ -319,11 +321,11 @@ export const YGOProImporter = ({
                                         type="URL"
                                         src={image_url}
                                     />}
-                                <div className="stat-list">
-                                    <div className="stat">{atk}</div>
-                                    <div className="stat">{def}</div>
-                                </div>
                             </div>
+                            {(atk || def) && <div className="stat-list">
+                                <div className="stat">{atk}</div>
+                                <div className="stat">{def}</div>
+                            </div>}
                         </div>
                         <div className="card-statistic">
                             <b>{name}</b>

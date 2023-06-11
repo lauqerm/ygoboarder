@@ -72,12 +72,35 @@ export const YGOProRequestor = async (
 
     /** Trường hợp đặc biệt với text search, name, description và pendulum description là phép search lấy phần hợp */
     if (name !== '' || desc !== '' || pendDesc !== '') {
+        /** Đối với text search dạng regex:
+         * * Biến các ký tự wildcard * thành match all `.*`
+         * * Biến ký tự | thành match fullword (kết thúc không phải bằng chữ a-zA-Z0-9) `\W`
+         */
+        const regexFromText = (text: string) => {
+            if (text.includes('*') || text.includes('|')) return new RegExp(name.replaceAll('*', '.*').replaceAll('|', '(\\W|$)'));
+            return undefined;
+        };
         let nameFilterPart = (_: YGOProCard) => false;
-        if (name.length > 0) nameFilterPart = (entry: YGOProCard) => entry.filterable_name.includes(name);
+        if (name.length > 0) {
+            const nameRegex = regexFromText(name);
+            nameFilterPart = nameRegex
+                ? (entry: YGOProCard) => nameRegex.test(entry.filterable_name)
+                : (entry: YGOProCard) => entry.filterable_name.includes(name);
+        }
         let descFilterPart = (_: YGOProCard) => false;
-        if (desc.length > 0) descFilterPart = (entry: YGOProCard) => entry.filterable_card_eff.includes(desc);
+        if (desc.length > 0) {
+            const descRegex = regexFromText(desc);
+            descFilterPart = descRegex
+                ? (entry: YGOProCard) => descRegex.test(entry.filterable_card_eff)
+                : (entry: YGOProCard) => entry.filterable_card_eff.includes(desc);
+        }
         let pendDescFilterPart = (_: YGOProCard) => false;
-        if (pendDesc.length > 0) pendDescFilterPart = (entry: YGOProCard) => entry.filterable_pend_eff.includes(pendDesc);
+        if (pendDesc.length > 0) {
+            const pendDescRegex = regexFromText(pendDesc);
+            pendDescFilterPart = pendDescRegex
+                ? (entry: YGOProCard) => pendDescRegex.test(entry.filterable_pend_eff)
+                : (entry: YGOProCard) => entry.filterable_pend_eff.includes(desc);
+        }
 
         filterMap['text'] = entry => nameFilterPart(entry)
             || descFilterPart(entry)
@@ -172,12 +195,12 @@ export const YGOProRequestor = async (
         filterMap['st_race'],
         filterMap['is_pendulum'],
         filterMap['ability'],
-        filterMap['text'],
         filterMap['step'],
         filterMap['atk'],
         filterMap['def'],
         filterMap['scale'],
         filterMap['marker'],
+        filterMap['text'],
     ].filter(entry => entry !== undefined);
     /** Lặp qua từng filter một, kết quả của lần filter này trở thành đầu vào của lần kế tiếp */
     let inputList = cardList;

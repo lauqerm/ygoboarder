@@ -32,15 +32,15 @@ import {
     useDOMEntityStateStore,
     PhaseBehavior,
 } from 'src/state';
-import { DeckImporter, DeckImporterRef } from '../deck-import';
+import { DeckImporterDrawerRef } from '../deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
 import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
 import { ExtractProps } from 'src/type';
 import { List } from 'immutable';
 import { createPortal } from 'react-dom';
 import { mergeClass } from 'src/util';
-import './deck-modal.scss';
 import { PlayerTag } from 'src/component/atom';
+import './deck-modal.scss';
 
 const distributeDeckRow = (cardList: List<DeckCard>) => {
     const processedDeckRow: { card: DeckCard, index: number }[][] = [];
@@ -99,27 +99,30 @@ export type DeckModal = {
     deckId: string,
     displayName: string,
     isVisible?: boolean,
+    isAdding?: boolean,
     type: DeckType,
     defaultPhase: PhaseType,
     phaseBehavior: PhaseBehavior,
     preset: CardPreset,
     onClose?: () => void,
+    onOpenImporter: (deckId: string, preset: CardPreset) => void,
     beaconList?: BeaconAction[],
 };
 export const DeckModal = React.forwardRef(({
     className,
     deckId,
     displayName,
+    isAdding = false,
     isVisible = false,
     type,
     defaultPhase,
     phaseBehavior,
     preset,
     onClose,
+    onOpenImporter,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
     const [isFocused, setFocused] = useState(false);
-    const [isAddingCard, setAddingCard] = useState(false);
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckStore(
@@ -222,7 +225,7 @@ export const DeckModal = React.forwardRef(({
         }
     }, [addDOMEntity]);
 
-    const deckImpoterRef = useRef<DeckImporterRef>(null);
+    const deckImpoterRef = useRef<DeckImporterDrawerRef>(null);
 
     const beaconProps = {
         deckId,
@@ -309,7 +312,7 @@ export const DeckModal = React.forwardRef(({
                 className={mergeClass(
                     'deck-modal-viewer',
                     isVisible ? 'deck-modal-visible' : 'deck-modal-invisible',
-                    isAddingCard ? 'deck-modal-adding' : '',
+                    isAdding ? 'deck-modal-adding' : '',
                     DOM_ENTITY_CLASS, DOMEntityTypeClass['deckModal'],
                     className,
                 )}
@@ -404,16 +407,10 @@ export const DeckModal = React.forwardRef(({
                     </div>
                 </DeckBeaconWrapper>
                 <div className="deck-tool-bar">
-                    <div>
-                        
-                    </div>
+                    <div />
                     <Button type="ghost" onClick={close}>Close</Button>
                     <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                    <DeckImporter ref={deckImpoterRef}
-                        deckId={deckId}
-                        preset={preset}
-                        onVisibleChange={status => setAddingCard(status)}
-                    />
+                    <Button type="primary" onClick={() => onOpenImporter(deckId, preset)}>Add</Button>
                 </div>
             </ModalContainer>
         </>,

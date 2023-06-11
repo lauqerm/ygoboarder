@@ -1,8 +1,20 @@
 .deck-import-drawer {
+    .ant-drawer-header {
+        padding: var(--spacing) var(--spacing-lg);
+        .ant-drawer-close {
+            padding: 0;
+        }
+    }
     .ant-drawer-body {
         background-color: var(--dim);
         padding: var(--spacing-lg);
         padding-top: 0;
+        .ant-tabs-nav {
+            margin-bottom: var(--spacing);
+        }
+        .ant-tabs-tab {
+            padding: var(--spacing) 0;
+        }
         .ant-tabs-content-holder {
             border-top: var(--bd-faint);
             padding-top: var(--spacing);

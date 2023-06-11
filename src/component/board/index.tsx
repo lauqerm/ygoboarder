@@ -19,6 +19,7 @@ import { DeckButton } from '../deck';
 import { useEffect, useRef, useState } from 'react';
 import { useDOMEntityStateStore } from 'src/state';
 import './play-board.scss';
+import { DeckImporterDrawer, DeckImporterDrawerRef } from '../deck/deck-import';
 
 const BoardContainer = styled.div`
     background-color: var(--main-primaryLighter);
@@ -33,6 +34,8 @@ export type Board = {
 export const Board = ({
     boardName,
 }: Board) => {
+    const importerRef = useRef<DeckImporterDrawerRef>(null);
+    const [addingDeckId, setAddingDeckId] = useState<string | undefined>();
     const [coordinateMap, setCoordinateMap] = useState<Record<FieldKey, FieldDeckCoordinateMap | undefined>>({
         [FieldKey.your]: {},
         [FieldKey.opponent]: {},
@@ -43,7 +46,7 @@ export const Board = ({
     const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
     useEffect(() => {
         if (boardDrawingRef.current) addDOMEntity(boardDrawingRef.current, DOMEntityType['board']);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return <BoardContainer ref={boardDrawingRef}
@@ -71,6 +74,7 @@ export const Board = ({
         {BoardComponentList.map(boardComponent => {
             const { fieldComponentKey, fieldKey, ...deckButtonProps } = boardComponent;
             const { top, left } = coordinateMap[fieldKey]?.[fieldComponentKey] ?? {};
+            const { name } = deckButtonProps;
 
             if (top == null || left == null) return null;
             return <DeckButton key={`${fieldKey}${fieldComponentKey}${top}${left}`}
@@ -80,8 +84,15 @@ export const Board = ({
                 /** Dịch 1px cho border */
                 offsetTop={top + 1}
                 offsetLeft={left + 1}
+                onOpenImporter={(deckId, preset) => importerRef.current?.open(deckId, preset)}
+                onClose={() => importerRef.current?.close()}
+                isAdding={addingDeckId === name}
             />;
         })}
+        <DeckImporterDrawer ref={importerRef} onVisibleChange={(isOpen, deckId) => {
+            if (isOpen && deckId) setAddingDeckId(deckId);
+            else setAddingDeckId(undefined);
+        }} />
     </BoardContainer>;
 };
 

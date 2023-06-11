@@ -1,8 +1,8 @@
 export {
-    DeckImporter,
+    DeckImporterDrawer,
 } from './deck-import';
 export type {
-    DeckImporterRef,
+    DeckImporterDrawerRef,
 } from './deck-import';
 
 export {

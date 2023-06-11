@@ -1,4 +1,4 @@
-import { Tag } from 'antd';
+import { Tag, Tooltip } from 'antd';
 import styled from 'styled-components';
 import { CloseCircleFilled, CheckSquareFilled } from '@ant-design/icons';
 import { useState } from 'react';
@@ -27,6 +27,11 @@ const CheckboxGroupContainer = styled.div`
     }
     .check-all-button {
         color: var(--color-extraFaint);
+    }
+    &.has-value {
+        .ant-select-selector {
+            border-color: var(--main-antd);
+        }
     }
     &.checkbox-all-selected {
         .action-button {
@@ -100,15 +105,20 @@ export const CheckboxGroup = ({
         }, {} as Record<string, boolean>),
     );
 
-    return <CheckboxGroupContainer className={mergeClass(
-        'checkbox-group',
-        className,
-        disabled ? 'checkbox-group-disabled' : '',
-        optionList.length === Object.keys(internalValue).length ? 'checkbox-all-selected' : '',
-    )}>
+    return <CheckboxGroupContainer
+        className={mergeClass(
+            'checkbox-group',
+            className,
+            disabled ? 'checkbox-group-disabled' : '',
+            optionList.length === Object.keys(internalValue).length ? 'checkbox-all-selected' : '',
+            Object.keys(internalValue).length > 0 ? 'has-value' : '',
+        )}
+    >
         {(optionList ?? []).map(entry => {
             const { label, value, disabled: individualDisabled } = entry;
-            const combinedDisable = disabled ?? individualDisabled;
+            const combinedDisable = disabled === true
+                ? true
+                : individualDisabled;
 
             return <Tag.CheckableTag key={value}
                 className={combinedDisable ? 'checkbox-disabled' : ''}
@@ -129,20 +139,24 @@ export const CheckboxGroup = ({
         })}
         {onReset && <>
             {Object.keys(internalValue).length > 0
-                ? <CloseCircleFilled className="action-button clear-button" onClick={() => {
-                    if (!disabled) {
-                        setInternalValue({});
-                        onChange([]);
-                    }
-                }} />
-                : <CheckSquareFilled className="action-button check-all-button" onClick={() => {
-                    if (!disabled) {
-                        setInternalValue(optionList.reduce((map, { value }) => {
-                            return { ...map, [value]: true };
-                        }, {} as Record<string, boolean>));
-                        onChange(optionList.map(entry => entry.value));
-                    }
-                }} />}
+                ? <Tooltip overlay={disabled ? undefined : 'Clear'} placement="topRight">
+                    <CloseCircleFilled className="action-button clear-button" onClick={() => {
+                        if (!disabled) {
+                            setInternalValue({});
+                            onChange([]);
+                        }
+                    }} />
+                </Tooltip>
+                : <Tooltip overlay={disabled ? undefined : 'Select All'} placement="topRight">
+                    <CheckSquareFilled className="action-button check-all-button" onClick={() => {
+                        if (!disabled) {
+                            setInternalValue(optionList.reduce((map, { value }) => {
+                                return { ...map, [value]: true };
+                            }, {} as Record<string, boolean>));
+                            onChange(optionList.map(entry => entry.value));
+                        }
+                    }} />
+                </Tooltip>}
         </>}
     </CheckboxGroupContainer>;
 };

@@ -45,7 +45,7 @@ export const ModePicker = ({
 }: ModePicker) => {
     return <ModePickerContainer className={mergeClass('mode-picker', disabled ? 'mode-picker-disabled' : '')}>
         {optionList.map(({ value, tooltip, label }) => {
-            return <Tooltip key={value} overlay={tooltip} open={disabled ? false : undefined}>
+            return <Tooltip key={value} overlay={tooltip} open={disabled ? false : undefined} placement="topRight">
                 <div
                     className={mergeClass(
                         'mode-picker-button',

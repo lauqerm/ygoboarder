@@ -44,8 +44,8 @@ import { MovableCard } from '../../card';
 import { mergeClass } from 'src/util';
 import { createPortal } from 'react-dom';
 import { BoardIcon } from '../../atom';
-import './deck-button.scss';
 import { DeckButtonAnnouncer, DeckButtonAnnouncerRef } from './deck-button-announce';
+import './deck-button.scss';
 
 const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
     display: block;
@@ -151,8 +151,8 @@ export type DeckButton = {
     offsetTop?: number, offsetLeft?: number,
     /** Board name chứa deck button */
     owner: string,
-} & Pick<DeckModal, 'beaconList'>
-    & BoardComponent;
+} & Pick<DeckModal, 'beaconList' | 'onOpenImporter' | 'isAdding' | 'onClose'>
+& BoardComponent;
 export const DeckButton = ({
     name,
     displayName = name,
@@ -166,6 +166,9 @@ export const DeckButton = ({
     actionPlacement,
     defaultPhase,
     phaseBehavior,
+    isAdding,
+    onClose,
+    onOpenImporter,
 }: DeckButton) => {
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
@@ -388,10 +391,11 @@ export const DeckButton = ({
                 <DeckButtonAnnouncer ref={announcerRef} />
             </DeckBeaconWrapper>
             {/* <div className="deck-button-info" style={{ zIndex: 1 + 1 }}>
-            {displayName}
-        </div> */}
+                {displayName}
+            </div> */}
             <DeckModal ref={deckModalRef}
                 isVisible={isVisible}
+                isAdding={isAdding}
                 deckId={name}
                 displayName={displayName}
                 type={type}
@@ -399,9 +403,11 @@ export const DeckButton = ({
                 phaseBehavior={phaseBehavior}
                 preset={preset}
                 beaconList={beaconList}
+                onOpenImporter={onOpenImporter}
                 onClose={() => {
                     setVisible(false);
                     hide('modal', name);
+                    onClose?.();
                 }}
             />
         </DeckButtonContainer>,

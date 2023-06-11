@@ -13,13 +13,22 @@ const LinkMarkerPickerContainer = styled.div`
     --marker-size: ${markerBoxSize}px;
     --marker-size-small: ${markerBoxSizeSmall}px;
     display: inline-flex;
-    border-radius: var(--br-antd);
-    border: var(--bd-antd);
     background-color: var(--contrast-antd);
+    &.has-value {
+        .title {
+            .link-marker-preview,
+            .title-content {
+                border-color: var(--main-antd);
+            }
+        }
+    }
     .title {
         display: flex;
         cursor: pointer;
         .title-content {
+            border-radius: var(--br-antd) 0 0 var(--br-antd);
+            border: var(--bd-antd);
+            border-right: none;
             padding: 0 var(--spacing-sm);
         }
         &:hover {
@@ -29,6 +38,11 @@ const LinkMarkerPickerContainer = styled.div`
             }
         }
     }
+    .mode-picker {
+        border-top: var(--bd-antd);
+        border-bottom: var(--bd-antd);
+        padding-right: var(--bdSize);
+    }
     .link-marker-reset {
         cursor: pointer;
         color: var(--color-extraFaint);
@@ -36,7 +50,8 @@ const LinkMarkerPickerContainer = styled.div`
         color: var(--color-ghost);
         background-color: var(--main-contrast);
         font-size: var(--fs-xs);
-        margin-left: var(--spacing-xxs);
+        border: var(--bd-antd);
+        border-left: none;
         &:hover {
             color: var(--color-faint);
         }
@@ -47,11 +62,9 @@ const LinkMarkerPickerContainer = styled.div`
         grid-template-rows: 1fr 1fr 1fr;
         gap: var(--bdSize);
         background-color: var(--bdColor-antd);
-        outline: var(--bdSize) solid var(--bdColor-antd);
-        width: calc(3 * var(--marker-size-small) + 4px);
-        height: calc(3 * var(--marker-size-small) + 4px);
-        margin: 0 var(--spacing-xs);
-        border: var(--bd-antd);
+        border: 2px solid var(--bdColor-antd);
+        width: calc(2px + 3 * var(--marker-size-small) + 4px);
+        height: calc(2px + 3 * var(--marker-size-small) + 4px);
         .marker-preview {
             background-color: var(--contrast-antd);
         }
@@ -59,7 +72,7 @@ const LinkMarkerPickerContainer = styled.div`
             background-color: var(--sub-metal);
         }
         .preview-on {
-            background-color: var(--main-antd);
+            background-color: var(--main-danger);
         }
     }
     &.link-marker-disabled {
@@ -94,7 +107,6 @@ export const LinkMarkerPicker = ({
     });
     const rotateList = [-45, 0, 45, -90, 0, 90, -135, 180, 135];
     const internalOnChange = (mode: PickerMode, value: string[]) => {
-        console.log(mode, value);
         const indexToArrowMap: Record<string, string> = {
             '1': 'Top-Left',
             '2': 'Top',
@@ -108,7 +120,11 @@ export const LinkMarkerPicker = ({
         onChange(mode, value.map(arrowIndex => indexToArrowMap[arrowIndex]));
     };
 
-    return <LinkMarkerPickerContainer className={mergeClass('link-marker-chooser', disabled ? 'link-marker-disabled' : '')}>
+    return <LinkMarkerPickerContainer className={mergeClass(
+        'link-marker-chooser',
+        disabled ? 'link-marker-disabled' : '',
+        selectedMarkerList.finalized.length > 0 ? 'has-value' : '',
+    )}>
         <Popover
             open={disabled ? false : expand}
             overlayClassName="marker-picker-overlay"
