@@ -213,6 +213,17 @@ export const YGOImporterFilter = ({
             secondValue,
         };
     };
+    const normalizeModeListValue = (
+        modelListValue?: { mode: PickerMode, value: number[] },
+    ) => {
+        if (modelListValue) {
+            const { mode, value } = modelListValue;
+
+            return { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
+        } else {
+            return undefined;
+        }
+    };
     const applySearch = () => {
         setPayload(id, curr => {
             const newPayload = { ...curr };
@@ -240,41 +251,11 @@ export const YGOImporterFilter = ({
             newPayload['scale'] = normalizeStatValue(scale);
             newPayload['attribute'] = (attribute ?? []).length === 0 ? undefined : attribute;
             newPayload['card_type'] = (card_type ?? []).length === 0 ? undefined : card_type;
-            if (marker) {
-                const { mode, value } = marker;
-
-                newPayload['marker'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
-            } else {
-                newPayload['marker'] = undefined;
-            }
-            if (race) {
-                const { mode, value } = race;
-
-                newPayload['race'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
-            } else {
-                newPayload['race'] = undefined;
-            }
-            if (st_race) {
-                const { mode, value } = st_race;
-
-                newPayload['st_race'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
-            } else {
-                newPayload['st_race'] = undefined;
-            }
-            if (ability) {
-                const { mode, value } = ability;
-
-                newPayload['ability'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
-            } else {
-                newPayload['ability'] = undefined;
-            }
-            if (frame) {
-                const { mode, value } = frame;
-
-                newPayload['frame'] = { mode, value: value.reduce((acc, cur) => acc | cur, 0) };
-            } else {
-                newPayload['frame'] = undefined;
-            }
+            newPayload['marker'] = normalizeModeListValue(marker);
+            newPayload['race'] = normalizeModeListValue(race);
+            newPayload['st_race'] = normalizeModeListValue(st_race);
+            newPayload['ability'] = normalizeModeListValue(ability);
+            newPayload['frame'] = normalizeModeListValue(frame);
 
             return newPayload;
         });

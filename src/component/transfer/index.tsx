@@ -53,7 +53,7 @@ export const ExportButton = () => {
             try {
                 exportAsJson({
                     deckList: resultDeckList,
-                    descriptionList: descriptionMap,
+                    descriptionMap: descriptionMap,
                 });
             } catch (e) {
                 console.error(e);
@@ -73,7 +73,7 @@ type TransferableDeck = {
 };
 type TransferableData = {
     deckList: Record<string, TransferableDeck>,
-    descriptionList: Record<string, string>,
+    descriptionMap: Record<string, string>,
 };
 export type ImportButton = {
     onImport: (importedData: TransferableData) => void,
@@ -86,7 +86,7 @@ export const ImportButton = ({
             'YOUR-DECK': {
                 phaseBehavior: 'always-down',
                 defaultPhase: 'down',
-                type: 'permanent',
+                type: 'consistent',
                 preset: 'your',
                 cardList: [
                     'https://i.imgur.com/NM1vrsS.png',
@@ -95,7 +95,7 @@ export const ImportButton = ({
             'OP-TRUNK': {
                 phaseBehavior: 'always-up',
                 defaultPhase: 'up',
-                type: 'consistent',
+                type: 'permanent',
                 preset: 'opp',
                 cardList: [
                     'https://i.imgur.com/YgaX2lG.png',
@@ -128,7 +128,7 @@ export const ImportButton = ({
                 ],
             },
         },
-        descriptionList: {
+        descriptionMap: {
             'https://i.imgur.com/4ADMrbA.jpg': '4ADMrbA.jpg',
             'https://i.imgur.com/NM1vrsS.png': 'NM1vrsS.png',
             'https://i.imgur.com/Y7rRxaV.png': 'Y7rRxaV.png',

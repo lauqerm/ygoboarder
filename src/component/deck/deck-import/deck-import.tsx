@@ -57,7 +57,6 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
         onClose={() => setOpen(false)}
         width={'730px'}
         mask={false}
-        destroyOnClose
     >
         <Tabs
             className="deck-import-modal"
@@ -78,6 +77,7 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
                                         data: '',
                                         dataURL: url,
                                         preset,
+                                        isOfficial: true,
                                     }),
                                 }],
                             );

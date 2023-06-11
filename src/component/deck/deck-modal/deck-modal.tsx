@@ -353,7 +353,7 @@ export const DeckModal = React.forwardRef(({
                     <div className="deck-card-list">
                         {currentDeckList.map((deckRow, rowIndex, arr) => {
                             return <Droppable key={rowIndex}
-                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[ORIGIN-${type}]-[ROW-${rowIndex}]`}
+                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
                                 direction="horizontal"
                                 isDropDisabled={!isVisible || !isFocused}
                             >
@@ -387,10 +387,10 @@ export const DeckModal = React.forwardRef(({
                                                             flipInList(deckId, [{ id: _id, phase: 'toggle' }]);
                                                         }}
                                                         onDelete={() => {
-                                                            deleteFromList(deckId, [_id]);
+                                                            deleteFromList(deckId, [_id], true);
                                                         }}
                                                         onDuplicate={() => {
-                                                            duplicateInList(deckId, [deckCard]);
+                                                            if (type !== 'permanent') duplicateInList(deckId, [deckCard]);
                                                         }}
                                                         {...dragProvided.dragHandleProps}
                                                         {...dragProvided.draggableProps}

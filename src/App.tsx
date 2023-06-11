@@ -17,6 +17,8 @@ import {
     DOMEntityType,
     PropDOMEntityVisible,
     Player,
+    YGOProDomainRegex,
+    GetDeckTypeRegex,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
@@ -356,12 +358,13 @@ function App() {
                                                 dataURL: imageURL,
                                                 type: 'external',
                                                 preset,
+                                                isOfficial: YGOProDomainRegex.test(imageURL),
                                             }),
                                         })),
                                 );
                             });
                             addDescription(
-                                Object.entries(importedData.descriptionList).map(([url, description]) => ({ key: url, description })),
+                                Object.entries(importedData.descriptionMap).map(([url, description]) => ({ key: url, description })),
                                 true,
                             );
                             setHardReset(cnt => cnt + 1);

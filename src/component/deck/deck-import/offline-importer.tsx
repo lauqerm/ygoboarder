@@ -243,6 +243,7 @@ export const OfflineImporter = ({
                     data: '',
                     dataURL: resultURL,
                     preset,
+                    isOfficial: false,
                 }),
             })),
         );

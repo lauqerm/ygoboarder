@@ -1,6 +1,6 @@
 import { Input, Button, Alert } from 'antd';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { CardImageConverter, CardPreset } from 'src/model';
+import { CardImageConverter, CardPreset, YGOProDomainRegex } from 'src/model';
 import { useDeckStore, useDescriptionStore } from 'src/state';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined } from '@ant-design/icons';
@@ -133,6 +133,7 @@ export const OnlineImporter = ({
         setFileList((rawValue.current ?? '')
             .split('\n')
             .filter(entry => typeof entry === 'string' && entry.length > 0)
+            .filter(entry => !YGOProDomainRegex.test(entry))
             .map(entry => ({ resultURL: entry, status: 'init', uid: uuidv4() })));
         rawValue.current = '';
         setInputKey(cur => cur + 1);
@@ -148,6 +149,7 @@ export const OnlineImporter = ({
                     data: '',
                     dataURL: resultURL,
                     preset,
+                    isOfficial: false,
                 }),
             })),
         );
@@ -163,7 +165,10 @@ export const OnlineImporter = ({
         <Alert
             showIcon
             type="info"
-            message="If many descriptions are bound with the same image link, only the latest description will be saved."
+            message={<>
+                If many descriptions are bound with the same image link, only the latest description will be saved.<br />
+                Images from ygoprodeck will be ignored, please import them using the "From YGOPro" tab instead.
+            </>}
         />
         <Input.TextArea key={`text-${inputKey}`}
             className="import-input"

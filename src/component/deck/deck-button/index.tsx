@@ -173,6 +173,7 @@ export const DeckButton = ({
     const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
     const beaconListRef = useRef<HTMLDivElement>(null);
+    const [, setRefreshCnt] = useState(0);
 
     const {
         hide,
@@ -368,6 +369,7 @@ export const DeckButton = ({
                                         origin: name,
                                         phase: cardInDeck.get('phase'),
                                     }]);
+                                    setRefreshCnt(cur => cur + 1);
                                 }
                             }}
                             onMouseEnter={() => {

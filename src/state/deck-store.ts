@@ -40,7 +40,7 @@ export type DeckState = {
     register: (deckId: string, info: { type: DeckType, defaultPhase: PhaseType, phaseBehavior: PhaseBehavior, preset: CardPreset }) => void,
     add: (deckId: string, addInfo: { card: BaseCard, phase?: PhaseType }[], position?: BeaconAction) => void,
     addToPosition: (deckId: string, cardWithPositionList: { position: number, card: DeckCard }[]) => void,
-    delete: (deckId: string, idList: string[]) => void,
+    delete: (deckId: string, idList: string[], force?: boolean) => void,
     duplicate: (deckId: string, cardList: DeckCard[]) => void,
     reorder: (deckId: string, changeList: { prevIndex: number, nextIndex: number }[]) => void,
     flip: (deckId: string, changeList: { id: string, phase: PhaseType | 'toggle' }[]) => void,
@@ -133,11 +133,22 @@ export const useDeckStore = create<DeckState>((set) => ({
             deckMap: state.deckMap.set(deckId, newDeck),
         };
     }),
-    delete: (deckId, idList) => set(state => {
+    delete: (deckId, idList, force = false) => set(state => {
         const targetDeck = state.deckMap.get(deckId, DeckListConverter());
+        /** Card không bị delete trong deck dạng permanent, nhưng vì card có id duy nhất nên ta xóa card đó và clone nó với id mới */
+        const cloneInstead = targetDeck.get('type') === 'permanent' && force === false;
+
         let newList = targetDeck.get('cardList');
         if (newList) {
-            idList.forEach(id => { newList = newList.filter(value => value.get('card').get('_id') !== id) });
+            idList.forEach(cardId => {
+                if (cloneInstead) {
+                    const targetIndex = newList.findIndex(deckElement => deckElement.get('card').get('_id') === cardId);
+                    const targetCard = newList.get(targetIndex);
+    
+                    if (targetCard) newList = newList.splice(targetIndex, 1, targetCard.setIn(['card', '_id'], uuidv4()));
+                }
+                else newList = newList.filter(value => value.get('card').get('_id') !== cardId);
+            });
         }
         const newDeck = targetDeck.set('cardList', newList);
 

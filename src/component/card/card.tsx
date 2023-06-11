@@ -66,10 +66,11 @@ export const Card = ({
                 preview(
                     'external',
                     baseCard.get('dataURL'),
+                    baseCard.get('isOfficial'),
                     useDescriptionStore.getState().descriptionMap[baseCard.get('dataURL')],
                 );
             } else {
-                preview('internal', baseCard.get('data'));
+                preview('internal', baseCard.get('data'), false);
             }
         };
         if (target) target.addEventListener('mouseenter', openPreview);

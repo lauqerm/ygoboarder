@@ -8,6 +8,7 @@ type BaseCardRecord = {
     data: string,
     dataURL: string,
     preset: CardPreset,
+    isOfficial: boolean,
 };
 export type BaseCard = ImmutableRecord<BaseCardRecord>;
 export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
@@ -17,6 +18,7 @@ export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
     data: '',
     dataURL: '',
     preset: 'your',
+    isOfficial: false,
 });
 
 export const DROP_TYPE_DECK = 'DECK';
@@ -40,6 +42,7 @@ export const GetBoardRegex = /\[BOARD-([\w-]*)\]/m;
 export const GetDeckButtonRegex = /\[DECKBUTTON-([\w-]*)\]/m;
 export const GetDeckModalRegex = /\[DECKMODAL-([\w-]*)\]/m;
 export const GetOriginRegex = /\[ORIGIN-([\w-]*)\]/m;
+export const GetDeckTypeRegex = /\[DECK-TYPE-([\w-]*)\]/m;
 
 export const DragTransformStatRegex = /translate\((-?\d*)px, (-?\d*)px\)/;
 
@@ -74,6 +77,8 @@ export const GroupPickerMode: { value: PickerMode, tooltip: string, label: React
     { value: 'exactly', tooltip: 'Match exactly', label: '=' },
     { value: 'most', tooltip: 'Match at most', label: '∈' },
 ];
+
+export const YGOProDomainRegex = new RegExp('https?://images.ygoprodeck.com');
 
 export * from './card';
 export * from './deck';
