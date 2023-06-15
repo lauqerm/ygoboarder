@@ -170,7 +170,7 @@ export const DeckButton = ({
     onClose,
     onOpenImporter,
 }: DeckButton) => {
-    const [isVisible, setVisible] = useState(false);
+    // const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
     const beaconListRef = useRef<HTMLDivElement>(null);
     const [, setRefreshCnt] = useState(0);
@@ -189,6 +189,7 @@ export const DeckButton = ({
             && prev.modalInstance.get('zIndex') === next.modalInstance.get('zIndex'),
     );
     const zIndex = modalInstance.get('zIndex');
+    const isVisible = modalInstance.get('visible');
 
     const addToBoard = useBoardStore(state => state.add);
 
@@ -250,8 +251,7 @@ export const DeckButton = ({
                 {action.includes('view') && <Tooltip overlay="View" placement={actionPlacement}>
                     <div
                         className="deck-button-tool deck-button-tool-view" onClick={() => {
-                            setVisible(true);
-                            focus('modal', name);
+                            focus('modal', name, true);
                         }}
                     >
                         <EyeOutlined />
@@ -355,7 +355,6 @@ export const DeckButton = ({
                             phase={topDeckCard.get('phase')}
                             fake={true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
-                                console.log('🚀 ~ file: index.tsx:354 ~ coord:', coord);
                                 const cardInDeck = deckList.get(0);
 
                                 if (cardInDeck) {
@@ -407,7 +406,6 @@ export const DeckButton = ({
                 beaconList={beaconList}
                 onOpenImporter={onOpenImporter}
                 onClose={() => {
-                    setVisible(false);
                     hide('modal', name);
                     onClose?.();
                 }}

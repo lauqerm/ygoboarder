@@ -31,6 +31,7 @@ import {
     useZIndexState,
     useDOMEntityStateStore,
     PhaseBehavior,
+    useDroppableAvailableState,
 } from 'src/state';
 import { DeckImporterDrawerRef } from '../deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
@@ -122,7 +123,6 @@ export const DeckModal = React.forwardRef(({
     onOpenImporter,
     beaconList = [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
-    const [isFocused, setFocused] = useState(false);
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckStore(
@@ -132,6 +132,7 @@ export const DeckModal = React.forwardRef(({
     const currentFullDeckList = deckData.get('cardList');
     const deckCount = useCountStore(state => state.countMap[deckId]);
     const recalculateDOMEntity = useDOMEntityStateStore(state => state.recalculate);
+    const isAllowDrop = useDroppableAvailableState(state => state.statusMap[deckId]) ?? false;
 
     const {
         register,
@@ -234,6 +235,7 @@ export const DeckModal = React.forwardRef(({
         deckImpoterRef.current?.close();
         onClose?.();
     };
+
     if (!portal) return null;
     return createPortal(
         <>
@@ -317,12 +319,10 @@ export const DeckModal = React.forwardRef(({
                     className,
                 )}
                 style={{ zIndex: currentZIndex }}
-                onMouseDown={e => {
+                onMouseUp={e => {
                     e.stopPropagation();
                     focus('modal', deckId);
                 }}
-                onMouseEnter={() => setFocused(true)}
-                onMouseLeave={() => setFocused(false)}
                 onMouseOver={e => e.stopPropagation()}
                 onMouseOut={e => e.stopPropagation()}
                 $beaconCount={beaconList?.length}
@@ -351,11 +351,26 @@ export const DeckModal = React.forwardRef(({
                         })}
                     </div>
                     <div className="deck-card-list">
+                        {currentDeckList.length === 0 && <Droppable key={0}
+                            droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${0}]`}
+                            direction="horizontal"
+                            isDropDisabled={!isAllowDrop || !isVisible}
+                        >
+                            {dropProvided => {
+                                return <ModalRowContainer
+                                    ref={dropProvided.innerRef}
+                                    className="deck-result"
+                                    lastRowExtender={4}
+                                    {...dropProvided.droppableProps}
+                                />;
+                            }}
+                        </Droppable>}
                         {currentDeckList.map((deckRow, rowIndex, arr) => {
                             return <Droppable key={rowIndex}
                                 droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
                                 direction="horizontal"
-                                isDropDisabled={!isVisible || !isFocused}
+                                isDropDisabled={!isAllowDrop || !isVisible}
+                            // isDropDisabled={!isVisible || !isFocused}
                             >
                                 {dropProvided => {
                                     return <ModalRowContainer

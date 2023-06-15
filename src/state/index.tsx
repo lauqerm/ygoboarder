@@ -4,6 +4,7 @@ export * from './count-store';
 export * from './deck-store';
 export * from './description-store';
 export * from './dom-entity-store';
+export * from './droppable-available-store';
 export * from './event-store';
 export * from './lp-store';
 export * from './preview-store';

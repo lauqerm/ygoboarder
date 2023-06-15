@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useLPStore, useZIndexState } from './state';
+import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useDroppableAvailableState, useLPStore, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
@@ -47,6 +47,7 @@ function App() {
     const resetBoard = useBoardStore(state => state.reset);
     const setLP = useLPStore(state => state.set);
     const zIndexChange = useZIndexState(state => state.updateCount);
+    const updateModalStatus = useDroppableAvailableState(state => state.update);
     const {
         recalculate,
         DOMEntityList,
@@ -106,14 +107,18 @@ function App() {
         /**
          * Side-effect cho modal, vì handle có index cao hơn modal, card khi drag ngang qua handle sẽ bị khuất, ta cần effect để nâng index của modal lên, rồi hạ xuống sau khi kết thúc drag
          */
-        document.querySelector(`[data-rbd-droppable-id="${source.droppableId}"]`)
-            ?.closest(`.${DOMEntityTypeClass.deckModal}`)
-            ?.classList.add('deck-modal-viewer-boost');
+        const targetModal = document.querySelector(`[data-rbd-droppable-id="${source.droppableId}"]`)
+            ?.closest(`.${DOMEntityTypeClass.deckModal}`);
+        /** Do cách render của component ta luôn assume header luôn ở ngay trước body */
+        const targetModalHeader = targetModal?.previousElementSibling;
+
+        targetModal?.classList.add('deck-modal-viewer-boost');
+        targetModalHeader?.classList.add('deck-modal-header-viewer-boost');
     };
 
     const onDragStart = (initial: DragStart) => {
         const { source, draggableId } = initial;
-        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragStart');
+        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragStart', source);
         /*...*/
 
         /**
@@ -122,9 +127,17 @@ function App() {
         currentEventTarget.current = document.querySelector(`[data-rbd-draggable-id="${draggableId}"`);
         currentHighlightEvent.current = ({ clientX, clientY }: MouseEvent) => {
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            const sourceDeckName = GetDropIDRegex.exec(source.droppableId)?.[1] ?? '';
+            const sourceDOMEntity = DOMEntityList.find(entry => entry.name === sourceDeckName);
+            /**
+             * Một hack nhỏ. Vì source modal được tự động nâng lên zIndex tối đa để đảm bảo card đang drag không bị che, điều này sẽ làm xáo trộn thứ tự của DOMEntityList, vốn được sắp xếp giảm dần theo zIndex. Ta sẽ build một list tạm để giải quyết vấn đề này.
+             */
+            const normalizedDOMEntityList = sourceDOMEntity
+                ? [sourceDOMEntity, ...DOMEntityList.filter(entry => entry.name !== sourceDeckName)]
+                : DOMEntityList;
             let foundWrapper = false;
-            for (const DOMEntity of DOMEntityList) {
-                const { type, element, beaconList } = DOMEntity;
+            for (const DOMEntity of normalizedDOMEntityList) {
+                const { name, type, element, beaconList } = DOMEntity;
                 const DOMElement = element();
                 DOMElement.classList.remove('js-available-to-drop');
 
@@ -141,6 +154,12 @@ function App() {
                         }
                     }
                     DOMElement.classList.add('js-available-to-drop');
+                } else if (type === DOMEntityType['deckModal']) {
+                    foundWrapper = true;
+                    updateModalStatus(() => ({
+                        [sourceDeckName]: true,
+                        [name]: true,
+                    }));
                 }
             }
         };
@@ -151,7 +170,7 @@ function App() {
         /*...*/
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
-        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragEnd');
+        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragEnd', result);
         const { destination, source } = result;
         const {
             droppableId: sourceDropId,
@@ -164,6 +183,7 @@ function App() {
         const cleanEffect = () => {
             document.removeEventListener('mousemove', currentHighlightEvent.current);
             document.querySelector('.deck-modal-viewer-boost')?.classList.remove('deck-modal-viewer-boost');
+            document.querySelector('.deck-modal-header-viewer-boost')?.classList.remove('deck-modal-header-viewer-boost');
             const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
             for (const DOMEntity of DOMEntityList) {
                 const { element, beaconList } = DOMEntity;
@@ -284,7 +304,7 @@ function App() {
                                 dropActionType as BeaconAction,
                             );
                         } else {
-                            /** Drag từ Deck này sang Deck khác bằng thao tác trực tiếp */
+                            /** Drag từ modal Deck này sang modal Deck khác */
                             addToDeckInPosition(destinationDeckID, [{
                                 card: targetDeckCard,
                                 position: destinationIndex,

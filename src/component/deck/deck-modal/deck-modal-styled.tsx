@@ -48,7 +48,7 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
     overflow: hidden;
     position: absolute;
     .deck-modal-header-padding {
-        height: 35px;
+        height: 39px;
         pointer-events: none;
     }
     .deck-beacon-wrapper {

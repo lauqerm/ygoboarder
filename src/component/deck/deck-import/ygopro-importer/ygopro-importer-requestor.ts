@@ -32,7 +32,6 @@ export const YGOProRequestor = async (
         if (question) {
             return filterMap[statType] = entry => ((entry.misc_info?.[0] as any)[`question_${statType}`] ?? 0) === 1;
         } else if (regex) {
-            console.log('🚀 ~ file: ygopro-importer-requestor.ts:35 ~ processStatPayload ~ regex:', regex);
             /** Search bằng regex */
             return filterMap[statType] = entry => regex.test(`${entry[statType]}`);
         } else {
@@ -182,8 +181,8 @@ export const YGOProRequestor = async (
         }
     }
 
-    console.log('🚀 ~ file: ygopro-importer-requestor.ts:78', cardPoolList, banlist, payload);
-    console.log(cardList.slice(0, 20));
+    // console.log('🚀 ~ file: ygopro-importer-requestor.ts:78', cardPoolList, banlist, payload);
+    // console.log(cardList.slice(0, 20));
     /** Sắp xếp theo thứ tự cố định với hy vọng số lượng card sau filter giảm nhanh nhất */
     const filterList: ((_: YGOProCard) => boolean)[] = [
         filterMap['card_type'],

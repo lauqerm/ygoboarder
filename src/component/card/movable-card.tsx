@@ -168,6 +168,7 @@ export const MovableCard = ({
             /** Drop tại beacon để cho card vào deck khác */
             const { top = initialY, left = initialX } = target?.getBoundingClientRect() ?? {};
             const movedInitialDistance = Math.sqrt((initialY - top) ** 2 + (initialX - left) ** 2);
+
             let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
                 const { type, element, beaconList, name } = DOMEntity;

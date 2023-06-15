@@ -7,11 +7,13 @@ export const cardIndexQueue = createIndexQueue(10);
 
 type BaseZIndexInstance = {
     name: string,
+    visible: boolean,
     zIndex: number,
 };
 export type ZIndexInstance = ImmutableRecord<BaseZIndexInstance>;
 export const ZIndexInstanceConverter = ImmutableRecord<BaseZIndexInstance>({
     name: '',
+    visible: false,
     zIndex: 0,
 });
 
@@ -39,7 +41,11 @@ const prune = (category: IndexCategoryData): IndexCategoryData => {
         const target = queueList[cnt];
         /** Nếu là phần tử có tồn tại, ta dồn nó vào đầu array mới, nếu không ta dồn nó ra sau */
         if (target !== undefined) {
-            newEntryQueue[existCount] = { name: target.name, zIndex: posToZIndex(existCount) };
+            newEntryQueue[existCount] = {
+                name: target.name,
+                zIndex: posToZIndex(existCount),
+                visible: target.visible,
+            };
             newEntryMap = newEntryMap.set(target.name, ZIndexInstanceConverter({ name: target.name, zIndex: posToZIndex(existCount) }));
             existCount += 1;
         } else {
@@ -61,8 +67,8 @@ type IndexCategory = 'modal' | 'card';
 export type ZIndexState = {
     updateCount: number,
     categoryMap: Record<IndexCategory, IndexCategoryData>,
-    toTop: (type: IndexCategory, name: string) => void,
-    reset: (type: IndexCategory, name: string) => void,
+    toTop: (type: IndexCategory, name: string, visible?: boolean) => void,
+    reset: (type: IndexCategory, name: string, visible?: boolean) => void,
 }
 export const useZIndexState = create<ZIndexState>((set) => ({
     updateCount: 0,
@@ -86,7 +92,7 @@ export const useZIndexState = create<ZIndexState>((set) => ({
             queueList: Array(MIN_ABSOLUTE_INDEX - MIN_MODAL_INDEX - 10).fill(undefined),
         },
     },
-    toTop: (type, name) => set(state => {
+    toTop: (type, name, visible) => set(state => {
         const targetCategory = state.categoryMap[type];
 
         if (!targetCategory) return state;
@@ -103,8 +109,16 @@ export const useZIndexState = create<ZIndexState>((set) => ({
          * Nếu phần tử lên top đã ở sẵn trong queue, ta remove nó ra rồi thêm lại ở vị trí top queue
          */
         if (targetIndex >= 0) queueList[targetIndex] = undefined;
-        queueList[newIndex] = { name, zIndex: posToZIndex(newIndex) };
-        updatedCategory.queueMap = queueMap.set(name, ZIndexInstanceConverter({ name, zIndex: posToZIndex(newIndex) }));
+        queueList[newIndex] = {
+            name,
+            zIndex: posToZIndex(newIndex),
+            visible: visible ?? queueMap.get(name, ZIndexInstanceConverter()).get('visible'),
+        };
+        updatedCategory.queueMap = queueMap.set(name, ZIndexInstanceConverter({
+            name,
+            zIndex: posToZIndex(newIndex),
+            visible: visible ?? queueMap.get(name, ZIndexInstanceConverter()).get('visible'),
+        }));
         updatedCategory.topIndex += 1;
         updatedCategory.currentFocus = name;
 
