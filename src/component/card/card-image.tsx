@@ -5,6 +5,8 @@ type ImageSourceEntry = {
     source?: string,
     resolved: boolean,
 }
+/** 20 image / 1s là giới hạn của ygoprodeck, a.k.a 50ms delay is minimum */
+const queueDelayTime = 200;
 const createImageSourceQueue = () => {
     const sourceMap: Record<string, ImageSourceEntry> = {};
     function* queueGenerator() {
@@ -20,7 +22,7 @@ const createImageSourceQueue = () => {
             await new Promise(resolve => {
                 setTimeout(() => {
                     resolve(true);
-                }, 500);
+                }, queueDelayTime);
             });
             yield counter;
             counter += 1;
@@ -67,29 +69,45 @@ const createImageSourceQueue = () => {
 const imageSourceMap = createImageSourceQueue();
 
 /**
- * Làm ra để tránh limit card image của YGORPO, ảnh trong component này sẽ load tuần tự, với số lượng mỗi giây dưới ngưỡng cho trước
+ * Làm ra để tránh limit card image của YGORPO, ảnh trong component này sẽ load tuần tự, với số lượng mỗi giây dưới ngưỡng cho trước.
+ * 
+ * Card có một delay ngắn để có thể loại bỏ image bị unmount trước khi kịp vào queue.
  */
 export type DelayedImage = React.ImgHTMLAttributes<HTMLImageElement> & { type: 'URL' | 'Base64' };
 export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
     const [actualSrc, setActualSrc] = useState(type === 'URL' && imageSourceMap.isResolved(src) === false ? undefined : src);
+    const [isReady, setReady] = useState(false);
+
+    useEffect(() => {
+        let relevant = true;
+        setTimeout(() => {
+            if (relevant) setReady(true);
+        }, 500);
+
+        return () => {
+            relevant = false;
+        };
+    }, []);
 
     useEffect(() => {
         let relevant = true;
 
-        if (type === 'URL' && imageSourceMap.isResolved(src) === false) {
-            imageSourceMap.add(src);
-            imageSourceMap.get(src)
-                .then(resolvedSrc => {
-                    if (relevant) setActualSrc(resolvedSrc);
-                });
-        } else {
-            if (relevant) setActualSrc(src);
+        if (isReady) {
+            if (type === 'URL' && imageSourceMap.isResolved(src) === false) {
+                imageSourceMap.add(src);
+                imageSourceMap.get(src)
+                    .then(resolvedSrc => {
+                        if (relevant) setActualSrc(resolvedSrc);
+                    });
+            } else {
+                if (relevant) setActualSrc(src);
+            }
         }
 
         return () => {
             relevant = false;
         };
-    }, [type, src]);
+    }, [isReady, type, src]);
 
     return <img
         {...rest}

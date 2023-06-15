@@ -25,6 +25,7 @@ type SearchProps = React.ComponentProps<typeof Search>;
 
 const YGOProFilterContainer = styled.div`
     display: flex;
+    flex-direction: column;
     column-gap: var(--spacing);
     padding-bottom: var(--spacing);
     .has-value {
@@ -135,10 +136,12 @@ const textOperatorList: YGOProPayloadStringKey[] = ['name', 'desc', 'pendDesc'];
 export type YGOImporterFilter = {
     id: string,
     ready: boolean,
+    children?: React.ReactNode,
 }
 export const YGOImporterFilter = ({
     id,
     ready,
+    children,
 }: YGOImporterFilter) => {
     const [textModeList, setTextMode] = useState<YGOProPayloadStringKey[]>([]);
     const [cardModeList, setCardModeList] = useState<CardType[]>([]);
@@ -559,5 +562,6 @@ export const YGOImporterFilter = ({
                 />
             </div>}
         </div>
+        {children}
     </YGOProFilterContainer>;
 };

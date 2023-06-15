@@ -1,4 +1,4 @@
-import { Radio, notification } from 'antd';
+import { Pagination, Radio, notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescription } from 'src/model';
 import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
@@ -10,6 +10,7 @@ import { YGOImporterFilter } from './ygopro-importer-filter';
 import { LoadingOutlined } from '@ant-design/icons';
 import { YGOProRequestor } from './ygopro-importer-requestor';
 import './ygopro-importer.scss';
+import { Loading } from 'src/component/loading';
 
 const YGOImporterContainer = styled.div`
     position: relative;
@@ -21,11 +22,13 @@ const YGOImporterContainer = styled.div`
         position: sticky;
         background-color: var(--dim);
         z-index: 1;
+        padding-top: var(--spacing);
     }
     .ygopro-importer-title {
         display: grid;
         grid-template-columns: 1fr max-content max-content max-content;
         column-gap: var(--spacing);
+        margin-bottom: 0;
         .ant-radio-group {
             font-weight: normal;
         }
@@ -111,35 +114,44 @@ const YGOImporterContainer = styled.div`
             white-space: pre-line;
         }
     }
-    .ygopro-card-list.grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, 168px);
-        gap: var(--spacing);
-        margin-top: var(--spacing);
-        .stat-list,
-        .card-statistic {
-            display: none;
-        }
-        /** Size của ygopro */
-        .ygopro-card-entry {
-            margin: 0;
-            padding: 0;
-            border: none;
-            &:hover {
-                outline: 4px solid var(--main-antd);
+    .ygopro-card-list {
+        position: relative;
+        min-height: 10rem;
+        &.grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, 168px);
+            gap: var(--spacing);
+            margin-top: var(--spacing);
+            .stat-list,
+            .card-statistic {
+                display: none;
+            }
+            /** Size của ygopro */
+            .ygopro-card-entry {
+                margin: 0;
+                padding: 0;
+                border: none;
+                &:hover {
+                    outline: 4px solid var(--main-antd);
+                }
+            }
+            .restriction-text {
+                font-size: var(--fs-xl);
+                border-radius: 0 var(--br) 0 0;
+            }
+            .card-entry-image {
+                width: 168px;
+                height: 246px;
+                .image-container {
+                    height: unset;
+                }
             }
         }
-        .restriction-text {
-            font-size: var(--fs-xl);
-            border-radius: 0 var(--br) 0 0;
-        }
-        .card-entry-image {
-            width: 168px;
-            height: 246px;
-            .image-container {
-                height: unset;
-            }
-        }
+    }
+    .card-list-pagination {
+        padding-top: var(--spacing);
+        flex: 1 0 100%;
+        align-self: flex-end;
     }
 `;
 
@@ -165,6 +177,8 @@ export const YGOProImporter = ({
     const fullCardList = useYGOProFilter(state => state.fullCardList);
     const cardListStatus = useYGOProFilter(state => state.status);
     const initCardList = useYGOProFilter(state => state.init);
+    const [cardPage, setCardPage] = useState(1);
+    const [cardPageSize, setCardPageSize] = useState(20);
 
     useEffect(() => {
         let relevant = true;
@@ -201,7 +215,10 @@ export const YGOProImporter = ({
                 const resultCardList = await YGOProRequestor(payload, fullCardList, cardpool, banlist);
 
                 if (relevant) setLoading(false);
-                if (relevant && resultCardList) setCardResponseList(resultCardList);
+                if (relevant && resultCardList) {
+                    setCardResponseList(resultCardList);
+                    setCardPage(1);
+                }
             } catch (e: any) {
                 if (e.code === 'ERR_BAD_REQUEST') notification.error({
                     message: 'No cards match your search',
@@ -211,6 +228,7 @@ export const YGOProImporter = ({
                 else console.error(e);
                 if (relevant) {
                     setLoading(false);
+                    setCardPage(1);
                 }
             }
         })();
@@ -272,10 +290,30 @@ export const YGOProImporter = ({
                 buttonStyle="solid"
             />
         </h2>
-        <YGOImporterFilter id={id} ready={ready} />
+        <YGOImporterFilter id={id} ready={ready}>
+            <Pagination
+                className="card-list-pagination"
+                size="small"
+                current={cardPage}
+                pageSize={cardPageSize}
+                total={cardResponseList.length}
+                pageSizeOptions={['20', '40', '80', '160']}
+                showSizeChanger
+                showQuickJumper
+                showTotal={(total, range) => <div>{range[0]} - {range[1]} / {total}</div>}
+                onShowSizeChange={(_, newSize) => {
+                    setCardPageSize(newSize);
+                    setCardPage(1);
+                }}
+                onChange={page => {
+                    setCardPage(page);
+                }}
+            />
+        </YGOImporterFilter>
         <div className={mergeClass('ygopro-card-list', displayMode)}>
+            {ready === false && <Loading.FullView />}
             {cardResponseList
-                .slice(0, 20)
+                .slice((cardPage - 1) * cardPageSize, cardPage * cardPageSize)
                 .map(card => {
                     const {
                         id,

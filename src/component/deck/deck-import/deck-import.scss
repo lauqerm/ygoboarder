@@ -9,6 +9,7 @@
         background-color: var(--dim);
         padding: var(--spacing-lg);
         padding-top: 0;
+        overflow-y: scroll;
         .ant-tabs-nav {
             margin-bottom: var(--spacing);
         }
