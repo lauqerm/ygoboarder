@@ -145,3 +145,14 @@ export const MonsterAbilityImplicationMap: Record<string, number> = {
     'Toon': MonsterAbilitySubtypeToBitMap['Effect'],
     'Union': MonsterAbilitySubtypeToBitMap['Effect'],
 };
+
+export const MonsterMainFrameIndex: Record<string, number> = {
+    normal: 0,
+    effect: 1,
+    ritual: 2,
+    fusion: 3,
+    synchro: 4,
+    xyz: 5,
+    link: 6,
+};
+export const DefaultMonsterMainFrame = Object.keys(MonsterMainFrameIndex).length + 1;

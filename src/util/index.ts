@@ -67,4 +67,37 @@ export const getAbsoluteRect = (rect: {
     };
 };
 
+export const isJsonObjectEqual = (payload1: any, payload2: any) => {
+    /**
+     * Check `array`, `object` và `null`
+     */
+    if (typeof payload1 === 'object' && typeof payload2 === 'object') {
+        if (payload1 === null || payload2 === null) return payload1 === payload2;
+
+        if (Array.isArray(payload1) && Array.isArray(payload2)) {
+            if (payload1.length !== payload2.length) return false;
+
+            for (let cnt = 0; cnt < payload1.length; cnt++) {
+                if (isJsonObjectEqual(payload1[cnt], payload2[cnt]) === false) return false;
+            }
+            return true;
+        }
+
+        if (payload1.toString() === '[object Object]' && payload2.toString() === '[object Object]') {
+            if (Object.keys(payload1).length !== Object.keys(payload2).length) return false;
+
+            for (const key in payload1) {
+                if (isJsonObjectEqual(payload1[key], payload2[key]) === false) return false;
+            }
+            return true;
+        }
+
+        return payload1 === payload2;
+    }
+    /**
+     * Check `number` và `string`
+     */
+    return payload1 === payload2;
+};
+
 export { createIndexQueue } from './index-queue';

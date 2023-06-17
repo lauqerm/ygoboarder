@@ -1,16 +1,16 @@
-import { Pagination, Radio, notification } from 'antd';
+import { Pagination, Radio, Select, notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescription } from 'src/model';
 import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
-import { usePreviewStore, useYGOProFilter } from 'src/state';
+import { OrderList, usePreviewStore, useYGOProFilter } from 'src/state';
 import { mergeClass } from 'src/util';
 import { YGOImporterFilter } from './ygopro-importer-filter';
 import { LoadingOutlined } from '@ant-design/icons';
 import { YGOProRequestor } from './ygopro-importer-requestor';
-import './ygopro-importer.scss';
 import { Loading } from 'src/component/loading';
+import './ygopro-importer.scss';
 
 const YGOImporterContainer = styled.div`
     position: relative;
@@ -148,10 +148,26 @@ const YGOImporterContainer = styled.div`
             }
         }
     }
-    .card-list-pagination {
+    .card-list-control {
+        display: grid;
+        grid-template-columns: 85px 1fr;
+        column-gap: var(--spacing);
         padding-top: var(--spacing);
-        flex: 1 0 100%;
-        align-self: flex-end;
+        .card-list-pagination {
+            text-align: right;
+        }
+        /** Không thể customize text nên ta phải can thiệp bằng cách khác */
+        .ant-pagination-options-quick-jumper {
+            font-size: 0;
+            input {
+                margin-right: 0;
+                padding: 0 var(--spacing-xs);
+            }
+            &:before {
+                content: "Page";
+                font-size: var(--fs);
+            }
+        }
     }
 `;
 
@@ -163,6 +179,7 @@ export const YGOProImporter = ({
     id,
     onSelect,
 }: YGOProImporter) => {
+    const filterKey = 'modal-importer';
     const [cardResponseList, setCardResponseList] = useState<YGOProCard[]>([]);
     const [displayMode, setDisplayMode] = useState('grid');
     const [loading, setLoading] = useState(false);
@@ -173,10 +190,12 @@ export const YGOProImporter = ({
         : ['BOTH', 'TCG', 'OCG']);
     const preview = usePreviewStore(state => state.setCardPreview);
 
-    const payload = useYGOProFilter(state => state.payloadMap[id]);
-    const fullCardList = useYGOProFilter(state => state.fullCardList);
+    const payload = useYGOProFilter(state => state.payloadMap[filterKey]);
+    const activeCardList = useYGOProFilter(state => state.activeCardList[filterKey]);
     const cardListStatus = useYGOProFilter(state => state.status);
     const initCardList = useYGOProFilter(state => state.init);
+    const activeListKey = useYGOProFilter(state => state.activeCardListKey[filterKey]);
+    const changeActiveList = useYGOProFilter(state => state.changeActiveCardList);
     const [cardPage, setCardPage] = useState(1);
     const [cardPageSize, setCardPageSize] = useState(20);
 
@@ -207,12 +226,17 @@ export const YGOProImporter = ({
     }, []);
 
     useEffect(() => {
+        changeActiveList(filterKey, 'level');   
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
         let relevant = true;
 
         if (cardListStatus === 'loaded') (async () => {
             try {
                 setLoading(true);
-                const resultCardList = await YGOProRequestor(payload, fullCardList, cardpool, banlist);
+                const resultCardList = await YGOProRequestor(payload, activeCardList ?? [], cardpool, banlist);
 
                 if (relevant) setLoading(false);
                 if (relevant && resultCardList) {
@@ -236,7 +260,7 @@ export const YGOProImporter = ({
         return () => {
             relevant = false;
         };
-    }, [fullCardList, cardListStatus, payload, cardpool, banlist]);
+    }, [activeCardList, cardListStatus, payload, cardpool, banlist]);
 
     return <YGOImporterContainer className="ygopro-importer">
         <h2 className="ygopro-importer-title">
@@ -290,25 +314,35 @@ export const YGOProImporter = ({
                 buttonStyle="solid"
             />
         </h2>
-        <YGOImporterFilter id={id} ready={ready}>
-            <Pagination
-                className="card-list-pagination"
-                size="small"
-                current={cardPage}
-                pageSize={cardPageSize}
-                total={cardResponseList.length}
-                pageSizeOptions={['20', '40', '80', '160']}
-                showSizeChanger
-                showQuickJumper
-                showTotal={(total, range) => <div>{range[0]} - {range[1]} / {total}</div>}
-                onShowSizeChange={(_, newSize) => {
-                    setCardPageSize(newSize);
-                    setCardPage(1);
-                }}
-                onChange={page => {
-                    setCardPage(page);
-                }}
-            />
+        <YGOImporterFilter id={filterKey} ready={ready}>
+            <div className="card-list-control">
+                <Select
+                    size="small"
+                    options={OrderList}
+                    value={activeListKey}
+                    onChange={value => {
+                        changeActiveList(filterKey, value);
+                    }}
+                />
+                <Pagination
+                    className="card-list-pagination"
+                    size="small"
+                    current={cardPage}
+                    pageSize={cardPageSize}
+                    total={cardResponseList.length}
+                    pageSizeOptions={['20', '40', '80', '160']}
+                    showSizeChanger
+                    showQuickJumper
+                    showTotal={(total) => <div>{total}</div>}
+                    onShowSizeChange={(_, newSize) => {
+                        setCardPageSize(newSize);
+                        setCardPage(1);
+                    }}
+                    onChange={page => {
+                        setCardPage(page);
+                    }}
+                />
+            </div>
         </YGOImporterFilter>
         <div className={mergeClass('ygopro-card-list', displayMode)}>
             {ready === false && <Loading.FullView />}
@@ -360,7 +394,7 @@ export const YGOProImporter = ({
                                         src={image_url}
                                     />}
                             </div>
-                            {(atk || def) && <div className="stat-list">
+                            {(atk !== undefined || def !== undefined) && <div className="stat-list">
                                 <div className="stat">{atk}</div>
                                 <div className="stat">{def}</div>
                             </div>}

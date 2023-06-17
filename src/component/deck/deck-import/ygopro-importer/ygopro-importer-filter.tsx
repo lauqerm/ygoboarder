@@ -1,5 +1,5 @@
 import { Button, Input, InputRef, Select } from 'antd';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CheckboxGroup, LinkMarkerPicker, SelectGroup } from 'src/component/atom';
 import {
     CardRaceToBitMap,
@@ -288,6 +288,11 @@ export const YGOImporterFilter = ({
             return newKeyMap;
         });
     };
+
+    useEffect(() => {
+        applySearch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const commonProps = {
         size: 'small' as SearchProps['size'],

@@ -112,12 +112,16 @@ export const CardBitToLabelMap: Record<string, string> = {
 
 export const getDefaultYGOProCard = () => ({
     ...getDefaultYGOProCardResponse(),
+    /** main_frame là frame chính của card, ví dụ Amorphage Wrath có frame chính là effect, frame thật là effect_pendulum */
+    main_frame: '',
     /** level, rank, link rating */
     step: 0 as number | undefined,
     card_type: 'monster' as CardType,
     filterable_name: '',
     filterable_card_eff: '',
     filterable_pend_eff: '',
+    question_atk: false,
+    question_def: false,
     is_pendulum: false,
     /** link marker được chuyển hóa thành dạng binary để kiểm tra nhanh */
     link_binary: 0,

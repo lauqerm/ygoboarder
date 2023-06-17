@@ -23,14 +23,13 @@ export const YGOProRequestor = async (
             case 'lte': return (value: YGOProCard) => (value[statType] ?? 0) <= compareValue;
             case 'gt': return (value: YGOProCard) => (value[statType] ?? Infinity) > compareValue;
             case 'gte': return (value: YGOProCard) => (value[statType] ?? Infinity) >= compareValue;
-            case 'qt': return (value: YGOProCard) => ((value.misc_info as any)[`question_${statType}`] ?? 0) === 1;
             }
             return (_: YGOProCard) => true;
         };
         let firstValueSearcher = (_: YGOProCard) => true;
         /** Search đích danh cho chỉ số không xác định */
         if (question) {
-            return filterMap[statType] = entry => ((entry.misc_info?.[0] as any)[`question_${statType}`] ?? 0) === 1;
+            return filterMap[statType] = entry => statType === 'atk' || statType === 'def' ? (entry[`question_${statType}`] ?? false) : false;
         } else if (regex) {
             /** Search bằng regex */
             return filterMap[statType] = entry => regex.test(`${entry[statType]}`);
@@ -208,9 +207,9 @@ export const YGOProRequestor = async (
         for (let cardCnt = 0; cardCnt < inputList.length; cardCnt++) {
             if (filterFunc(inputList[cardCnt])) narrowedList.push(inputList[cardCnt]);
         }
-        console.log(filterFunc.toString(), [...narrowedList].slice(0, 20));
+        // console.log(filterFunc.toString(), [...narrowedList].slice(0, 20));
         inputList = narrowedList;
     }
 
-    return inputList.sort((l, r) => l.name.localeCompare(r.name));
+    return inputList;
 };
