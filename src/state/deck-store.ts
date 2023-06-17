@@ -47,7 +47,7 @@ export type DeckState = {
     shuffle: (deckId: string) => void,
     reset: () => void,
 }
-export const useDeckStore = create<DeckState>((set) => ({
+export const useDeckState = create<DeckState>((set) => ({
     deckMap: Map({
         [BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].name]: DeckListConverter({
             cardList: List(),

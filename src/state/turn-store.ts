@@ -7,7 +7,7 @@ export type TurnState = {
     currentPhase: TurnPhase,
     changeTurn: (phase?: TurnPhase, player?: CardPreset, turn?: number) => void,
 }
-export const useTurn = create<TurnState>(set => ({
+export const useTurnState = create<TurnState>(set => ({
     turn: 1,
     currentPlayer: 'your',
     currentPhase: 'draw',

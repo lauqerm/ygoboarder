@@ -1,6 +1,6 @@
 import { Input } from 'antd';
 import { useEffect, useState } from 'react';
-import { useLPStore } from 'src/state';
+import { useLPState } from 'src/state';
 import { mergeClass } from 'src/util';
 import styled from 'styled-components';
 
@@ -37,8 +37,8 @@ export type LPWidget = {
 
 }
 export const LPWidget = () => {
-    const lpMap = useLPStore(state => state.lpMap);
-    const setLP = useLPStore(state => state.set);
+    const lpMap = useLPState(state => state.lpMap);
+    const setLP = useLPState(state => state.set);
     const [valueMap, setValueMap] = useState<Record<string, string>>({});
 
     useEffect(() => {

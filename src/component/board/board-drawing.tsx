@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent } from 'src/model';
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
-import { DeckListConverter, useDeckStore } from 'src/state';
+import { DeckListConverter, useDeckState } from 'src/state';
 import { LPWidget, RandomWidget, TurnWidget } from '../widget';
 import { getAbsoluteRect } from 'src/util';
 
@@ -116,7 +116,7 @@ export const BoardDrawing = ({
     const yourGYRef = useRef<HTMLDivElement>(null);
     const yourDeckRef = useRef<HTMLDivElement>(null);
 
-    const deckCountMap = useDeckStore(state => state.deckMap);
+    const deckCountMap = useDeckState(state => state.deckMap);
 
     const oldCoord = useRef({ x: 0, y: 0 });
     useEffect(() => {

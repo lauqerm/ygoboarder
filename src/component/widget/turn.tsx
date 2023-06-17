@@ -1,5 +1,5 @@
 import { TurnList } from 'src/model';
-import { useTurn } from 'src/state/turn-store';
+import { useTurnState } from 'src/state/turn-store';
 import { mergeClass } from 'src/util';
 import { CaretDownFilled, CaretUpFilled } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -107,7 +107,7 @@ export const TurnWidget = () => {
         phase,
         player,
         turn,
-    } = useTurn(
+    } = useTurnState(
         state => ({
             turn: state.turn,
             phase: state.currentPhase,
@@ -117,7 +117,7 @@ export const TurnWidget = () => {
             && prev.player === next.player
             && prev.turn === next.turn,
     );
-    const changeTurn = useTurn(state => state.changeTurn);
+    const changeTurn = useTurnState(state => state.changeTurn);
     const [editMode, setEditMode] = useState(false);
 
     return <TurnWidgetContainer className="turn-widget">

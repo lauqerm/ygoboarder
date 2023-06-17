@@ -26,10 +26,10 @@ import {
     DeckCard,
     DeckListConverter,
     ZIndexInstanceConverter,
-    useCountStore,
-    useDeckStore,
+    useCountState,
+    useDeckState,
     useZIndexState,
-    useDOMEntityStateStore,
+    useDOMEntityState,
     PhaseBehavior,
     useDroppableAvailableState,
 } from 'src/state';
@@ -125,13 +125,13 @@ export const DeckModal = React.forwardRef(({
 }: DeckModal, ref: React.ForwardedRef<DeckModalRef>) => {
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
-    const deckData = useDeckStore(
+    const deckData = useDeckState(
         state => state.deckMap.get(deckId, DeckListConverter()),
         (oldState, newState) => oldState.equals(newState),
     );
     const currentFullDeckList = deckData.get('cardList');
-    const deckCount = useCountStore(state => state.countMap[deckId]);
-    const recalculateDOMEntity = useDOMEntityStateStore(state => state.recalculate);
+    const deckCount = useCountState(state => state.countMap[deckId]);
+    const recalculateDOMEntity = useDOMEntityState(state => state.recalculate);
     const isAllowDrop = useDroppableAvailableState(state => state.statusMap[deckId]) ?? false;
 
     const {
@@ -140,7 +140,7 @@ export const DeckModal = React.forwardRef(({
         duplicateInList,
         shuffleList,
         flipInList,
-    } = useDeckStore(
+    } = useDeckState(
         state => ({
             register: state.register,
             addToList: state.add,
@@ -217,7 +217,7 @@ export const DeckModal = React.forwardRef(({
 
 
     /** [Register DOM Entity] */
-    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
+    const addDOMEntity = useDOMEntityState(state => state.addDOMEntity);
     const deckButtonRef = useRef<HTMLDivElement | null>(null);
     const deckButtonBeaconListRef = useRef<HTMLDivElement[]>([]);
     useEffect(() => {

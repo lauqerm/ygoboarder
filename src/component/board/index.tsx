@@ -17,7 +17,7 @@ import {
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
 import { useEffect, useRef, useState } from 'react';
-import { useDOMEntityStateStore } from 'src/state';
+import { useDOMEntityState } from 'src/state';
 import './play-board.scss';
 import { DeckImporterDrawer, DeckImporterDrawerRef } from '../deck/deck-import';
 
@@ -43,7 +43,7 @@ export const Board = ({
 
     /** [Register DOM Entity] */
     const boardDrawingRef = useRef<HTMLDivElement>(null);
-    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
+    const addDOMEntity = useDOMEntityState(state => state.addDOMEntity);
     useEffect(() => {
         if (boardDrawingRef.current) addDOMEntity(boardDrawingRef.current, DOMEntityType['board']);
         // eslint-disable-next-line react-hooks/exhaustive-deps

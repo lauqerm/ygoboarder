@@ -13,7 +13,7 @@ import {
 import { isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
-import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore, useDeckStore, useDOMEntityStateStore, useZIndexState } from 'src/state';
+import { BoardCard, BoardEntryConverter, useBoardState, useCardGroupState, useDeckState, useDOMEntityState, useZIndexState } from 'src/state';
 import { createPortal } from 'react-dom';
 import { List } from 'immutable';
 import './movable-card-group.scss';
@@ -39,9 +39,9 @@ export const MovableCardGroup = ({
     const cardIdList = useRef<string[]>([]);
     const target = useRef<HTMLDivElement>(null);
     const [key, setKey] = useState(0);
-    const cardGroupElementList = useCardGroupStore(state => state.elementGroup[groupName]);
-    const addToDeck = useDeckStore(state => state.add);
-    const removeFromBoard = useBoardStore(state => state.delete);
+    const cardGroupElementList = useCardGroupState(state => state.elementGroup[groupName]);
+    const addToDeck = useDeckState(state => state.add);
+    const removeFromBoard = useBoardState(state => state.delete);
 
     const focus = useZIndexState(
         state => state.toTop,
@@ -74,7 +74,7 @@ export const MovableCardGroup = ({
             if (button !== 0) return;
             cardIdList.current.forEach(cardId => focus('card', cardId));
             highlightBeacon.current = ({ clientX, clientY }: MouseEvent) => {
-                const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+                const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
                 let foundWrapper = false;
                 for (const DOMEntity of DOMEntityList) {
                     const { type, element, beaconList } = DOMEntity;
@@ -103,7 +103,7 @@ export const MovableCardGroup = ({
         };
         const onMouseUp = ({ clientX, clientY }: MouseEvent) => {
             document.removeEventListener('mousemove', highlightBeacon.current);
-            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
             let foundValidDrop = false;
             for (const DOMEntity of DOMEntityList) {
                 const { type, element, beaconList } = DOMEntity;
@@ -129,7 +129,7 @@ export const MovableCardGroup = ({
                             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
                             const cardIdInGroupSet = new Set(cardIdList.current);
                             if (type && id && boardId) {
-                                const cardImageList = useBoardStore
+                                const cardImageList = useBoardState
                                     .getState().boardMap
                                     .get(boardId, BoardEntryConverter())
                                     .get('boardCardList', List<BoardCard>())
@@ -215,7 +215,7 @@ export const MovableCardGroup = ({
                         element.style.top = `${clientY - 40}px`;
                         element.style.left = `${clientX - (groupWidth / 2) + offsetBetweenCard * index}px`;
                     });
-                    const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+                    const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
                     for (const DOMEntity of DOMEntityList) {
                         const { element, beaconList } = DOMEntity;
                         element().classList.remove('js-available-to-drop');

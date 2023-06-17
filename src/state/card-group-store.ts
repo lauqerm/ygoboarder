@@ -5,7 +5,7 @@ export type ElementGroupState = {
     addToGroup: (groupName: string, elementList: HTMLElement[]) => void,
     replaceGroup: (groupName: string, elementList: HTMLElement[]) => void,
 }
-export const useCardGroupStore = create<ElementGroupState>(set => ({
+export const useCardGroupState = create<ElementGroupState>(set => ({
     elementGroup: {},
 
     addToGroup: (groupName, elementList) => set(state => {

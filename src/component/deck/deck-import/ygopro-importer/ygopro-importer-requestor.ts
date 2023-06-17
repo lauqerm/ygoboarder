@@ -180,8 +180,6 @@ export const YGOProRequestor = async (
         }
     }
 
-    // console.log('🚀 ~ file: ygopro-importer-requestor.ts:78', cardPoolList, banlist, payload);
-    // console.log(cardList.slice(0, 20));
     /** Sắp xếp theo thứ tự cố định với hy vọng số lượng card sau filter giảm nhanh nhất */
     const filterList: ((_: YGOProCard) => boolean)[] = [
         filterMap['card_type'],
@@ -207,7 +205,6 @@ export const YGOProRequestor = async (
         for (let cardCnt = 0; cardCnt < inputList.length; cardCnt++) {
             if (filterFunc(inputList[cardCnt])) narrowedList.push(inputList[cardCnt]);
         }
-        // console.log(filterFunc.toString(), [...narrowedList].slice(0, 20));
         inputList = narrowedList;
     }
 

@@ -14,7 +14,7 @@ import { getAbsoluteRect, isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
-import { DOMEntity, useBoardStore, useDeckStore, useDOMEntityStateStore, useZIndexState, ZIndexInstanceConverter } from 'src/state';
+import { DOMEntity, useBoardState, useDeckState, useDOMEntityState, useZIndexState, ZIndexInstanceConverter } from 'src/state';
 import { createPortal } from 'react-dom';
 import './movable-card.scss';
 
@@ -50,14 +50,14 @@ export const MovableCard = ({
     ...rest
 }: MovableCard) => {
     const [isReversed, setReversed] = useState((originEntity === 'board' && baseCard.get('preset') === 'opp') ? true : false);
-    const { addToDeck, deleteFromDeck } = useDeckStore(
+    const { addToDeck, deleteFromDeck } = useDeckState(
         state => ({
             addToDeck: state.add,
             deleteFromDeck: state.delete,
         }),
         () => true,
     );
-    const { changePhase, changePosition, removeFromBoard } = useBoardStore(
+    const { changePhase, changePosition, removeFromBoard } = useBoardState(
         state => ({
             removeFromBoard: state.delete,
             changePosition: state.changePosition,
@@ -116,7 +116,7 @@ export const MovableCard = ({
             currentY = clientY;
             focus('card', uniqueId);
             highlightBeacon = ({ clientX, clientY }: MouseEvent) => {
-                const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+                const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
                 let foundWrapper = false;
                 for (const DOMEntity of DOMEntityList) {
                     const { type, element, beaconList } = DOMEntity;
@@ -149,7 +149,7 @@ export const MovableCard = ({
             document.removeEventListener('mousemove', highlightBeacon);
             /** Bỏ qua right click */
             if (button !== 0) return;
-            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
             /** Left click một lần để đổi trạng thái faceup-facedown */
             const movedDistance = Math.sqrt((currentY - clientY) ** 2 + (currentX - clientX) ** 2);
             const boardId = GetBoardRegex.exec(uniqueId)?.[1];

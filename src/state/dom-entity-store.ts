@@ -38,7 +38,7 @@ export type DOMEntityState = {
     recalculateCount: number,
     recalculate: () => void,
 }
-export const useDOMEntityStateStore = create<DOMEntityState>(set => ({
+export const useDOMEntityState = create<DOMEntityState>(set => ({
     DOMEntityMap: {
         [DOMEntityType['board']]: {},
         [DOMEntityType['deckButton']]: {},

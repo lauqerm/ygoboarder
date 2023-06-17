@@ -1,10 +1,10 @@
 import create from 'zustand';
 
-export type CountState = {
+export type CounterState = {
     countMap: Record<string, number>
     set: (deckId: string, amount?: number) => void,
 };
-export const useCountState = create<CountState>((set) => ({
+export const useCounterState = create<CounterState>((set) => ({
     countMap: {},
     set: (deckId, amount = 1) => set(state => {
         const nextMap = { ...state.countMap };

@@ -10,7 +10,7 @@ export type PreviewState = {
     },
     setCardPreview: (type: 'internal' | 'external', data: string, isOfficial: boolean, description?: string) => void,
 };
-export const usePreviewStore = create<PreviewState>((set) => ({
+export const usePreviewState = create<PreviewState>((set) => ({
     cardPreview: {
         type: 'internal',
         data: '',

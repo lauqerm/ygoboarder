@@ -2,7 +2,7 @@ import { Drawer, Tabs } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { CardImageConverter, CardPreset } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
-import { useDeckStore, useDescriptionStore } from 'src/state';
+import { useDeckState, useDescriptionState } from 'src/state';
 import { YGOProImporter } from './ygopro-importer';
 import { OfflineImporter } from './offline-importer';
 import { OnlineImporter } from './online-importer';
@@ -22,10 +22,10 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
     const [isOpened, setOpen] = useState(false);
     const [deckId, setDeckId] = useState<string | undefined>();
     const [preset, setPreset] = useState<CardPreset | undefined>();
-    const addDescription = useDescriptionStore(state => state.set);
+    const addDescription = useDescriptionState(state => state.set);
     const {
         addToList,
-    } = useDeckStore(
+    } = useDeckState(
         state => ({
             addToList: state.add,
         }),

@@ -5,7 +5,7 @@ export type LPState = {
     lpMap: Record<string, number>,
     set: (targetId: string, expression: string) => void,
 };
-export const useLPStore = create<LPState>((set) => ({
+export const useLPState = create<LPState>((set) => ({
     lpMap: {},
     set: (targetId, expression) => set(state => {
         const nextMap = { ...state.lpMap };

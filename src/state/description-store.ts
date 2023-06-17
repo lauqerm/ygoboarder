@@ -4,7 +4,7 @@ export type DescriptionState = {
     descriptionMap: Record<string, string>
     set: (valueList: { key?: string, description?: string }[], force?: boolean) => void,
 };
-export const useDescriptionStore = create<DescriptionState>((set) => ({
+export const useDescriptionState = create<DescriptionState>((set) => ({
     descriptionMap: {},
     set: (valueList, force = false) => set(state => {
         const nextMap = { ...state.descriptionMap };

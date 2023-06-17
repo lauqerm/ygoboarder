@@ -1,7 +1,7 @@
 import { Input, Button, Alert } from 'antd';
 import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { CardImageConverter, CardPreset, YGOProDomainRegex } from 'src/model';
-import { useDeckStore, useDescriptionStore } from 'src/state';
+import { useDeckState, useDescriptionState } from 'src/state';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
@@ -123,8 +123,8 @@ export const OnlineImporter = ({
     onClose,
 }: OnlineImporter) => {
     const rawValue = useRef('');
-    const addDescription = useDescriptionStore(state => state.set);
-    const addToList = useDeckStore(state => state.add);
+    const addDescription = useDescriptionState(state => state.set);
+    const addToList = useDeckState(state => state.add);
     const [fileList, setFileList] = useState<OnlineFile[]>([]);
     const [inputKey, setInputKey] = useState(0);
     const refMap = useRef<Record<string, FileItemRef | null>>({});

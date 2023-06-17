@@ -36,7 +36,7 @@ export type BoardState = {
     changePhase: (boardName: string, affectList: { id: string, phase?: PhaseType }[]) => void,
     reset: () => void,
 }
-export const useBoardStore = create<BoardState>((set) => ({
+export const useBoardState = create<BoardState>((set) => ({
     boardMap: Map(),
     add: (boardName, cardList) => set(state => {
         let newEntry = state.boardMap.get(boardName, BoardEntryConverter());

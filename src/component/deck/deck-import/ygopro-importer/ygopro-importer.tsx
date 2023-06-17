@@ -4,7 +4,7 @@ import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescript
 import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
-import { OrderList, usePreviewStore, useYGOProFilter } from 'src/state';
+import { OrderList, usePreviewState, useYGOProFilter } from 'src/state';
 import { mergeClass } from 'src/util';
 import { YGOImporterFilter } from './ygopro-importer-filter';
 import { LoadingOutlined } from '@ant-design/icons';
@@ -188,7 +188,7 @@ export const YGOProImporter = ({
     const [cardpool, setCardPool] = useState<string[]>(localStorage.getItem(LocalstorageKeyMap.cardpool)
         ? JSON.parse(localStorage.getItem(LocalstorageKeyMap.cardpool) ?? '[]')
         : ['BOTH', 'TCG', 'OCG']);
-    const preview = usePreviewStore(state => state.setCardPreview);
+    const preview = usePreviewState(state => state.setCardPreview);
 
     const payload = useYGOProFilter(state => state.payloadMap[filterKey]);
     const activeCardList = useYGOProFilter(state => state.activeCardList[filterKey]);

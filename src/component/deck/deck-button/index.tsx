@@ -21,10 +21,10 @@ import {
 import {
     DeckListConverter,
     ZIndexInstanceConverter,
-    useDeckStore,
+    useDeckState,
     useZIndexState,
-    useDOMEntityStateStore,
-    useBoardStore,
+    useDOMEntityState,
+    useBoardState,
     DeckCard,
 } from 'src/state';
 import styled from 'styled-components';
@@ -191,17 +191,17 @@ export const DeckButton = ({
     const zIndex = modalInstance.get('zIndex');
     const isVisible = modalInstance.get('visible');
 
-    const addToBoard = useBoardStore(state => state.add);
+    const addToBoard = useBoardState(state => state.add);
 
-    const deleteFromDeck = useDeckStore(state => state.delete);
-    const deckList = useDeckStore(
+    const deleteFromDeck = useDeckState(state => state.delete);
+    const deckList = useDeckState(
         state => state.deckMap.get(name, DeckListConverter()).get('cardList', List()),
         (oldState, newState) => oldState.equals(newState),
     );
     const topDeckCard = deckList.get(0);
 
     /** [Register DOM Entity] */
-    const addDOMEntity = useDOMEntityStateStore(state => state.addDOMEntity);
+    const addDOMEntity = useDOMEntityState(state => state.addDOMEntity);
     const deckButtonRef = useRef<HTMLDivElement>(null);
     const deckButtonBeaconListRef = useRef<HTMLDivElement[]>([]);
     useEffect(() => {

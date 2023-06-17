@@ -1,6 +1,6 @@
 import Selecto from 'react-selecto';
 import styled from 'styled-components';
-import { BoardCard, BoardEntryConverter, useBoardStore, useCardGroupStore, useDOMEntityStateStore } from 'src/state';
+import { BoardCard, BoardEntryConverter, useBoardState, useCardGroupState, useDOMEntityState } from 'src/state';
 import { CLASS_BOARD, CLASS_CARD_MOVABLE, CLASS_CARD_MOVABLE_ZONED, DOMEntityType, PROP_BOARD_NAME, PROP_CARD_BOARD_NAME } from 'src/model';
 import { List } from 'immutable';
 import { MovableCard, MovableCardGroup } from '../card';
@@ -24,12 +24,12 @@ export const CardBoard = ({
 }: CardBoard) => {
     const [cardGroupKey, setCardGroupKey] = useState(0);
     const [cardGroupCount, setCardGroupCount] = useState(0);
-    const replaceCardGroup = useCardGroupStore(state => state.replaceGroup);
-    const currentBoardList = useBoardStore(
+    const replaceCardGroup = useCardGroupState(state => state.replaceGroup);
+    const currentBoardList = useBoardState(
         state => state.boardMap.get(boardName, BoardEntryConverter()).get('boardCardList', List<BoardCard>()),
         (oldState, newState) => oldState.equals(newState),
     );
-    const boardBoundary = useDOMEntityStateStore(state => state.DOMEntityMap[DOMEntityType['board']][boardName]);
+    const boardBoundary = useDOMEntityState(state => state.DOMEntityMap[DOMEntityType['board']][boardName]);
 
     const boardCardRef = useRef<HTMLDivElement>(null);
 

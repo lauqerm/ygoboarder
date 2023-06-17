@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { BaseCard, PhaseType, Position } from 'src/model';
-import { useCountStore, useDescriptionStore, usePreviewStore } from 'src/state';
+import { useCountState, useDescriptionState, usePreviewState } from 'src/state';
 import { mergeClass } from 'src/util';
 import { DelayedImage } from './card-image';
 import { CardBack } from '../atom';
@@ -46,7 +46,7 @@ export const Card = ({
     onCornerClick,
     ...rest
 }: Card) => {
-    const changeCount = useCountStore(state => state.set);
+    const changeCount = useCountState(state => state.set);
     const type = baseCard.get('type');
     const imgSource = type === 'external'
         ? baseCard.get('dataURL')
@@ -55,7 +55,7 @@ export const Card = ({
             : undefined;
     const preset = baseCard.get('preset');
     const cardContainerRef = useRef<HTMLDivElement>(null);
-    const preview = usePreviewStore(state => state.setCardPreview);
+    const preview = usePreviewState(state => state.setCardPreview);
 
     useEffect(() => {
         if (!fake) changeCount(origin, 1);
@@ -67,7 +67,7 @@ export const Card = ({
                     'external',
                     baseCard.get('dataURL'),
                     baseCard.get('isOfficial'),
-                    useDescriptionStore.getState().descriptionMap[baseCard.get('dataURL')],
+                    useDescriptionState.getState().descriptionMap[baseCard.get('dataURL')],
                 );
             } else {
                 preview('internal', baseCard.get('data'), false);

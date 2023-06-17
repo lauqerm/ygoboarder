@@ -1,7 +1,7 @@
 import { notification } from 'antd';
 import { List } from 'immutable';
 import { CardPreset, DeckType, PhaseType } from 'src/model';
-import { PhaseBehavior, useBoardStore, useDeckStore, useDescriptionStore } from 'src/state';
+import { PhaseBehavior, useBoardState, useDeckState, useDescriptionState } from 'src/state';
 import { exportAsJson } from 'src/util';
 import styled from 'styled-components';
 
@@ -10,9 +10,9 @@ const JSONUploadInput = styled.input`
 `;
 
 export const ExportButton = () => {
-    const allDeckList = useDeckStore(state => state.deckMap);
-    const allBoard = useBoardStore(state => state.boardMap);
-    const allDescription = useDescriptionStore(state => state.descriptionMap);
+    const allDeckList = useDeckState(state => state.deckMap);
+    const allBoard = useBoardState(state => state.boardMap);
+    const allDescription = useDescriptionState(state => state.descriptionMap);
 
     return <div
         className="menu-button"

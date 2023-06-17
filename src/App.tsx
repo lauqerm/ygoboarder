@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardStore, useDeckStore, useDescriptionStore, useDOMEntityStateStore, useDroppableAvailableState, useLPStore, useZIndexState } from './state';
+import { cardIndexQueue, DeckListConverter, useBoardState, useDeckState, useDescriptionState, useDOMEntityState, useDroppableAvailableState, useLPState, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
@@ -32,26 +32,26 @@ import { useResizeDetector } from 'react-resize-detector';
 
 function App() {
     const appRef = useRef<HTMLDivElement>(null);
-    const currentDeckList = useDeckStore(
+    const currentDeckList = useDeckState(
         state => state.deckMap,
         (oldState, newState) => oldState.equals(newState),
     );
-    const reorder = useDeckStore(state => state.reorder);
-    const deleteFromDeck = useDeckStore(state => state.delete);
-    const addToBoard = useBoardStore(state => state.add);
-    const addToDeckInPosition = useDeckStore(state => state.addToPosition);
-    const addToDeck = useDeckStore(state => state.add);
-    const addDescription = useDescriptionStore(state => state.set);
-    const registerDeck = useDeckStore(state => state.register);
-    const resetDeck = useDeckStore(state => state.reset);
-    const resetBoard = useBoardStore(state => state.reset);
-    const setLP = useLPStore(state => state.set);
+    const reorder = useDeckState(state => state.reorder);
+    const deleteFromDeck = useDeckState(state => state.delete);
+    const addToBoard = useBoardState(state => state.add);
+    const addToDeckInPosition = useDeckState(state => state.addToPosition);
+    const addToDeck = useDeckState(state => state.add);
+    const addDescription = useDescriptionState(state => state.set);
+    const registerDeck = useDeckState(state => state.register);
+    const resetDeck = useDeckState(state => state.reset);
+    const resetBoard = useBoardState(state => state.reset);
+    const setLP = useLPState(state => state.set);
     const zIndexChange = useZIndexState(state => state.updateCount);
     const updateModalStatus = useDroppableAvailableState(state => state.update);
     const {
         recalculate,
         DOMEntityList,
-    } = useDOMEntityStateStore(
+    } = useDOMEntityState(
         ({ DOMEntityList, recalculate, recalculateCount }) => ({
             DOMEntityList,
             recalculate,
@@ -126,7 +126,7 @@ function App() {
          */
         currentEventTarget.current = document.querySelector(`[data-rbd-draggable-id="${draggableId}"`);
         currentHighlightEvent.current = ({ clientX, clientY }: MouseEvent) => {
-            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
             const sourceDeckName = GetDropIDRegex.exec(source.droppableId)?.[1] ?? '';
             const sourceDOMEntity = DOMEntityList.find(entry => entry.name === sourceDeckName);
             /**
@@ -184,7 +184,7 @@ function App() {
             document.removeEventListener('mousemove', currentHighlightEvent.current);
             document.querySelector('.deck-modal-viewer-boost')?.classList.remove('deck-modal-viewer-boost');
             document.querySelector('.deck-modal-header-viewer-boost')?.classList.remove('deck-modal-header-viewer-boost');
-            const DOMEntityList = useDOMEntityStateStore.getState().DOMEntityList;
+            const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
             for (const DOMEntity of DOMEntityList) {
                 const { element, beaconList } = DOMEntity;
                 element().classList.remove('js-available-to-drop');

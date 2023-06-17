@@ -1,4 +1,4 @@
-import { PreviewState, useDescriptionStore, usePreviewStore } from 'src/state';
+import { PreviewState, useDescriptionState, usePreviewState } from 'src/state';
 import styled from 'styled-components';
 import { DelayedImage } from './card-image';
 import { CardBack, Credit } from '../atom';
@@ -108,7 +108,7 @@ export type CardPreviewer = React.PropsWithChildren<{}>;
 export const CardPreviewer = ({
     children,
 }: CardPreviewer) => {
-    const dynamicState = usePreviewStore(
+    const dynamicState = usePreviewState(
         state => state.cardPreview,
         (prev, next) => {
             if (prev.type !== next.type) return false;
@@ -118,8 +118,8 @@ export const CardPreviewer = ({
                 || (next.type === 'internal' && prev.data === next.data);
         },
     );
-    const preview = usePreviewStore(state => state.setCardPreview);
-    const addDescription = useDescriptionStore(state => state.set);
+    const preview = usePreviewState(state => state.setCardPreview);
+    const addDescription = useDescriptionState(state => state.set);
     const [lockedData, setLockedData] = useState<PreviewState['cardPreview'] | undefined>(undefined);
     const draftDescription = useRef('');
     const {

@@ -2,7 +2,7 @@ import { Alert, Button, Input, Tooltip, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CardImageConverter, CardPreset, ImgurResponse } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
-import { useDeckStore, useDescriptionStore } from 'src/state';
+import { useDeckState, useDescriptionState } from 'src/state';
 import { ExtractProps } from 'src/type';
 import { InboxOutlined, StopOutlined, WarningOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Loading } from '../../loading';
@@ -226,11 +226,11 @@ export const OfflineImporter = ({
     onClose,
 }: OfflineImporter) => {
     const imageQueueMap = useRef<Record<string, RcFile>>({});
-    const addToList = useDeckStore(state => state.add);
+    const addToList = useDeckState(state => state.add);
     const refMap = useRef<Record<string, FileItemRef | null>>({});
     const [fileList, setFileList] = useState<OfflineFile[]>([]);
 
-    const addDescription = useDescriptionStore(state => state.set);
+    const addDescription = useDescriptionState(state => state.set);
     const submit = () => {
         const finalFileList = fileList.filter(entry => entry.status === 'finished');
         addToList(
