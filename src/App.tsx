@@ -24,7 +24,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardState, useDeckState, useDescriptionState, useDOMEntityState, useDroppableAvailableState, useLPState, useZIndexState } from './state';
+import { cardIndexQueue, DeckListConverter, useBoardState, useCounterState, useDeckState, useDescriptionState, useDOMEntityState, useDroppableAvailableState, useLPState, useZIndexState } from './state';
 import { isLieInside } from './util';
 import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
@@ -36,17 +36,24 @@ function App() {
         state => state.deckMap,
         (oldState, newState) => oldState.equals(newState),
     );
+
     const reorder = useDeckState(state => state.reorder);
     const deleteFromDeck = useDeckState(state => state.delete);
-    const addToBoard = useBoardState(state => state.add);
     const addToDeckInPosition = useDeckState(state => state.addToPosition);
     const addToDeck = useDeckState(state => state.add);
     const addDescription = useDescriptionState(state => state.set);
     const registerDeck = useDeckState(state => state.register);
     const resetDeck = useDeckState(state => state.reset);
+
     const resetBoard = useBoardState(state => state.reset);
+    const addToBoard = useBoardState(state => state.add);
+
+    const switchCounterMode = useCounterState(state => state.setCounterMode);
+
     const setLP = useLPState(state => state.set);
+
     const zIndexChange = useZIndexState(state => state.updateCount);
+
     const updateModalStatus = useDroppableAvailableState(state => state.update);
     const {
         recalculate,
@@ -319,6 +326,11 @@ function App() {
     };
 
     useEffect(() => {
+        const turnOffCounterMode = (e: MouseEvent) => {
+            if (useCounterState.getState().activeCounter) e.preventDefault();
+            switchCounterMode(undefined);
+        };
+
         const getMousePosition = (e: MouseEvent) => {
             mousePosition.current = {
                 x: e.pageX,
@@ -326,6 +338,7 @@ function App() {
             };
         };
         document.addEventListener('mousemove', getMousePosition);
+        document.addEventListener('contextmenu', turnOffCounterMode);
         setTimeout(() => {
             recalculate();
             resetLP();
@@ -333,6 +346,7 @@ function App() {
 
         return () => {
             document.removeEventListener('mousemove', getMousePosition);
+            document.removeEventListener('contextmenu', turnOffCounterMode);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hardResetCnt]);

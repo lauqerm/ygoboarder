@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     CLASS_CARD_MOVABLE,
+    CLASS_PREVENT_POINTER_EVENT,
     DOMEntityType,
     GetBoardRegex,
     GetDeckButtonRegex,
@@ -14,8 +15,18 @@ import { getAbsoluteRect, isLieInside, mergeClass } from 'src/util';
 import Moveable from 'react-moveable';
 import { ExtractProps } from 'src/type';
 import { Card } from './card';
-import { DOMEntity, useBoardState, useDeckState, useDOMEntityState, useZIndexState, ZIndexInstanceConverter } from 'src/state';
+import {
+    DOMEntity,
+    REMOVE_ALL_COUNTER,
+    useBoardState,
+    useCounterState,
+    useDeckState,
+    useDOMEntityState,
+    useZIndexState,
+    ZIndexInstanceConverter,
+} from 'src/state';
 import { createPortal } from 'react-dom';
+import { CardCounter } from '../atom';
 import './movable-card.scss';
 
 export type MovableCard = {
@@ -47,6 +58,7 @@ export const MovableCard = ({
     style,
     movableBoundary,
     onDragToBoard,
+    onClick,
     ...rest
 }: MovableCard) => {
     const [isReversed, setReversed] = useState((originEntity === 'board' && baseCard.get('preset') === 'opp') ? true : false);
@@ -57,6 +69,7 @@ export const MovableCard = ({
         }),
         () => true,
     );
+
     const { changePhase, changePosition, removeFromBoard } = useBoardState(
         state => ({
             removeFromBoard: state.delete,
@@ -80,6 +93,10 @@ export const MovableCard = ({
         },
     );
     const zIndex = zIndexInstance.get('zIndex');
+
+    const currentCounterList = useCounterState(state => state.counterMap[uniqueId]);
+    const activeCounter = useCounterState(state => state.activeCounter);
+    const setCounter = useCounterState(state => state.set);
 
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const onDrag = useCallback(({
@@ -149,12 +166,14 @@ export const MovableCard = ({
             document.removeEventListener('mousemove', highlightBeacon);
             /** Bỏ qua right click */
             if (button !== 0) return;
+            /** Bỏ qua event từ counter list */
+            if ((eventTarget as HTMLElement)?.parentElement?.classList.contains(CLASS_PREVENT_POINTER_EVENT)) return;
             const DOMEntityList = useDOMEntityState.getState().DOMEntityList;
             /** Left click một lần để đổi trạng thái faceup-facedown */
             const movedDistance = Math.sqrt((currentY - clientY) ** 2 + (currentX - clientX) ** 2);
             const boardId = GetBoardRegex.exec(uniqueId)?.[1];
             if (movedDistance <= 5 && boardId) {
-                if (originEntity === 'board' && phase) {
+                if (originEntity === 'board' && phase && useCounterState.getState().activeCounter === undefined) {
                     changePhase(boardId, [{ id: baseCard.get('_id') }]);
                 }
                 for (const DOMEntity of DOMEntityList) {
@@ -218,6 +237,9 @@ export const MovableCard = ({
                 }
             }
         };
+        // const capture = () => {
+
+        // }
 
         if (target && once.current === false) {
             once.current = true;
@@ -258,8 +280,21 @@ export const MovableCard = ({
                 isReversed ? 'ygo-card-reversed' : '',
                 className,
             )}
+            onClick={e => {
+                onClick?.(e);
+                if (activeCounter) {
+                    e.stopPropagation();
+                    setCounter(uniqueId, activeCounter);
+                }
+            }}
             {...rest}
-            style={{ zIndex, ...style }}
+            style={{
+                zIndex,
+                cursor: activeCounter
+                    ? `url('${process.env.PUBLIC_URL}/asset/img/counter/${activeCounter}-counter.png'), grab`
+                    : 'grab',
+                ...style,
+            }}
         >
             <Card
                 baseCard={baseCard}
@@ -271,7 +306,7 @@ export const MovableCard = ({
                 onContextMenu={e => {
                     e.preventDefault();
                     const boardId = GetBoardRegex.exec(uniqueId)?.[1];
-                    if (boardId && originEntity === 'board' && position && target) {
+                    if (boardId && originEntity === 'board' && position && target && activeCounter === undefined) {
                         if (e.ctrlKey) {
                             /** Xoay ngược card, chưa biết có cần lưu thông tin này ở dạng global không */
                             setReversed(cur => !cur);
@@ -298,6 +333,18 @@ export const MovableCard = ({
                             changePosition(boardId, [{ id: baseCard.get('_id') }]);
                         }
                     }
+                }}
+            >
+                
+            </Card>
+            <CardCounter
+                counterMap={currentCounterList}
+                onChange={(counterName, amount) => {
+                    setCounter(
+                        uniqueId,
+                        counterName,
+                        (amount === '0' || amount === undefined) ? REMOVE_ALL_COUNTER : `${amount}`,
+                    );
                 }}
             />
             {target && <Moveable

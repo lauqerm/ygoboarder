@@ -33,6 +33,7 @@ export type Card = {
     cornerBack?: boolean,
     onCornerClick?: React.MouseEventHandler<HTMLImageElement>,
     flashing?: boolean,
+    chilren?: React.ReactNode,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const Card = ({
     baseCard,
@@ -43,6 +44,7 @@ export const Card = ({
     fake,
     flashing,
     cornerBack,
+    children,
     onCornerClick,
     ...rest
 }: Card) => {
@@ -106,5 +108,6 @@ export const Card = ({
                     <RollbackOutlined />
                 </CardCornerFront>
                 : null}
+        {children}
     </div>;
 };

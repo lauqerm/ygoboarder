@@ -1,7 +1,7 @@
 .ygo-card.ygo-movable-card {
     position: absolute;
     transform: none !important;
-    cursor: grab;
+    box-shadow: 0 0 1px 1px var(--main-primaryLighter);
     .moveable-control-box {
         visibility: hidden!important;
     }
@@ -17,5 +17,8 @@
     }
     &.ygo-card-reversed img {
         transform: rotate(180deg);
+    }
+    &:hover {
+        box-shadow: 0 0 1px 1px var(--main-antd);
     }
 }

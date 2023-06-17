@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent } from 'src/model';
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
-import { DeckListConverter, useDeckState } from 'src/state';
-import { LPWidget, RandomWidget, TurnWidget } from '../widget';
+import { DeckListConverter, useCounterState, useDeckState } from 'src/state';
+import { CounterWidget, LPWidget, RandomWidget, TurnWidget } from '../widget';
 import { getAbsoluteRect } from 'src/util';
 
 const BoardContainer = styled.div`
@@ -102,6 +102,8 @@ export type BoardDrawing = {
 export const BoardDrawing = ({
     onCoordinateChnage,
 }: BoardDrawing) => {
+    const activeCounter = useCounterState(state => state.activeCounter);
+
     const boardRef = useRef<HTMLDivElement>(null);
 
     const oppTrunkRef = useRef<HTMLDivElement>(null);
@@ -181,6 +183,7 @@ export const BoardDrawing = ({
         className="play-board-drawing"
         style={{
             backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/noise.png")`,
+            cursor: `url('${process.env.PUBLIC_URL}/asset/img/counter/${activeCounter}-counter.png'), auto`,
         }}
     >
         <div className="side-col">
@@ -246,7 +249,9 @@ export const BoardDrawing = ({
                     <RandomWidget />
                 </div>
                 <div className="square-zone" />
-                <div className="empty-zone right-extra-section" />
+                <div className="empty-zone right-extra-section">
+                    <CounterWidget />
+                </div>
             </div>
             <div className="main-col-component main-col-field main-col-field-bot">
                 <div className="square-zone" />

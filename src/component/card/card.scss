@@ -37,4 +37,10 @@
             clip-path: polygon(0 68%, 0% 100%, 46.51% 100%);
         }
     }
+    .card-counter {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        padding: var(--spacing-xxs);
+    }
 }

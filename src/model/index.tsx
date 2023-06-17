@@ -34,6 +34,7 @@ export const CLASS_BOARD_ACTIVE = 'js-deck-board-js-ready-to-drop';
 export const CLASS_BOARD = 'js-board';
 export const CLASS_CARD_MOVABLE = 'js-movable-card';
 export const CLASS_CARD_MOVABLE_ZONED = 'js-movable-card-zoned';
+export const CLASS_PREVENT_POINTER_EVENT = 'js-ignore-pointer-event';
 
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
 export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;
@@ -79,6 +80,8 @@ export const GroupPickerMode: { value: PickerMode, tooltip: string, label: React
 ];
 
 export const YGOProDomainRegex = new RegExp('https?://images.ygoprodeck.com');
+
+export const getCounterImage = (name: string) => `${process.env.PUBLIC_URL}/asset/img/counter/${name}-counter.png`;
 
 export * from './card';
 export * from './deck';
