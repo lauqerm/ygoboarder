@@ -75,7 +75,7 @@ export const CardBoard = ({
             />;
         })}
         <MovableCardGroup key={cardGroupKey}
-            groupName="board-group"
+            groupName={boardName}
             count={cardGroupCount}
         />
         <Selecto

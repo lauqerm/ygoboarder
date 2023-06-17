@@ -15,4 +15,7 @@
         box-shadow: 0 0 0 2px deepskyblue;
         border-radius: 3px;
     }
+    &.ygo-card-reversed img {
+        transform: rotate(180deg);
+    }
 }

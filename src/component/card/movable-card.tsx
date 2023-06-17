@@ -49,6 +49,7 @@ export const MovableCard = ({
     onDragToBoard,
     ...rest
 }: MovableCard) => {
+    const [isReversed, setReversed] = useState((originEntity === 'board' && baseCard.get('preset') === 'opp') ? true : false);
     const { addToDeck, deleteFromDeck } = useDeckStore(
         state => ({
             addToDeck: state.add,
@@ -254,6 +255,7 @@ export const MovableCard = ({
                 `ygo-card-size-${size}`,
                 `ygo-card-phase-${phase}`,
                 `ygo-card-position-${position}`,
+                isReversed ? 'ygo-card-reversed' : '',
                 className,
             )}
             {...rest}
@@ -269,10 +271,14 @@ export const MovableCard = ({
                 onContextMenu={e => {
                     e.preventDefault();
                     const boardId = GetBoardRegex.exec(uniqueId)?.[1];
-                    if (boardId && originEntity === 'board' && position) {
-                        /** Ta tính toán lại vị trí để đảm bảo card xoay quanh tâm */
-                        try {
-                            if (target) {
+                    if (boardId && originEntity === 'board' && position && target) {
+                        if (e.ctrlKey) {
+                            /** Xoay ngược card, chưa biết có cần lưu thông tin này ở dạng global không */
+                            setReversed(cur => !cur);
+                        } else {
+                            /** Xoay card theo chiều ngang */
+                            /** Ta tính toán lại vị trí để đảm bảo card xoay quanh tâm */
+                            try {
                                 const computedStyle = getComputedStyle(target);
                                 const cardWidth = parseInt(computedStyle.getPropertyValue('--card-width').replace('px', ''));
                                 const cardHeight = parseInt(computedStyle.getPropertyValue('--card-height').replace('px', ''));
@@ -286,11 +292,11 @@ export const MovableCard = ({
                                     target.style.left = `${currentX + (cardHeight - cardWidth) / 2}px`;
                                     target.style.top = `${currentY - (cardHeight - cardWidth) / 2}px`;
                                 }
+                            } catch (e) {
+                                console.error('MovableCard: Missing coordinate or variable', e);
                             }
-                        } catch (e) {
-                            console.error('MovableCard: Missing coordinate or variable', e);
+                            changePosition(boardId, [{ id: baseCard.get('_id') }]);
                         }
-                        changePosition(boardId, [{ id: baseCard.get('_id') }]);
                     }
                 }}
             />
