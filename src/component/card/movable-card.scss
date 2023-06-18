@@ -15,9 +15,6 @@
         box-shadow: 0 0 0 2px deepskyblue;
         border-radius: 3px;
     }
-    &.ygo-card-reversed img {
-        transform: rotate(180deg);
-    }
     &:hover {
         box-shadow: 0 0 1px 1px var(--main-antd);
     }

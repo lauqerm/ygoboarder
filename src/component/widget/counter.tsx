@@ -35,12 +35,15 @@ export const CounterWidget = () => {
         <div className="counter-list">
             {[
                 { value: 'generic', label: 'Generic Counter' },
+                { value: 'negate', label: 'Negate Counter' },
                 { value: 'level', label: 'Level Counter' },
                 { value: 'atk', label: 'ATK Counter' },
                 { value: 'def', label: 'DEF Counter' },
                 { value: 'spell', label: 'Spell Counter' },
                 { value: 'venom', label: 'Venom Counter' },
                 { value: 'predator', label: 'Predator Counter' },
+                { value: 'ice', label: 'Ice Counter' },
+                { value: 'a', label: 'A Counter' },
             ].map(({ label, value }) => {
                 return <div key={value} className="counter-icon" onClick={() => switchCounterMode(value)}>
                     <img src={getCounterImage(value)} alt={label} />

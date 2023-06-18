@@ -8,6 +8,12 @@
     background-position: center;
     position: relative;
     pointer-events: all;
+    &.ygo-card-reversed {
+        > .card-image,
+        > .card-back {
+            transform: rotate(180deg);
+        }
+    }
     &.ygo-card-position-def {
         width: var(--card-height);
         height: var(--card-width);
@@ -15,6 +21,12 @@
         > .card-back {
             transform-origin: 0 0;
             transform: rotate(-90deg) translateX(-100%);
+        }
+        &.ygo-card-reversed {
+            > .card-image,
+            > .card-back {
+                transform: rotate(90deg) translateY(-100%);
+            }
         }
     }
     &.ygo-card-partial-down {

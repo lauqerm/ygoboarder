@@ -303,6 +303,7 @@ export const MovableCard = ({
                 flashing={true}
                 phase={phase}
                 position={position}
+                isReversed={isReversed}
                 onContextMenu={e => {
                     e.preventDefault();
                     const boardId = GetBoardRegex.exec(uniqueId)?.[1];

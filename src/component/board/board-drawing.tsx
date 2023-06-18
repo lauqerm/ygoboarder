@@ -13,7 +13,7 @@ const BoardContainer = styled.div`
     display: inline-grid;
     grid-template-columns: max-content max-content max-content;
     column-gap: var(--spacing-xl);
-    padding: var(--spacing-xl);
+    padding: var(--spacing-3xl) var(--spacing-xl);
     .side-col {
         display: inline-grid;
         grid-template-columns: 1fr;

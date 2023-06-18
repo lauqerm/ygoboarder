@@ -28,6 +28,7 @@ export type Card = {
     origin: string,
     phase?: PhaseType,
     position?: Position,
+    isReversed?: boolean,
     /** Fake card là card ảo, không được đếm và chỉ là copy của một card thật khác */
     fake?: boolean,
     cornerBack?: boolean,
@@ -41,6 +42,7 @@ export const Card = ({
     origin,
     phase,
     position,
+    isReversed,
     fake,
     flashing,
     cornerBack,
@@ -90,6 +92,7 @@ export const Card = ({
             'ygo-card',
             `ygo-card-size-${size}`,
             `ygo-card-position-${position}`,
+            isReversed ? 'ygo-card-reversed' : '',
             (phase === 'down' && cornerBack) ? 'ygo-card-partial-down' : '',
         )}
     >
