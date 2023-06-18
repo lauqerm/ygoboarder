@@ -9,6 +9,7 @@ type BaseCardRecord = {
     dataURL: string,
     preset: CardPreset,
     isOfficial: boolean,
+    isToken: boolean,
 };
 export type BaseCard = ImmutableRecord<BaseCardRecord>;
 export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
@@ -19,6 +20,7 @@ export const CardImageConverter = ImmutableRecord<BaseCardRecord>({
     dataURL: '',
     preset: 'your',
     isOfficial: false,
+    isToken: false,
 });
 
 export const DROP_TYPE_DECK = 'DECK';

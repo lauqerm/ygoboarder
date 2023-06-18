@@ -146,6 +146,7 @@ export const YGOProRequestor = async (
     }
     if (ability) {
         const { mode, value } = ability;
+        console.log('🚀 ~ file: ygopro-importer-requestor.ts:149 ~ value:', value);
         switch (mode) {
         case 'exactly': filterMap['ability'] = entry => entry.ability_binary === value; break;
         case 'least': filterMap['ability'] = entry => entry.ability_binary === (entry.ability_binary | value); break;
@@ -198,6 +199,7 @@ export const YGOProRequestor = async (
         filterMap['marker'],
         filterMap['text'],
     ].filter(entry => entry !== undefined);
+    // console.log(payload);
     /** Lặp qua từng filter một, kết quả của lần filter này trở thành đầu vào của lần kế tiếp */
     let inputList = cardList;
     for (let filterFunc of filterList) {
@@ -205,6 +207,7 @@ export const YGOProRequestor = async (
         for (let cardCnt = 0; cardCnt < inputList.length; cardCnt++) {
             if (filterFunc(inputList[cardCnt])) narrowedList.push(inputList[cardCnt]);
         }
+        // console.log([...inputList].slice(0, 20), [...narrowedList].slice(0, 20));
         inputList = narrowedList;
     }
 

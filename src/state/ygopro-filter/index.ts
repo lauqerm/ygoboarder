@@ -78,7 +78,7 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
         };
         const fullCardList = await axios<{ data: YGOProCardResponse[] }>('https://db.ygoprodeck.com/api/v7/cardinfo.php?misc=yes');
         const processedCardList: YGOProCard[] = fullCardList.data.data
-            .filter(entry => entry.frameType !== 'skill' && entry.frameType !== 'token')
+            .filter(entry => entry.frameType !== 'skill')
             .map<YGOProCard>(normalizeYGOProCardResponse);
 
         /** Tách các sorted list ở đây, vì điều kiện sort là cố định ta có thể presort ở đây */

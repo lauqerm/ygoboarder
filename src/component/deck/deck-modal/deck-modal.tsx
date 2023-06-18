@@ -405,7 +405,7 @@ export const DeckModal = React.forwardRef(({
                                                             deleteFromList(deckId, [_id], true);
                                                         }}
                                                         onDuplicate={() => {
-                                                            if (type !== 'permanent') duplicateInList(deckId, [deckCard]);
+                                                            if (type !== 'permanent' && type !== 'none') duplicateInList(deckId, [deckCard]);
                                                         }}
                                                         {...dragProvided.dragHandleProps}
                                                         {...dragProvided.draggableProps}

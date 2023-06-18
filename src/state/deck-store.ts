@@ -135,8 +135,9 @@ export const useDeckState = create<DeckState>((set) => ({
     }),
     delete: (deckId, idList, force = false) => set(state => {
         const targetDeck = state.deckMap.get(deckId, DeckListConverter());
-        /** Card không bị delete trong deck dạng permanent, nhưng vì card có id duy nhất nên ta xóa card đó và clone nó với id mới */
-        const cloneInstead = targetDeck.get('type') === 'permanent' && force === false;
+        /** Card không bị delete trong deck dạng permanent và none, nhưng vì card có id duy nhất nên ta xóa card đó và clone nó với id mới */
+        const cloneInstead = (targetDeck.get('type') === 'permanent' || targetDeck.get('type') === 'none')
+            && force === false;
 
         let newList = targetDeck.get('cardList');
         if (newList) {

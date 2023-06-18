@@ -28,6 +28,7 @@ const BoardIconMap: Record<FieldComponentKey, any> = {
     'gy': GraveyardIcon,
     'banishedPile': BanishedIcon,
     'trunk': TrunkIcon,
+    'tokenPile': undefined,
 };
 export type BoardIcon = {
     size?: 'sm' | 'lg' | 'md',

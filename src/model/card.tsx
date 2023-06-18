@@ -113,6 +113,7 @@ export const MonsterAbilitySubtypeToBitMap: Record<string, number> = {
     'Pendulum': 2 ** 2,
     'Special Summon': 2 ** 3,
     'Tuner': 2 ** 4,
+    'Token': 2 ** 10,
 
     'Flip': 2 ** 5,
     'Gemini': 2 ** 6,
@@ -128,6 +129,7 @@ export const MonsterAbilitySubtypeGroup = {
         'Pendulum',
         'Special Summon',
         'Tuner',
+        'Token',
     ],
     'Ability': [
         'Flip',

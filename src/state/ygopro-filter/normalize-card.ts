@@ -28,8 +28,9 @@ export const normalizeYGOProCardResponse = (entry: YGOProCardResponse): YGOProCa
     }
     const link_binary = (linkmarkers ?? []).reduce((acc, markerName) => acc | (MarkerToBitMap[markerName] ?? 0), 0);
     const race_binary = race ? CardRaceToBitMap[race] : 0;
-    const ability_binary = (has_effect === 1 ? MonsterAbilitySubtypeToBitMap['Effect'] : 0)
+    const ability_binary = (has_effect === 1 || frameType === 'effect' ? MonsterAbilitySubtypeToBitMap['Effect'] : 0)
         | (cardEff.startsWith('Cannot be Normal Summoned/Set.') ? MonsterAbilitySubtypeToBitMap['Special Summon'] : 0)
+        | (cardEff.includes('FLIP:') ? MonsterAbilitySubtypeToBitMap['Flip'] : 0)
         | (type ?? '')
             .split(' ')
             .reduce(

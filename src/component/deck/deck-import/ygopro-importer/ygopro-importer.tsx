@@ -375,6 +375,7 @@ export const YGOProImporter = ({
                         className="ygopro-card-entry"
                         onClick={() => onSelect(name, image_url, ygoproCardToDescription(card))}
                         onMouseEnter={() => {
+                            console.log(card);
                             preview('external', image_url, true, ygoproCardToDescription(card));
                         }}
                     >

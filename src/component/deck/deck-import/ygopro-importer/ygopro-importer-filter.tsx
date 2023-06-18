@@ -6,6 +6,7 @@ import {
     CardType,
     CardTypeList,
     MarkerToBitMap,
+    MonsterAbilityImplicationMap,
     MonsterAbilitySubtypeGroup,
     MonsterAbilitySubtypeToBitMap,
     MonsterFrameList,
@@ -525,7 +526,11 @@ export const YGOImporterFilter = ({
                             if (Array.isArray(value) && value.length > 0) {
                                 internalPayload.current['ability'] = {
                                     mode,
-                                    value: (value ?? []).map((entry: string) => MonsterAbilitySubtypeToBitMap[entry]),
+                                    value: (value ?? []).map((entry: string) => {
+                                        if (mode !== 'most') return (MonsterAbilitySubtypeToBitMap[entry] ?? 0)
+                                            | (MonsterAbilityImplicationMap[entry] ?? 0);
+                                        return MonsterAbilitySubtypeToBitMap[entry] ?? 0;
+                                    }),
                                 };
                             } else internalPayload.current['ability'] = undefined;
                             applySearch();
