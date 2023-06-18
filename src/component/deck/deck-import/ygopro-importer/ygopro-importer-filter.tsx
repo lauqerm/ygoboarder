@@ -5,6 +5,7 @@ import {
     CardRaceToBitMap,
     CardType,
     CardTypeList,
+    GroupPickerMode,
     MarkerToBitMap,
     MonsterAbilityImplicationMap,
     MonsterAbilitySubtypeGroup,
@@ -381,7 +382,10 @@ export const YGOImporterFilter = ({
                     <Input ref={textInputRef} key={`text-${filterKeyMap['text']}`}
                         {...commonProps}
                         autoFocus
-                        onChange={e => internalPayload.current['text'] = e.currentTarget.value}
+                        onChange={e => {
+                            internalPayload.current['text'] = e.currentTarget.value;
+                            if (e.type === 'click') applySearch();
+                        }}
                         onPressEnter={() => applySearch()}
                         onBlur={() => applySearch()}
                         placeholder="Search card text"
@@ -419,7 +423,10 @@ export const YGOImporterFilter = ({
                         className={internalPayload.current['atk'] ? 'has-value' : ''}
                         addonBefore="ATK"
                         disabled={!ready}
-                        onChange={e => internalPayload.current['atk'] = e.currentTarget.value}
+                        onChange={e => {
+                            internalPayload.current['atk'] = e.currentTarget.value;
+                            if (e.type === 'click') applySearch();
+                        }}
                         onPressEnter={() => applySearch()}
                     />
                     <Input key={`def-${filterKeyMap['def']}`}
@@ -427,7 +434,10 @@ export const YGOImporterFilter = ({
                         className={internalPayload.current['def'] ? 'has-value' : ''}
                         addonBefore="DEF"
                         disabled={!ready}
-                        onChange={e => internalPayload.current['def'] = e.currentTarget.value}
+                        onChange={e => {
+                            internalPayload.current['def'] = e.currentTarget.value;
+                            if (e.type === 'click') applySearch();
+                        }}
                         onPressEnter={() => applySearch()}
                     />
                     <Input key={`step-${filterKeyMap['step']}`}
@@ -440,7 +450,10 @@ export const YGOImporterFilter = ({
                             <img src={`${process.env.PUBLIC_URL}/asset/img/step-filter.png`} alt="step-filter-icon" />L
                         </span>}
                         disabled={!ready}
-                        onChange={e => internalPayload.current['step'] = e.currentTarget.value}
+                        onChange={e => {
+                            internalPayload.current['step'] = e.currentTarget.value;
+                            if (e.type === 'click') applySearch();
+                        }}
                         onPressEnter={() => applySearch()}
                     />
                     <Input key={`scale-${filterKeyMap['scale']}`}
@@ -453,7 +466,10 @@ export const YGOImporterFilter = ({
                             <img src={`${process.env.PUBLIC_URL}/asset/img/scale-icon.png`} alt="scale-icon" />
                         </span>}
                         disabled={!ready}
-                        onChange={e => internalPayload.current['scale'] = e.currentTarget.value}
+                        onChange={e => {
+                            internalPayload.current['scale'] = e.currentTarget.value;
+                            if (e.type === 'click') applySearch();
+                        }}
                         onPressEnter={() => applySearch()}
                     />
                     <LinkMarkerPicker key={`marker-${filterKeyMap['marker']}`}
@@ -522,14 +538,14 @@ export const YGOImporterFilter = ({
                         placeholder="Ability / Subtype"
                         mode="multiple"
                         defaultPickerMode="least"
+                        pickerModeList={[GroupPickerMode[0], GroupPickerMode[1]]}
                         onChange={(mode, value) => {
                             if (Array.isArray(value) && value.length > 0) {
                                 internalPayload.current['ability'] = {
                                     mode,
                                     value: (value ?? []).map((entry: string) => {
-                                        if (mode !== 'most') return (MonsterAbilitySubtypeToBitMap[entry] ?? 0)
+                                        return (MonsterAbilitySubtypeToBitMap[entry] ?? 0)
                                             | (MonsterAbilityImplicationMap[entry] ?? 0);
-                                        return MonsterAbilitySubtypeToBitMap[entry] ?? 0;
                                     }),
                                 };
                             } else internalPayload.current['ability'] = undefined;

@@ -36,18 +36,25 @@ export const SelectGroup = ({
     ...rest
 }: SelectGroup) => {
     const [pickerMode, setPickerMode] = useState(defaultPickerMode);
+    const [currentValue, setCurrentValue] = useState({ value: undefined as any, option: [] as DefaultOptionType | DefaultOptionType[] });
     const { disabled } = rest;
 
     return <SelectGroupContainer className={mergeClass(outerClassName, 'select-group')}>
         <Select
             {...rest}
-            onChange={(value, option) => onChange?.(pickerMode, value, option)}
+            onChange={(value, option) => {
+                onChange?.(pickerMode, value, option);
+                setCurrentValue({ value, option });
+            }}
         />
         <ModePicker
             optionList={pickerModeList}
             disabled={disabled}
             value={pickerMode}
-            onChange={newMode => setPickerMode(newMode)}
+            onChange={newMode => {
+                onChange?.(pickerMode, currentValue.value, currentValue.option);
+                setPickerMode(newMode);
+            }}
         />
     </SelectGroupContainer>;
 };
