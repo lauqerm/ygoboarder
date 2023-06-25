@@ -50,6 +50,7 @@ export type YGOProFilterState = {
     status: 'idling' | 'loading' | 'loaded',
     payloadMap: Record<string, YGOProRequestorPayload>,
     sortedCardListMap: Record<OrderType, YGOProCard[]>,
+    cardImageToDescriptionMap: Record<string, string>,
     fullCardMap: Record<string, YGOProCard>,
     activeCardListKey: Record<string, OrderType>,
     activeCardList: Record<string, YGOProCard[] | undefined>,
@@ -67,6 +68,7 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
         level: [],
         name: [],
     },
+    cardImageToDescriptionMap: {},
     fullCardMap: {},
     activeCardListKey: {},
     activeCardList: {},
@@ -114,11 +116,19 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
             level: Object.values(monsterLevelCategory).flatMap(entry => entry.flat()),
         };
 
+        /** Mapping image to description, trong trường hợp file export quá lớn ta có thể cân nhắc chỉ lưu image, và sau đó map vào description sau khi query thay vì lấy decsription từ file lưu. Tất nhiên sẽ có rủi ro nếu link image bị đổi. */
+        const cardImageToDescriptionMap = processedCardList.reduce((acc, cur) => {
+            acc[cur.card_images[0].image_url] = cur.desc;
+
+            return acc;
+        }, {} as Record<string, string>);
+
         set(state => {
             return {
                 ...state,
                 status: 'loaded',
                 sortedCardListMap,
+                cardImageToDescriptionMap,
                 activeCardList: Object.entries(state.activeCardListKey)
                     .map(([id, activeListKey]) => {
                         return { id, list: sortedCardListMap[activeListKey] };

@@ -52,7 +52,7 @@ export const SelectGroup = ({
             disabled={disabled}
             value={pickerMode}
             onChange={newMode => {
-                onChange?.(pickerMode, currentValue.value, currentValue.option);
+                onChange?.(newMode, currentValue.value, currentValue.option);
                 setPickerMode(newMode);
             }}
         />

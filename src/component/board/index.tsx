@@ -13,6 +13,7 @@ import {
     BOARD_INDEX,
     BoardComponentList,
     PROP_BOARD_NAME,
+    NeutralFieldKey,
 } from 'src/model';
 import { mergeClass } from 'src/util';
 import { DeckButton } from '../deck';
@@ -36,9 +37,10 @@ export const Board = ({
 }: Board) => {
     const importerRef = useRef<DeckImporterDrawerRef>(null);
     const [addingDeckId, setAddingDeckId] = useState<string | undefined>();
-    const [coordinateMap, setCoordinateMap] = useState<Record<FieldKey, FieldDeckCoordinateMap | undefined>>({
+    const [coordinateMap, setCoordinateMap] = useState<Record<FieldKey | NeutralFieldKey, FieldDeckCoordinateMap | undefined>>({
         [FieldKey.your]: {},
         [FieldKey.opponent]: {},
+        [NeutralFieldKey.neutral]: {},
     });
 
     /** [Register DOM Entity] */

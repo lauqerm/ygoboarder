@@ -31,6 +31,7 @@ export type Card = {
     isReversed?: boolean,
     /** Fake card là card ảo, không được đếm và chỉ là copy của một card thật khác */
     fake?: boolean,
+    snippet?: boolean,
     cornerBack?: boolean,
     onCornerClick?: React.MouseEventHandler<HTMLImageElement>,
     flashing?: boolean,
@@ -44,6 +45,7 @@ export const Card = ({
     position,
     isReversed,
     fake,
+    snippet,
     flashing,
     cornerBack,
     children,
@@ -94,9 +96,14 @@ export const Card = ({
             `ygo-card-position-${position}`,
             isReversed ? 'ygo-card-reversed' : '',
             (phase === 'down' && cornerBack) ? 'ygo-card-partial-down' : '',
+            snippet ? 'ygo-card-snippet' : '',
         )}
     >
-        <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />
+        {snippet
+            ? <div className="card-snippet">
+                <img src={`${process.env.PUBLIC_URL}/asset/img/token-sample.png`} alt="token-sample" />
+            </div>
+            : <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />}
         {phase === 'down'
             ? <CardBack
                 cornerBack={cornerBack}

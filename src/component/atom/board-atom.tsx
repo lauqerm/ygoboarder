@@ -1,10 +1,11 @@
-import { FieldComponentKey } from 'src/model';
+import { FieldComponentKey, NeutalFieldComponentKey } from 'src/model';
 import {
     DeckIcon,
     ExtraDeckIcon,
     TrunkIcon,
     GraveyardIcon,
     BanishedIcon,
+    TokenIcon,
 } from './board-icon';
 import styled from 'styled-components';
 
@@ -22,17 +23,17 @@ const BoardIconContainer = styled.div<{ $size?: 'sm' | 'lg' | 'md' }>`
     }
 `;
 
-const BoardIconMap: Record<FieldComponentKey, any> = {
+const BoardIconMap: Record<FieldComponentKey | NeutalFieldComponentKey, any> = {
     'deck': DeckIcon,
     'extraDeck': ExtraDeckIcon,
     'gy': GraveyardIcon,
     'banishedPile': BanishedIcon,
     'trunk': TrunkIcon,
-    'tokenPile': undefined,
+    'tokenPile': TokenIcon,
 };
 export type BoardIcon = {
     size?: 'sm' | 'lg' | 'md',
-    type?: FieldComponentKey,
+    type?: FieldComponentKey | NeutalFieldComponentKey,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const BoardIcon = ({
     size = 'sm',
@@ -43,7 +44,7 @@ export const BoardIcon = ({
         ? BoardIconMap[type]
         : undefined;
 
-    return <BoardIconContainer $size={size} {...rest}>
+    return <BoardIconContainer $size={size} className="board-icon" {...rest}>
         {Icon && <Icon />}
     </BoardIconContainer>;
 };

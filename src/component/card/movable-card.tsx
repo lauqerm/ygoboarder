@@ -44,6 +44,7 @@ export type MovableCard = {
 export const MovableCard = ({
     uniqueId,
     fake,
+    snippet,
     baseCard,
     size = 'sm',
     initialX = 0,
@@ -278,6 +279,7 @@ export const MovableCard = ({
                 `ygo-card-phase-${phase}`,
                 `ygo-card-position-${position}`,
                 isReversed ? 'ygo-card-reversed' : '',
+                snippet ? 'ygo-card-snippet' : '',
                 className,
             )}
             onClick={e => {
@@ -300,6 +302,7 @@ export const MovableCard = ({
                 baseCard={baseCard}
                 origin={origin}
                 fake={fake}
+                snippet={snippet}
                 flashing={true}
                 phase={phase}
                 position={position}

@@ -380,7 +380,10 @@ function App() {
                             resetDeck();
                             resetBoard();
                             resetLP();
-                            Object.entries(importedData.deckList).forEach(([deckName, { type, cardList, defaultPhase, phaseBehavior, preset }]) => {
+                            Object.entries(importedData.deckList).forEach(([
+                                deckName,
+                                { type, cardList, defaultPhase, phaseBehavior, preset },
+                            ]) => {
                                 const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
                                 registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
                                 addToDeck(

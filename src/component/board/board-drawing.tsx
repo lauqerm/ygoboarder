@@ -1,5 +1,12 @@
 import { useEffect, useRef } from 'react';
-import { FieldComponentKey, FieldDeckCoordinateMap, FieldKey, getBoardComponent } from 'src/model';
+import {
+    FieldComponentKey,
+    NeutalFieldComponentKey,
+    FieldDeckCoordinateMap,
+    FieldKey,
+    NeutralFieldKey,
+    getBoardComponent,
+} from 'src/model';
 import styled from 'styled-components';
 import { CardBack, FieldIcon, PendulumIcon } from '../atom';
 import { DeckListConverter, useCounterState, useDeckState } from 'src/state';
@@ -86,7 +93,14 @@ const BoardContainer = styled.div`
             margin: auto;
         }
     }
-
+    .token {
+        width: calc(var(--deck-button-simple-width) + 2px);
+        height: calc(var(--deck-button-simple-height) + 2px);
+        margin: var(--spacing-xs) 0;
+        margin-left: var(--spacing-4xl);
+        background-color: var(--main-secondaryLighter);
+        border: var(--bd-contrast);
+    }
     .left-extra-section {
         display: flex;
         align-items: center;
@@ -97,7 +111,7 @@ const BoardContainer = styled.div`
 `;
 
 export type BoardDrawing = {
-    onCoordinateChnage: (boardCoordinateMap: Record<FieldKey, FieldDeckCoordinateMap | undefined>) => void,
+    onCoordinateChnage: (boardCoordinateMap: Record<FieldKey | NeutralFieldKey, FieldDeckCoordinateMap | undefined>) => void,
 }
 export const BoardDrawing = ({
     onCoordinateChnage,
@@ -105,6 +119,8 @@ export const BoardDrawing = ({
     const activeCounter = useCounterState(state => state.activeCounter);
 
     const boardRef = useRef<HTMLDivElement>(null);
+
+    const tokenPileRef = useRef<HTMLDivElement>(null);
 
     const oppTrunkRef = useRef<HTMLDivElement>(null);
     const oppExtraDeckRef = useRef<HTMLDivElement>(null);
@@ -128,6 +144,11 @@ export const BoardDrawing = ({
         if (x !== oldCoord.current.x || y !== oldCoord.current.y) {
             oldCoord.current = { x, y };
             onCoordinateChnage({
+                [NeutralFieldKey.neutral]: {
+                    [NeutalFieldComponentKey.tokenPile]: tokenPileRef.current
+                        ? getAbsoluteRect(tokenPileRef.current.getBoundingClientRect())
+                        : undefined,
+                },
                 [FieldKey.your]: {
                     [FieldComponentKey.deck]: yourDeckRef.current
                         ? getAbsoluteRect(yourDeckRef.current.getBoundingClientRect())
@@ -251,6 +272,7 @@ export const BoardDrawing = ({
                 <div className="square-zone" />
                 <div className="empty-zone right-extra-section">
                     <CounterWidget />
+                    <div ref={tokenPileRef} className="token with-icon" />
                 </div>
             </div>
             <div className="main-col-component main-col-field main-col-field-bot">

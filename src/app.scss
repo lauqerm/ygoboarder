@@ -8,6 +8,7 @@
   --spacing-xl: 16px;
   --spacing-2xl: 24px;
   --spacing-3xl: 32px;
+  --spacing-4xl: 40px;
 
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
@@ -62,6 +63,9 @@
   --sub-opp-color: #ffbdbd;
   --main-opp-color: #ff2222;
   --contrast-opp-color: #ffffff;
+  --sub-neutral-color: #9add9a;
+  --main-neutral-color: #22aa22;
+  --contrast-neutral-color: #ffffff;
 
   --white: #fff;
   --dim: #efefef;
@@ -84,6 +88,9 @@
   --bdColor-faint: #c8c8c8;
   --bd-faint: var(--bdSize) solid var(--bdColor-faint);
   --bd-contrast: var(--bdSize) solid var(--main-contrast);
+
+  --deck-button-simple-width: 2.5rem;
+  --deck-button-simple-height: 2.5rem;
 
   --card-width-lg: 549px;
   --card-height-lg: 800px;

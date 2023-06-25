@@ -7,7 +7,7 @@ const PlayerTagContainer = styled(Tag)<{ $preset: Player }>`
     margin-right: 0;
 `;
 export type PlayerTag = {
-    preset: Player
+    preset: Player,
 }
 export const PlayerTag = ({
     preset,

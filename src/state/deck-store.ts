@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, BoardMapping, BaseCard, CardImageConverter, CardPreset, DeckType, FieldComponentKey, FieldKey, PhaseType } from 'src/model';
+import { BeaconAction, BaseCard, CardImageConverter, CardPreset, DeckType, PhaseType } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/util';
@@ -48,22 +48,17 @@ export type DeckState = {
     reset: () => void,
 }
 export const useDeckState = create<DeckState>((set) => ({
-    deckMap: Map({
-        [BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].name]: DeckListConverter({
-            cardList: List(),
-            name: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].name,
-            type: BoardMapping.fieldMap[FieldKey['your']].componentMap[FieldComponentKey['deck']].type,
-        }),
-    }),
+    deckMap: Map({}),
     register: (deckId, deckInfo) => set(state => {
         if (state.deckMap.has(deckId)) return state;
-        const { type, defaultPhase, phaseBehavior } = deckInfo;
+        const { type, defaultPhase, phaseBehavior, preset } = deckInfo;
         const newDeck = DeckListConverter({
             cardList: List(),
             name: deckId,
             type,
             defaultPhase,
             phaseBehavior,
+            preset,
         });
 
         return {
@@ -145,7 +140,7 @@ export const useDeckState = create<DeckState>((set) => ({
                 if (cloneInstead) {
                     const targetIndex = newList.findIndex(deckElement => deckElement.get('card').get('_id') === cardId);
                     const targetCard = newList.get(targetIndex);
-    
+
                     if (targetCard) newList = newList.splice(targetIndex, 1, targetCard.setIn(['card', '_id'], uuidv4()));
                 }
                 else newList = newList.filter(value => value.get('card').get('_id') !== cardId);

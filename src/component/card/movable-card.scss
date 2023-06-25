@@ -18,4 +18,8 @@
     &:hover {
         box-shadow: 0 0 1px 1px var(--main-antd);
     }
+    &.ygo-card-snippet {
+        width: var(--deck-button-simple-width);
+        height: var(--deck-button-simple-height);
+    }
 }

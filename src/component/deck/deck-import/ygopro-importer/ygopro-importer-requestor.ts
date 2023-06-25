@@ -146,7 +146,6 @@ export const YGOProRequestor = async (
     }
     if (ability) {
         const { mode, value } = ability;
-        console.log('🚀 ~ file: ygopro-importer-requestor.ts:149 ~ value:', value);
         switch (mode) {
         case 'exactly': filterMap['ability'] = entry => entry.ability_binary === value; break;
         case 'least': filterMap['ability'] = entry => entry.ability_binary === (entry.ability_binary | value); break;

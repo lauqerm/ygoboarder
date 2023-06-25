@@ -39,7 +39,6 @@ export const normalizeYGOProCardResponse = (entry: YGOProCardResponse): YGOProCa
                     | (MonsterAbilityImplicationMap[abilityOrSubtype] ?? 0),
                 0,
             );
-    if (cardEff.includes('FLIP:')) console.log(name, MonsterAbilitySubtypeToBitMap['Flip'], ability_binary);
     const frame_binary = (type ?? '')
         .split(' ')
         .reduce(

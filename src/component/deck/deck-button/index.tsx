@@ -17,6 +17,7 @@ import {
     ActionListPlacement,
     CardSize,
     PhaseType,
+    DeckButtonType,
 } from 'src/model';
 import {
     DeckListConverter,
@@ -94,7 +95,13 @@ const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
         }
     }
 `;
-const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: number, $top?: number, $left?: number }>`
+const DeckButtonContainer = styled.div<{
+    $preset: CardPreset,
+    $beaconCount: number,
+    $top?: number,
+    $left?: number,
+    $buttonType?: DeckButtonType,
+}>`
     text-align: center;
     position: absolute;
     top: ${props => `${props.$top}px`};
@@ -145,19 +152,32 @@ const DeckButtonContainer = styled.div<{ $preset: CardPreset, $beaconCount: numb
         left: 50%;
         transform: translateX(-50%);
     }
+    ${({ $buttonType }) => $buttonType === 'simple'
+        ? `
+            .deck-back, .top-card, .board-icon {
+                width: var(--deck-button-simple-width);
+                height: var(--deck-button-simple-height);
+                .deck-back-beacon-list {
+                    display: none;
+                }
+            }
+        `
+        : ''}
 `;
 
 export type DeckButton = {
     offsetTop?: number, offsetLeft?: number,
     /** Board name chứa deck button */
     owner: string,
+    buttonType?: DeckButtonType,
 } & Pick<DeckModal, 'beaconList' | 'onOpenImporter' | 'isAdding' | 'onClose'>
-& BoardComponent;
+    & BoardComponent;
 export const DeckButton = ({
     name,
     displayName = name,
     owner,
     type,
+    buttonType = 'simple',
     fieldComponentKey,
     preset = 'your',
     offsetTop, offsetLeft,
@@ -235,7 +255,12 @@ export const DeckButton = ({
     if (!portal) return null;
     return createPortal(
         <DeckButtonContainer ref={deckButtonRef}
-            className={mergeClass('deck-button', DOM_ENTITY_CLASS, DOMEntityTypeClass['deckButton'])}
+            className={mergeClass(
+                'deck-button',
+                DOM_ENTITY_CLASS,
+                DOMEntityTypeClass['deckButton'],
+            )}
+            $buttonType={buttonType}
             $preset={preset}
             $beaconCount={beaconList.length}
             $top={offsetTop ?? 0}
@@ -329,7 +354,7 @@ export const DeckButton = ({
                 isVisible={true}
             >
                 <div ref={beaconListRef} className="deck-back-beacon-list">
-                    {beaconList.map((beaconAction, index) => {
+                    {(buttonType === 'normal' ? beaconList : []).map((beaconAction, index) => {
                         return <DeckBeacon key={beaconAction}
                             ref={ref => {
                                 if (ref) deckButtonBeaconListRef.current[index] = ref;
@@ -354,6 +379,7 @@ export const DeckButton = ({
                             initialY={offsetTop}
                             phase={topDeckCard.get('phase')}
                             fake={true}
+                            snippet={buttonType === 'normal' ? false : true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
                                 const cardInDeck = deckList.get(0);
 

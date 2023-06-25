@@ -1,6 +1,7 @@
 import { Button } from 'antd';
 import { getCounterImage } from 'src/model';
 import { useCounterState } from 'src/state';
+import { mergeClass } from 'src/util';
 import styled from 'styled-components';
 
 const CounterWidgetContainer = styled.div`
@@ -26,6 +27,9 @@ const CounterWidgetContainer = styled.div`
             height: 20px;
         }
     }
+    .hide-button {
+        visibility: hidden;
+    }
 `;
 export const CounterWidget = () => {
     const switchCounterMode = useCounterState(state => state.setCounterMode);
@@ -50,14 +54,14 @@ export const CounterWidget = () => {
                 </div>;
             })}
         </div>
-        {activeCounter && <Button
-            className="counter-off-button"
+        <Button
+            className={mergeClass('counter-off-button', activeCounter ? '' : 'hide-button')}
             size="small"
             onClick={() => switchCounterMode(undefined)}
             type="primary"
             danger
         >
             {'Counter mode off'}
-        </Button>}
+        </Button>
     </CounterWidgetContainer>;
 };

@@ -28,17 +28,30 @@ export const FieldComponentKey = Object.freeze({
     extraDeck: 'extraDeck' as const,
     gy: 'gy' as const,
     banishedPile: 'banishedPile' as const,
-    tokenPile: 'tokenPile' as const,
     trunk: 'trunk' as const,
 });
+export type NeutalFieldComponentKey = keyof typeof NeutalFieldComponentKey;
+export const NeutalFieldComponentKey = Object.freeze({
+    tokenPile: 'tokenPile' as const,
+});
 
-export type FieldKey = 'your' | 'opponent';
+export type FieldKey = keyof typeof FieldKey;
 export const FieldKey = Object.freeze({
     your: 'your' as const,
     opponent: 'opponent' as const,
 });
+export type NeutralFieldKey = keyof typeof NeutralFieldKey;
+export const NeutralFieldKey = Object.freeze({
+    neutral: 'neutral' as const,
+});
 
-export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey, {
+export type DeckButtonType = keyof typeof DeckButtonType;
+export const DeckButtonType = Object.freeze({
+    normal: 'normal' as const,
+    simple: 'simple' as const,
+});
+
+export type FieldDeckCoordinateMap = Partial<Record<FieldComponentKey | NeutalFieldComponentKey, {
     x: number, y: number,
     left: number, right: number,
     top: number, bottom: number,
@@ -51,9 +64,10 @@ export type BoardComponentAction = 'view' | 'shuffle'
 | 'get-random' | 'get-random-faceup' | 'get-random-facedown';
 export type ActionListPlacement = 'left' | 'right';
 export type BoardComponent = {
-    fieldKey: FieldKey,
-    fieldComponentKey: FieldComponentKey,
+    fieldKey: FieldKey | NeutralFieldKey,
+    fieldComponentKey: FieldComponentKey | NeutalFieldComponentKey,
     type: DeckType,
+    buttonType: DeckButtonType,
     preset: CardPreset,
     name: string,
     displayName: string,
@@ -63,12 +77,28 @@ export type BoardComponent = {
     defaultPhase: PhaseType,
     phaseBehavior: PhaseBehavior,
 };
+export const NeutralBoardComponentMap = {
+    [NeutalFieldComponentKey.tokenPile]: {
+        fieldKey: 'neutral',
+        fieldComponentKey: NeutalFieldComponentKey.tokenPile,
+        type: DeckType['none'],
+        buttonType: DeckButtonType['simple'],
+        preset: 'neutral',
+        displayName: 'Token Pile',
+        name: 'TOKEN-PILE',
+        beaconList: [],
+        action: ['view'],
+        actionPlacement: 'left',
+        defaultPhase: 'up',
+        phaseBehavior: 'always-up',
+    },
+};
 export const BoardMapping: {
     fieldList: FieldKey[],
     fieldMap: Record<FieldKey, {
         key: FieldKey,
         componentList: FieldComponentKey[],
-        componentMap: Record<FieldComponentKey, BoardComponent>
+        componentMap: Record<FieldComponentKey, BoardComponent>,
     }>
 } = {
     fieldList: [FieldKey.your, FieldKey.opponent],
@@ -87,6 +117,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.deck,
                     type: DeckType['consistent'],
+                    buttonType: DeckButtonType['normal'],
                     preset: CardPreset['your'],
                     displayName: 'Deck',
                     name: 'YOUR-DECK',
@@ -100,6 +131,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.extraDeck,
                     type: DeckType['consistent'],
+                    buttonType: DeckButtonType['normal'],
                     preset: CardPreset['your'],
                     displayName: 'Extra Deck',
                     name: 'YOUR-EXTRA-DECK',
@@ -113,6 +145,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.trunk,
                     type: DeckType['permanent'],
+                    buttonType: DeckButtonType['normal'],
                     preset: CardPreset['your'],
                     displayName: 'Trunk',
                     name: 'YOUR-TRUNK',
@@ -126,6 +159,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.gy,
                     type: DeckType['transient'],
+                    buttonType: DeckButtonType['normal'],
                     preset: CardPreset['your'],
                     displayName: 'GY',
                     name: 'YOUR-GY',
@@ -139,6 +173,7 @@ export const BoardMapping: {
                     fieldKey: FieldKey.your,
                     fieldComponentKey: FieldComponentKey.banishedPile,
                     type: DeckType['transient'],
+                    buttonType: DeckButtonType['normal'],
                     preset: CardPreset['your'],
                     displayName: 'Banished Pile',
                     name: 'YOUR-BANISHED-PILE',
@@ -147,32 +182,6 @@ export const BoardMapping: {
                     actionPlacement: 'left',
                     defaultPhase: 'up',
                     phaseBehavior: 'keep',
-                },
-                [FieldComponentKey.banishedPile]: {
-                    fieldKey: FieldKey.your,
-                    fieldComponentKey: FieldComponentKey.banishedPile,
-                    type: DeckType['transient'],
-                    preset: CardPreset['your'],
-                    displayName: 'Banished Pile',
-                    name: 'YOUR-BANISHED-PILE',
-                    beaconList: [BeaconAction['top'], BeaconAction['bottom']],
-                    action: ['view', 'excavate-top-faceup'],
-                    actionPlacement: 'left',
-                    defaultPhase: 'up',
-                    phaseBehavior: 'keep',
-                },
-                [FieldComponentKey.tokenPile]: {
-                    fieldKey: FieldKey.your,
-                    fieldComponentKey: FieldComponentKey.tokenPile,
-                    type: DeckType['none'],
-                    preset: CardPreset['your'],
-                    displayName: 'Token Pile',
-                    name: 'YOUR-TOKEN-PILE',
-                    beaconList: [],
-                    action: ['view', 'excavate-top-faceup'],
-                    actionPlacement: 'left',
-                    defaultPhase: 'up',
-                    phaseBehavior: 'always-up',
                 },
             },
         },
@@ -191,6 +200,7 @@ export const BoardMapping: {
                     fieldComponentKey: FieldComponentKey.deck,
                     preset: CardPreset['opp'],
                     type: DeckType['consistent'],
+                    buttonType: DeckButtonType['normal'],
                     displayName: 'Deck',
                     name: 'OP-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
@@ -204,6 +214,7 @@ export const BoardMapping: {
                     fieldComponentKey: FieldComponentKey.extraDeck,
                     preset: CardPreset['opp'],
                     type: DeckType['consistent'],
+                    buttonType: DeckButtonType['normal'],
                     displayName: 'Extra Deck',
                     name: 'OP-EXTRA-DECK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle']],
@@ -217,6 +228,7 @@ export const BoardMapping: {
                     fieldComponentKey: FieldComponentKey.trunk,
                     preset: CardPreset['opp'],
                     type: DeckType['permanent'],
+                    buttonType: DeckButtonType['normal'],
                     displayName: 'Trunk',
                     name: 'OP-TRUNK',
                     beaconList: [BeaconAction['top'], BeaconAction['shuffle'], BeaconAction['bottom']],
@@ -230,6 +242,7 @@ export const BoardMapping: {
                     fieldComponentKey: FieldComponentKey.gy,
                     preset: CardPreset['opp'],
                     type: DeckType['transient'],
+                    buttonType: DeckButtonType['normal'],
                     displayName: 'GY',
                     name: 'OP-GY',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
@@ -243,6 +256,7 @@ export const BoardMapping: {
                     fieldComponentKey: FieldComponentKey.banishedPile,
                     preset: CardPreset['opp'],
                     type: DeckType['transient'],
+                    buttonType: DeckButtonType['normal'],
                     displayName: 'Banished Pile',
                     name: 'OP-BANISHED-PILE',
                     beaconList: [BeaconAction['top'], BeaconAction['bottom']],
@@ -250,19 +264,6 @@ export const BoardMapping: {
                     actionPlacement: 'right',
                     defaultPhase: 'up',
                     phaseBehavior: 'keep',
-                },
-                [FieldComponentKey.tokenPile]: {
-                    fieldKey: FieldKey.opponent,
-                    fieldComponentKey: FieldComponentKey.tokenPile,
-                    type: DeckType['none'],
-                    preset: CardPreset['opp'],
-                    displayName: 'Token Pile',
-                    name: 'OP-TOKEN-PILE',
-                    beaconList: [],
-                    action: ['view', 'excavate-top-faceup'],
-                    actionPlacement: 'left',
-                    defaultPhase: 'up',
-                    phaseBehavior: 'always-up',
                 },
             },
         },
@@ -279,6 +280,10 @@ export const BoardComponentList = Object
 
         return [
             ...prev,
-            ...componentList.map(componentKey => componentMap[componentKey]),
+            ...componentList
+                .map(componentKey => componentMap[componentKey])
+                .filter(Boolean) as BoardComponent[],
         ];
-    }, [] as BoardComponent[]);
+    }, [
+        NeutralBoardComponentMap[NeutalFieldComponentKey.tokenPile],
+    ] as BoardComponent[]);
