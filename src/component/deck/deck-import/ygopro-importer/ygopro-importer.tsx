@@ -1,4 +1,4 @@
-import { Pagination, Radio, Select, notification } from 'antd';
+import { Empty, Pagination, Radio, Select, notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescription } from 'src/model';
 import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
@@ -169,6 +169,9 @@ const YGOImporterContainer = styled.div`
                 .image-container {
                     height: unset;
                 }
+            }
+            .ant-empty {
+                grid-column: 1 / -1;
             }
         }
     }
@@ -378,6 +381,7 @@ export const YGOProImporter = ({
             </button>
             <div className={mergeClass('ygopro-card-list', displayMode)}>
                 {ready === false && <Loading.FullView />}
+                {(ready && cardResponseList.length === 0) && <Empty description="No Result" />}
                 {cardResponseList
                     .slice((cardPage - 1) * cardPageSize, cardPage * cardPageSize)
                     .map(card => {
@@ -454,7 +458,7 @@ export const YGOProImporter = ({
             <button
                 className="list-quick-navigate card-list-next"
                 onClick={() => setCardPage(cur => cur + 1)}
-                disabled={cardPage > Math.ceil(cardResponseList.length / cardPageSize)}
+                disabled={cardPage >= Math.ceil(cardResponseList.length / cardPageSize)}
             >
                 <CaretRightFilled />
             </button>
