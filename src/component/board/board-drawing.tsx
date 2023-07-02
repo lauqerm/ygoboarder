@@ -14,8 +14,11 @@ import { CounterWidget, LPWidget, RandomWidget, TurnWidget } from '../widget';
 import { getAbsoluteRect } from 'src/util';
 
 const BoardContainer = styled.div`
-    --field-card-height-sm: calc(var(--card-height-sm) + 2px);
-    --field-card-width-sm: calc(var(--card-width-sm) + 2px);
+    /** 2px cho border, 4px cho padding */
+    --zone-card-height-sm: calc(var(--card-height-sm) + 2px);
+    --zone-card-width-sm: calc(var(--card-width-sm) + 2px);
+    --field-card-height-sm: calc(var(--card-height-sm) + 4px + 2px);
+    --field-card-width-sm: calc(var(--card-width-sm) + 4px + 2px);
 
     display: inline-grid;
     grid-template-columns: max-content max-content max-content;
@@ -62,13 +65,14 @@ const BoardContainer = styled.div`
         }
     }
     .square-zone {
-        width: var(--field-card-height-sm);
-        height: var(--field-card-height-sm);
+        /** 4px cho padding */
+        width: calc(var(--zone-card-height-sm) + 4px);
+        height: calc(var(--zone-card-height-sm) + 4px);
         background-color: var(--main-secondaryLighter);
     }
     .vertical-zone {
-        width: var(--field-card-width-sm);
-        height: var(--field-card-height-sm);
+        width: var(--zone-card-width-sm);
+        height: var(--zone-card-height-sm);
         background-color: var(--main-secondaryLighter);
         border: var(--bd-contrast);
         &.hidden-zone {
@@ -97,7 +101,7 @@ const BoardContainer = styled.div`
         width: calc(var(--deck-button-simple-width) + 2px);
         height: calc(var(--deck-button-simple-height) + 2px);
         margin: var(--spacing-xs) 0;
-        margin-left: var(--spacing-4xl);
+        margin-left: 45px;
         background-color: var(--main-secondaryLighter);
         border: var(--bd-contrast);
     }

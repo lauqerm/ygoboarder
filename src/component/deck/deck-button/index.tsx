@@ -18,6 +18,7 @@ import {
     CardSize,
     PhaseType,
     DeckButtonType,
+    DeckButtonSize,
 } from 'src/model';
 import {
     DeckListConverter,
@@ -382,6 +383,7 @@ export const DeckButton = ({
                             snippet={buttonType === 'normal' ? false : true}
                             onDragToBoard={(_id, coord, _origin, boardName) => {
                                 const cardInDeck = deckList.get(0);
+                                /** Offset đặc biệt với dạng compact, tạo cảm giác compact card được expand ra 4 phía thay vì expand ra phải và dưới */
 
                                 if (cardInDeck) {
                                     const { left, top } = coord;
@@ -389,8 +391,8 @@ export const DeckButton = ({
                                     deleteFromDeck(name, [targetCard.get('_id')]);
                                     addToBoard(boardName, [{
                                         card: targetCard,
-                                        initialX: left,
-                                        initialY: top,
+                                        initialX: left - (buttonType === 'simple' ? (CardSize.sm.width - DeckButtonSize.simple.width) / 2 : 0),
+                                        initialY: top - (buttonType === 'simple' ? (CardSize.sm.height - DeckButtonSize.simple.height) / 2 : 0),
                                         origin: name,
                                         phase: cardInDeck.get('phase'),
                                     }]);

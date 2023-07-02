@@ -7,6 +7,12 @@ export const CardSize = {
         height: 125,
     },
 };
+export const DeckButtonSize = {
+    simple: {
+        width: 40,
+        height: 40,
+    },
+};
 
 export const CardRaceToBitMap: Record<string, number> = {
     'Aqua': 2 ** 0,

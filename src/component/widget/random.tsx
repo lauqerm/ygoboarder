@@ -1,5 +1,5 @@
-import { Input } from 'antd';
-import { useState } from 'react';
+import { Input, InputRef } from 'antd';
+import { useRef, useState } from 'react';
 import styled from 'styled-components';
 
 const RandomWidgetContainer = styled.div`
@@ -23,9 +23,13 @@ const RandomWidgetContainer = styled.div`
         }
     }
     .random-result {
+        cursor: pointer;
         background-color: var(--dim);
         font-weight: bold;
         text-align: center;
+    }
+    .error-text {
+        color: var(--main-danger);
     }
 `;
 export type RandomWidget = {
@@ -33,9 +37,26 @@ export type RandomWidget = {
 }
 export const RandomWidget = () => {
     const [result, setResult] = useState(0);
+    const [error, setError] = useState<null | string>(null);
+    const internalValue = useRef('');
+    const inputRef = useRef<InputRef>(null);
     const random = (range: number) => {
         if (range > 0) setResult(1 + Math.floor(Math.random() * range));
         else setResult(0);
+    };
+    const submit = (expression: string) => {
+        try {
+            const value = parseInt(expression);
+
+            if (isNaN(value)) {
+                setError('Invalid range');
+                inputRef.current?.focus();
+            }
+            else random(value);
+        } catch (e) {
+            setError('Invalid range');
+            inputRef.current?.focus();
+        }
     };
 
     return <RandomWidgetContainer className="random-widget">
@@ -43,22 +64,22 @@ export const RandomWidget = () => {
             {[2, 3, 6].map(entry => {
                 return <div key={entry} className="static-random-button" onClick={() => random(entry)}>{entry}</div>;
             })}
-            <Input
+            <Input ref={inputRef}
                 size="small"
-                onPressEnter={e => {
-                    try {
-                        const value = parseInt(e.currentTarget.value);
-
-                        if (isNaN(value)) random(0);
-                        else random(value);
-                    } catch (e) {
-                        random(0);
-                    }
+                status={typeof error === 'string' ? 'error' : undefined}
+                onChange={e => {
+                    internalValue.current = e.currentTarget.value;
+                    setError(null);
                 }}
+                onPressEnter={e => submit(e.currentTarget.value)}
             />
         </div>
-        <div className="random-result">
-            {result === 0 ? 'Random' : `Result: ${result}`}
+        <div className="random-result" onClick={() => {
+            submit(internalValue.current);
+        }}>
+            {error
+                ? <span className="error-text">{error}</span>
+                : result === 0 ? 'Random' : `Result: ${result}`}
         </div>
     </RandomWidgetContainer>;
 };

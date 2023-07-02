@@ -100,9 +100,12 @@ export const Card = ({
         )}
     >
         {snippet
-            ? <div className="card-snippet">
-                <img src={`${process.env.PUBLIC_URL}/asset/img/token-sample.png`} alt="token-sample" />
+            ? <div className="compact-container">
+                <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />
             </div>
+            // ? <div className="card-snippet">
+            //     <img src={`${process.env.PUBLIC_URL}/asset/img/token-sample.png`} alt="token-sample" />
+            // </div>
             : <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />}
         {phase === 'down'
             ? <CardBack
