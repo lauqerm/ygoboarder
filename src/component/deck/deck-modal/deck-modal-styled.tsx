@@ -30,6 +30,9 @@ export const DeckModalHandleContainer = styled.div`
         display: flex;
         align-items: center;
         column-gap: var(--spacing-sm);
+        .ant-tag {
+            transition: all 0s;
+        }
     }
     .moveable-control-box {
         visibility: hidden!important;

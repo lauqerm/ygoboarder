@@ -176,5 +176,5 @@ export const ygoproCardToDescription = (card: YGOProCardResponse) => {
 ${[rating, attribute, category].filter(Boolean).join(' ')}
 ${[stat, normalizedLinkMarkerList].filter(Boolean).join(' ')}
 ${desc}
-    `;
+    `.trim();
 };

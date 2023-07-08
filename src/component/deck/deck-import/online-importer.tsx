@@ -5,6 +5,7 @@ import { useDeckState, useDescriptionState } from 'src/state';
 import { v4 as uuidv4 } from 'uuid';
 import { DeleteOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
 
 const FileItemContainer = styled.div`
     width: 100%;
@@ -65,7 +66,13 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
         <div>
             <Input.TextArea
                 placeholder="Card description"
-                onChange={e => description.current = e.target.value}
+                onChange={event => {
+                    try {
+                        description.current = ygoCarderToDescription(rebuildYGOCarderData(event.target.value, true));
+                    } catch (error) {
+                        description.current = event.target.value;
+                    }
+                }}
             />
         </div>
     </FileItemContainer>;

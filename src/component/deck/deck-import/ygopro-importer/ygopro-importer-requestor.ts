@@ -206,7 +206,8 @@ export const YGOProRequestor = async (
         for (let cardCnt = 0; cardCnt < inputList.length; cardCnt++) {
             if (filterFunc(inputList[cardCnt])) narrowedList.push(inputList[cardCnt]);
         }
-        // console.log([...inputList].slice(0, 20), [...narrowedList].slice(0, 20));
+        // console.log([...inputList].slice(0, 20), inputList.length);
+        // console.log([...narrowedList].slice(0, 20), narrowedList.length);
         inputList = narrowedList;
     }
 

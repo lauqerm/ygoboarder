@@ -254,7 +254,9 @@ export const DeckModal = React.forwardRef(({
                 onMouseOut={e => e.stopPropagation()}
             >
                 <div className="deck-modal-content">
-                    <div className="deck-modal-title-content"><PlayerTag preset={preset} /> {displayName} ({currentFullDeckList.size} / {deckCount ?? 0})</div>
+                    <div className="deck-modal-title-content">
+                        <PlayerTag preset={preset} /> {displayName} {type !== 'none' && type !== 'permanent' ? `(${currentFullDeckList.size} / ${deckCount ?? 0})` : ''}
+                    </div>
                     <CloseOutlined onClick={close} />
                 </div>
                 <Moveable

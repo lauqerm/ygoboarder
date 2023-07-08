@@ -13,25 +13,32 @@ import {
     PROP_BEACON_DECK_ORIGIN,
     PROP_BEACON_ACTION_TYPE,
     DOMEntityTypeClass,
-    MODAL_WRAPPER_ID,
     DOMEntityType,
-    PropDOMEntityVisible,
     Player,
     YGOProDomainRegex,
-    GetDeckTypeRegex,
+    DEFAULT_LP,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
 import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
-import { cardIndexQueue, DeckListConverter, useBoardState, useCounterState, useDeckState, useDescriptionState, useDOMEntityState, useDroppableAvailableState, useLPState, useZIndexState } from './state';
+import {
+    DeckListConverter,
+    useBoardState,
+    useCounterState,
+    useDeckState,
+    useDescriptionState,
+    useDOMEntityState,
+    useDroppableAvailableState,
+    useLPState,
+    useZIndexState,
+} from './state';
 import { isLieInside } from './util';
-import 'antd/dist/antd.less';
 import { AppMenuContainer } from './styled';
 import { useResizeDetector } from 'react-resize-detector';
+import 'antd/dist/antd.less';
 
 function App() {
-    const appRef = useRef<HTMLDivElement>(null);
     const currentDeckList = useDeckState(
         state => state.deckMap,
         (oldState, newState) => oldState.equals(newState),
@@ -55,23 +62,12 @@ function App() {
     const zIndexChange = useZIndexState(state => state.updateCount);
 
     const updateModalStatus = useDroppableAvailableState(state => state.update);
-    const {
-        recalculate,
-        DOMEntityList,
-    } = useDOMEntityState(
-        ({ DOMEntityList, recalculate, recalculateCount }) => ({
-            DOMEntityList,
-            recalculate,
-            version: recalculateCount,
-        }),
-        (prev, next) => prev.version === next.version,
-    );
-    const resetLP = (value = '8000') => [Player.your, Player.opp].map(entry => setLP(entry, value));
+    const recalculate = useDOMEntityState(state => state.recalculate);
+    const resetLP = (value = `${DEFAULT_LP}`) => [Player.your, Player.opp].map(entry => setLP(entry, value));
     const { ref } = useResizeDetector({
         refreshMode: 'debounce',
         refreshRate: 500,
         onResize: () => {
-            console.log('resize');
             recalculate();
         },
     });
@@ -107,9 +103,8 @@ function App() {
 
     const currentEventTarget = useRef<HTMLDivElement | null>(null);
     const currentHighlightEvent = useRef<(_e: MouseEvent) => void>(() => { });
-    const currentMouseDownEvent = useRef<(_e: MouseEvent) => void>();
     const onBeforeDragStart = (initial: DragStart) => {
-        const { source, draggableId } = initial;
+        const { source } = initial;
 
         /**
          * Side-effect cho modal, vì handle có index cao hơn modal, card khi drag ngang qua handle sẽ bị khuất, ta cần effect để nâng index của modal lên, rồi hạ xuống sau khi kết thúc drag
@@ -125,7 +120,7 @@ function App() {
 
     const onDragStart = (initial: DragStart) => {
         const { source, draggableId } = initial;
-        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragStart', source);
+        // console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragStart', source);
         /*...*/
 
         /**
@@ -173,11 +168,11 @@ function App() {
         document.addEventListener('mousemove', currentHighlightEvent.current);
     };
     const onDragUpdate = () => {
-        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragUpdate');
+        // console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragUpdate');
         /*...*/
     };
     const onDragEnd: ExtractProps<typeof DragDropContext>['onDragEnd'] = result => {
-        console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragEnd', result);
+        // console.log('🚀 ~ Draggable ~ onBeforeCapture ~ onDragEnd', result);
         const { destination, source } = result;
         const {
             droppableId: sourceDropId,
@@ -228,7 +223,6 @@ function App() {
                     const targetDeckCard = currentDeckList.get(sourceDeckID, DeckListConverter()).get('cardList').get(sourceIndex);
 
                     if (targetDeckCard) {
-                        console.log(targetDeckCard.toJS(), beaconOrigin);
                         deleteFromDeck(sourceDeckID, [targetDeckCard.get('card').get('_id')]);
                         addToDeck(
                             beaconOrigin,
@@ -398,6 +392,8 @@ function App() {
                                                 isOfficial: YGOProDomainRegex.test(imageURL),
                                             }),
                                         })),
+                                    undefined,
+                                    true,
                                 );
                             });
                             addDescription(

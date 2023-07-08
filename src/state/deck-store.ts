@@ -1,5 +1,5 @@
 import { List, Record as ImmutableRecord, Map } from 'immutable';
-import { BeaconAction, BaseCard, CardImageConverter, CardPreset, DeckType, PhaseType } from 'src/model';
+import { BeaconAction, BaseCard, CardImageConverter, CardPreset, DeckType, PhaseType, NeutralBoardComponentMap, NeutalFieldComponentKey } from 'src/model';
 import create from 'zustand';
 import { v4 as uuidv4 } from 'uuid';
 import { shuffleDeck } from 'src/util';
@@ -38,7 +38,7 @@ export const DeckListConverter = ImmutableRecord<BaseDeckList>({
 export type DeckState = {
     deckMap: Map<string, DeckList>,
     register: (deckId: string, info: { type: DeckType, defaultPhase: PhaseType, phaseBehavior: PhaseBehavior, preset: CardPreset }) => void,
-    add: (deckId: string, addInfo: { card: BaseCard, phase?: PhaseType }[], position?: BeaconAction) => void,
+    add: (deckId: string, addInfo: { card: BaseCard, phase?: PhaseType }[], position?: BeaconAction, replace?: boolean) => void,
     addToPosition: (deckId: string, cardWithPositionList: { position: number, card: DeckCard }[]) => void,
     delete: (deckId: string, idList: string[], force?: boolean) => void,
     duplicate: (deckId: string, cardList: DeckCard[]) => void,
@@ -48,11 +48,44 @@ export type DeckState = {
     reset: () => void,
 }
 export const useDeckState = create<DeckState>((set) => ({
-    deckMap: Map({}),
+    deckMap: Map({
+        [NeutralBoardComponentMap[NeutalFieldComponentKey.tokenPile].name]: DeckListConverter({
+            type: DeckType['none'],
+            preset: 'your',
+            name: 'TOKEN-PILE',
+            defaultPhase: 'up',
+            phaseBehavior: 'always-up',
+            cardList: List([
+                'https://images.ygoprodeck.com/images/cards/73915052.jpg',
+                'https://images.ygoprodeck.com/images/cards/71645243.jpg',
+                'https://images.ygoprodeck.com/images/cards/59160189.jpg',
+                'https://images.ygoprodeck.com/images/cards/52340445.jpg',
+                'https://images.ygoprodeck.com/images/cards/39972130.jpg',
+                'https://images.ygoprodeck.com/images/cards/90884404.jpg',
+                'https://images.ygoprodeck.com/images/cards/15341822.jpg',
+                'https://images.ygoprodeck.com/images/cards/904186.jpg',
+                'https://images.ygoprodeck.com/images/cards/53855410.jpg',
+                'https://images.ygoprodeck.com/images/cards/9929399.jpg',
+            ].map(image => {
+                return DeckCardConverter({
+                    card: CardImageConverter({
+                        _id: uuidv4(),
+                        dataURL: image,
+                        isOfficial: true,
+                        isToken: true,
+                        preset: 'your',
+                        type: 'external',
+                    }),
+                    origin: 'TOKEN-PILE',
+                    phase: 'up',
+                });
+            })),
+        }),
+    }),
     register: (deckId, deckInfo) => set(state => {
-        if (state.deckMap.has(deckId)) return state;
         const { type, defaultPhase, phaseBehavior, preset } = deckInfo;
-        const newDeck = DeckListConverter({
+        const existedDeck = state.deckMap.get(deckId, DeckListConverter());
+        let newDeck = DeckListConverter({
             cardList: List(),
             name: deckId,
             type,
@@ -60,15 +93,21 @@ export const useDeckState = create<DeckState>((set) => ({
             phaseBehavior,
             preset,
         });
+        const isSameDeck = (existedDeck.get('defaultPhase') === newDeck.get('defaultPhase'))
+            && (existedDeck.get('phaseBehavior') === newDeck.get('phaseBehavior'))
+            && (existedDeck.get('preset') === newDeck.get('preset'))
+            && (existedDeck.get('name') === newDeck.get('name'))
+            && (existedDeck.get('type') === newDeck.get('type'));
+        if (isSameDeck) newDeck = newDeck.set('cardList', existedDeck.get('cardList'));
 
         return {
             ...state,
             deckMap: state.deckMap.set(deckId, newDeck),
         };
     }),
-    add: (deckId, addInfo, position = 'bottom') => set(state => {
+    add: (deckId, addInfo, position = 'bottom', replace = false) => set(state => {
         const targetDeck = state.deckMap.get(deckId, DeckListConverter());
-        let newList = targetDeck.get('cardList');
+        let newList = replace ? targetDeck.get('cardList') : List<DeckCard>();
         const phaseBehavior = targetDeck.get('phaseBehavior');
         const resolvePhase = (phase: PhaseType = targetDeck.get('defaultPhase')): PhaseType => {
             return phaseBehavior === 'keep'

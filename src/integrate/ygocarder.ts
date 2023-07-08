@@ -1,0 +1,105 @@
+export const cardFieldShortenMap: Record<keyof YGOCarderCard | string, string | Record<string, string>> = {
+    frame: 'fr',
+    foil: 'fo',
+    name: 'na',
+    nameStyleType: 'nst',
+    effectStyle: {
+        _newKey: 'es',
+        condenseTolerant: 'cdtl',
+    },
+    nameStyle: {
+        _newKey: 'ns',
+        fillStyle: 'nsfs',
+        shadowColor: 'nssc',
+        shadowOffsetY: 'nssoy',
+        shadowOffsetX: 'nssox',
+        shadowBlur: 'nssb',
+        hasShadow: 'nshs',
+    },
+    attribute: 'at',
+    subFamily: 'sf',
+    star: 'st',
+    picture: 'pt',
+    pictureCrop: {
+        _newKey: 'ptc',
+        x: 'ptx',
+        y: 'pty',
+        width: 'ptw',
+        height: 'pth',
+        unit: 'ptu',
+        aspect: 'pta',
+    },
+    linkMap: 'lm',
+    isPendulum: 'ip',
+    pendulumEffect: 'pe',
+    pendulumScaleRed: 'rs',
+    pendulumScaleBlue: 'bs',
+    typeAbility: 'ta',
+    effect: 'ef',
+    setId: 'si',
+    atk: 'atk',
+    def: 'def',
+    passcode: 'pc',
+    sticker: 'sti',
+    isFirstEdition: 'ife',
+    creator: 'cr',
+};
+
+export type TextStyleType = 'auto' | 'custom';
+export type TextStyle = typeof defaultTextStyle;
+export const defaultTextStyle = {
+    fillStyle: '#000000',
+    shadowColor: '#000000',
+    shadowOffsetY: 0,
+    shadowOffsetX: 0,
+    shadowBlur: 0,
+    hasShadow: false,
+};
+
+export type CondenseType = 'strict' | 'loose';
+
+export type YGOCarderCard = typeof defaultYGOCarderCard;
+export const defaultYGOCarderCard = {
+    frame: 'fusion',
+    foil: 'normal',
+    name: 'Junko',
+    nameStyleType: 'auto' as TextStyleType,
+    nameStyle: {
+        fillStyle: '#000000',
+        shadowColor: '#000000',
+        shadowOffsetY: 0,
+        shadowOffsetX: 0,
+        shadowBlur: 0,
+        hasShadow: false,
+    } as TextStyle,
+    attribute: 'LIGHT',
+    subFamily: 'NO ICON',
+    star: 6,
+    picture: 'https://i.imgur.com/h5kXZeC.png',
+    pictureCrop: {
+        x: 0,
+        y: 12,
+        width: 269,
+        height: 269,
+        unit: 'px',
+        aspect: 1,
+    } as Partial<any>,
+    linkMap: ['1', '3', '7', '9'] as string[],
+    isPendulum: false,
+    pendulumEffect: 'Once per turn: You can pay 800 LP, increase this card\'s Pendulum Scale by 1.',
+    pendulumScaleRed: '4',
+    pendulumScaleBlue: '4',
+    typeAbility: ['Fairy', 'Fusion', 'Effect'] as string[],
+    effectStyle: {
+        condenseTolerant: 'strict' as CondenseType,
+    },
+    effect: `[2+ Effect Monsters on your field]
+Each time an opponent's monster activates its effect, place 1 Pure Counter on that opponent's monster (max. 1) after that effect resolves. Unaffected by activated effects from monster with a Pure Counter. Cannot be destroyed by battle with monsters with a Pure Counter.`,
+    setId: 'YGOC-EN001',
+    atk: '2000',
+    def: '2000',
+    passcode: '18111996',
+    sticker: 'holo5',
+    isFirstEdition: true,
+    creator: '©2020 Studio Dice/SHUEISHA TV TOKYO, KONAMI',
+};

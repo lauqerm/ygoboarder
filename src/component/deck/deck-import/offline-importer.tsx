@@ -9,6 +9,7 @@ import { Loading } from '../../loading';
 import styled from 'styled-components';
 import axios from 'axios';
 import { CardBack } from 'src/component/atom';
+import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
 
 const { Dragger } = Upload;
 type RcFile = Parameters<NonNullable<ExtractProps<typeof Dragger>['beforeUpload']>>[0];
@@ -174,7 +175,13 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
         <div>
             <Input.TextArea
                 placeholder="Card description"
-                onChange={e => description.current = e.target.value}
+                onChange={event => {
+                    try {
+                        description.current = ygoCarderToDescription(rebuildYGOCarderData(event.target.value, true));
+                    } catch (error) {
+                        description.current = event.target.value;
+                    }
+                }}
             />
         </div>
     </FileItemContainer>;

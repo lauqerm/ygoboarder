@@ -43,7 +43,7 @@ const CheckboxGroupContainer = styled.div`
             color: var(--color-ghost);
             border-color: var(--bdColor-antd);
             cursor: not-allowed;
-            background-color: #f5f5f5;
+            background-color: var(--sub-disabled);
             &:hover {
                 color: var(--color-ghost);
             }
@@ -79,8 +79,8 @@ const CheckboxGroupContainer = styled.div`
         &.checkbox-disabled {
             cursor: not-allowed;
             color: rgba(0, 0, 0, 0.25);
-            background-color: #f5f5f5;
-            box-shadow: 0 0 0 1px #d9d9d9;
+            background-color: var(--sub-disabled);
+            box-shadow: 0 0 0 1px var(--main-disabled);
         }
     }
 `;

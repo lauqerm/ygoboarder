@@ -69,3 +69,5 @@ export const Player = {
     opp: 'opp' as const,
 };
 export type Player = keyof typeof Player;
+
+export const DEFAULT_LP = 8000;

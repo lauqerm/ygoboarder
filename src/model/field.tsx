@@ -83,7 +83,7 @@ export const NeutralBoardComponentMap = {
         fieldComponentKey: NeutalFieldComponentKey.tokenPile,
         type: DeckType['none'],
         buttonType: DeckButtonType['simple'],
-        preset: 'neutral',
+        preset: 'your',
         displayName: 'Token Pile',
         name: 'TOKEN-PILE',
         beaconList: [],

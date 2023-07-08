@@ -113,7 +113,10 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
             name: processedCardList,
             atk: [...sortedMonsterListByATK, ...sortedSTList],
             def: [...sortedMonsterListByDEF, ...sortedSTList],
-            level: Object.values(monsterLevelCategory).flatMap(entry => entry.flat()),
+            level: [
+                ...Object.values(monsterLevelCategory).flatMap(entry => entry.flat()),
+                ...sortedSTList,
+            ],
         };
 
         /** Mapping image to description, trong trường hợp file export quá lớn ta có thể cân nhắc chỉ lưu image, và sau đó map vào description sau khi query thay vì lấy decsription từ file lưu. Tất nhiên sẽ có rủi ro nếu link image bị đổi. */
@@ -135,6 +138,7 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
                     })
                     .reduce((acc, cur) => {
                         acc[cur.id] = cur.list;
+                        console.log('🚀 ~ file: index.ts:140 ~ .reduce ~ cur.list:', cur.list);
                         return acc;
                     }, {} as Record<string, YGOProCard[]>),
                 fullCardMap: processedCardList.reduce((map, card) => {
