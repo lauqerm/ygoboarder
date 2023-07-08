@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/static/css/main.42107182.css",
-    "main.js": "/static/js/main.e111bb20.js",
-    "static/js/787.3ce549be.chunk.js": "/static/js/787.3ce549be.chunk.js",
-    "index.html": "/index.html",
-    "static/media/antd.less": "/static/media/antd.7affb7a1925b6ab47ea6.less",
-    "main.42107182.css.map": "/static/css/main.42107182.css.map",
-    "main.e111bb20.js.map": "/static/js/main.e111bb20.js.map",
-    "787.3ce549be.chunk.js.map": "/static/js/787.3ce549be.chunk.js.map"
+    "main.css": "/ygoboarder/static/css/main.42107182.css",
+    "main.js": "/ygoboarder/static/js/main.887176e8.js",
+    "static/js/787.3ce549be.chunk.js": "/ygoboarder/static/js/787.3ce549be.chunk.js",
+    "index.html": "/ygoboarder/index.html",
+    "static/media/antd.less": "/ygoboarder/static/media/antd.7affb7a1925b6ab47ea6.less",
+    "main.42107182.css.map": "/ygoboarder/static/css/main.42107182.css.map",
+    "main.887176e8.js.map": "/ygoboarder/static/js/main.887176e8.js.map",
+    "787.3ce549be.chunk.js.map": "/ygoboarder/static/js/787.3ce549be.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.42107182.css",
-    "static/js/main.e111bb20.js"
+    "static/js/main.887176e8.js"
   ]
 }
