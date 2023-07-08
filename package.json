@@ -1,5 +1,6 @@
 {
   "name": "ygoboarder",
+  "homepage": "http://lauqerm.github.io/ygoboarder",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

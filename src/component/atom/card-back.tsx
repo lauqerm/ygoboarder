@@ -57,7 +57,7 @@ export const CardBack = ({
 
     return <CardBackImage ref={target}
         $size={size}
-        src={`/asset/img/ygo-card-back-${preset ?? 'neutral'}.png`}
+        src={`${process.env.PUBLIC_URL}/asset/img/ygo-card-back-${preset ?? 'neutral'}.png`}
         alt="card-back"
         {...rest}
         className={mergeClass(

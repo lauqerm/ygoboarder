@@ -112,7 +112,6 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
                             'https://api.imgur.com/3/image',
                             imgurFormData,
                             {
-
                                 headers: {
                                     'Authorization': 'Client-ID f9bbe0da263580e',
                                 },

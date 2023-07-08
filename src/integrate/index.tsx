@@ -22,7 +22,6 @@ const reverseCardDataCondenser = (
     condensedCard: Record<string, any> | string,
     shortenMap: Record<string, any> = cardFieldShortenMap,
 ) => {
-    // if (typeof condensedCard === 'string') console.log(JSONUncrush(decodeURIComponent(condensedCard)));
     const normalizedCondensedCard = typeof condensedCard === 'string'
         ? JSON.parse(JSONUncrush(decodeURIComponent(condensedCard)))
         : condensedCard;

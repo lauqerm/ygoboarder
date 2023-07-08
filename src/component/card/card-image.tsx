@@ -113,7 +113,7 @@ export const DelayedImage = ({ src, type, ...rest }: DelayedImage) => {
         {...rest}
         loading="lazy"
         alt="card"
-        src={actualSrc ?? '/asset/img/ygo-card-back-neutral.png'}
+        src={actualSrc ?? `${process.env.PUBLIC_URL}/asset/img/ygo-card-back-neutral.png`}
         onLoad={() => {
             imageSourceMap.resolve(actualSrc);
         }}

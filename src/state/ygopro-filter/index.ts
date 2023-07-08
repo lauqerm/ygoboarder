@@ -138,7 +138,6 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
                     })
                     .reduce((acc, cur) => {
                         acc[cur.id] = cur.list;
-                        console.log('🚀 ~ file: index.ts:140 ~ .reduce ~ cur.list:', cur.list);
                         return acc;
                     }, {} as Record<string, YGOProCard[]>),
                 fullCardMap: processedCardList.reduce((map, card) => {
