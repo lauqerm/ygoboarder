@@ -6,6 +6,7 @@ import { useRef, useState } from 'react';
 import TextArea from 'antd/lib/input/TextArea';
 import { mergeClass } from 'src/util';
 import { Button } from 'antd';
+import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
 
 const CardPreviewContainer = styled.div`
     display: flex;
@@ -133,7 +134,12 @@ export const CardPreviewer = ({
         || (type === 'internal' && data.length <= 0);
     const submit = () => {
         if (draftDescription.current !== '' && dataURL.length > 0) {
-            addDescription([{ key: dataURL, description: draftDescription.current }], true);
+            let processedDescription = draftDescription.current;
+            try {
+                processedDescription = ygoCarderToDescription(rebuildYGOCarderData(draftDescription.current, true));
+            } catch (error) {
+            }
+            addDescription([{ key: dataURL, description: processedDescription }], true);
             if (dataURL === dynamicState.dataURL) preview('external', dataURL, isOfficial, draftDescription.current);
             draftDescription.current = '';
         }

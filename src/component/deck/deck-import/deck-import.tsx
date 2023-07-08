@@ -23,14 +23,7 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
     const [deckId, setDeckId] = useState<string | undefined>();
     const [preset, setPreset] = useState<CardPreset | undefined>();
     const addDescription = useDescriptionState(state => state.set);
-    const {
-        addToList,
-    } = useDeckState(
-        state => ({
-            addToList: state.add,
-        }),
-        () => true,
-    );
+    const addToDeck = useDeckState(state => state.add);
 
     useEffect(() => {
         onVisibleChange?.(isOpened, deckId);
@@ -67,7 +60,7 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
                     children: <YGOProImporter
                         id={deckId}
                         onSelect={(name, url, description) => {
-                            addToList(
+                            addToDeck(
                                 deckId,
                                 [{
                                     card: CardImageConverter({

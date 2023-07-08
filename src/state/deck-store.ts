@@ -107,7 +107,7 @@ export const useDeckState = create<DeckState>((set) => ({
     }),
     add: (deckId, addInfo, position = 'bottom', replace = false) => set(state => {
         const targetDeck = state.deckMap.get(deckId, DeckListConverter());
-        let newList = replace ? targetDeck.get('cardList') : List<DeckCard>();
+        let newList = replace ? List<DeckCard>() : targetDeck.get('cardList');
         const phaseBehavior = targetDeck.get('phaseBehavior');
         const resolvePhase = (phase: PhaseType = targetDeck.get('defaultPhase')): PhaseType => {
             return phaseBehavior === 'keep'
