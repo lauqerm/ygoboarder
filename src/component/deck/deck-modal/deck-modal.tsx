@@ -35,12 +35,14 @@ import {
 } from 'src/state';
 import { DeckImporterDrawerRef } from '../deck-import';
 import { DeckModalHandleContainer, DECK_MODAL_HEIGHT, DECK_MODAL_WIDTH, ModalContainer, ModalRowContainer } from './deck-modal-styled';
-import { Droppable, Draggable, DraggableStateSnapshot, DraggingStyle, NotDraggingStyle } from 'react-beautiful-dnd';
+import { Droppable, Draggable } from 'react-beautiful-dnd';
 import { ExtractProps } from 'src/type';
 import { List } from 'immutable';
 import { createPortal } from 'react-dom';
 import { mergeClass } from 'src/util';
 import { PlayerTag } from 'src/component/atom';
+import { DeckModalHotkeyController } from 'src/component/hotkey';
+import { getDraggingClass, getDraggingStyle } from './dnd-styling';
 import './deck-modal.scss';
 
 const distributeDeckRow = (cardList: List<DeckCard>) => {
@@ -60,36 +62,6 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
     if (currentRowList.length !== 0) processedDeckRow.push(currentRowList);
 
     return processedDeckRow;
-};
-
-const getDraggingClass = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot, index: number): string => {
-    /** Indicator để giúp user nhận biết vị trí sẽ drag */
-    if (!snapshot.isDragging && (style?.transform ?? '').length > 0) {
-        return 'affected-by-dragging';
-    }
-    if (snapshot.isDragging) return 'is-dragging';
-    return '';
-};
-const getDraggingStyle = (style: DraggingStyle | NotDraggingStyle | undefined, snapshot: DraggableStateSnapshot): React.CSSProperties | undefined => {
-    /** Giảm giật layout */
-    if (!snapshot.isDragging) {
-        /** Không dùng regex vì quá lười */
-        return {
-            ...style,
-            transform: '',
-        };
-    }
-    /** Skip hết mức transition lúc drop để giảm giật layout */
-    if (snapshot.isDropAnimating && snapshot.dropAnimation) {
-        const { curve } = snapshot.dropAnimation;
-
-        return {
-            ...style,
-            visibility: snapshot.isDropAnimating ? 'hidden' : 'visible',
-            transition: `all ${curve} 0.001s, visibility 0s`,
-        };
-    }
-    return style;
 };
 
 export type DeckModalRef = {
@@ -130,6 +102,7 @@ export const DeckModal = React.forwardRef(({
         (oldState, newState) => oldState.equals(newState),
     );
     const currentFullDeckList = deckData.get('cardList');
+    const deckCardListRef = useRef<HTMLDivElement>(null);
     const deckCount = useCountState(state => state.countMap[deckId]);
     const recalculateDOMEntity = useDOMEntityState(state => state.recalculate);
     const isAllowDrop = useDroppableAvailableState(state => state.statusMap[deckId]) ?? false;
@@ -139,6 +112,7 @@ export const DeckModal = React.forwardRef(({
         deleteFromList,
         duplicateInList,
         shuffleList,
+        groupList,
         flipInList,
     } = useDeckState(
         state => ({
@@ -147,6 +121,7 @@ export const DeckModal = React.forwardRef(({
             deleteFromList: state.delete,
             duplicateInList: state.duplicate,
             shuffleList: state.shuffle,
+            groupList: state.group,
             flipInList: state.flip,
         }),
         () => true,
@@ -215,14 +190,18 @@ export const DeckModal = React.forwardRef(({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    /** Focus tự động vào element bên trong hotkey để kích hoạt hotkey */
+    useEffect(() => {
+        if (isVisible) deckCardListRef.current?.focus();
+    }, [isVisible]);
 
     /** [Register DOM Entity] */
     const addDOMEntity = useDOMEntityState(state => state.addDOMEntity);
-    const deckButtonRef = useRef<HTMLDivElement | null>(null);
+    const deckModalRef = useRef<HTMLDivElement | null>(null);
     const deckButtonBeaconListRef = useRef<HTMLDivElement[]>([]);
     useEffect(() => {
-        if (deckButtonRef.current && deckButtonBeaconListRef.current) {
-            addDOMEntity(deckButtonRef.current, DOMEntityType['deckModal'], deckButtonBeaconListRef.current);
+        if (deckModalRef.current && deckButtonBeaconListRef.current) {
+            addDOMEntity(deckModalRef.current, DOMEntityType['deckModal'], deckButtonBeaconListRef.current);
         }
     }, [addDOMEntity]);
 
@@ -311,7 +290,7 @@ export const DeckModal = React.forwardRef(({
             <ModalContainer
                 ref={targetRef => {
                     setTarget(targetRef);
-                    if (targetRef) deckButtonRef.current = targetRef;
+                    if (targetRef) deckModalRef.current = targetRef;
                 }}
                 className={mergeClass(
                     'deck-modal-viewer',
@@ -335,100 +314,110 @@ export const DeckModal = React.forwardRef(({
                 }}
             >
                 <div className="deck-modal-header-padding" />
-                <DeckBeaconWrapper
-                    isVisible={isVisible}
-                    zIndex={currentZIndex}
+                <DeckModalHotkeyController
+                    handlerMap={{
+                        CLOSE: () => { console.log('close'); close() },
+                        SHUFFLE: () => shuffleList(deckId),
+                        GROUP: () => groupList(deckId),
+                        ADD_CARD: () => onOpenImporter(deckId, preset),
+                    }}
                 >
-                    <div className="deck-modal-beacon-list">
-                        {beaconList.map((beaconType, index) => {
-                            return <DeckBeacon key={beaconType}
-                                ref={ref => {
-                                    if (ref) deckButtonBeaconListRef.current[index] = ref;
-                                }}
-                                {...beaconProps}
-                                actionType={beaconType}
-                            >
-                                {BeaconActionLabel[beaconType].label}
-                            </DeckBeacon>;
-                        })}
-                    </div>
-                    <div className="deck-card-list">
-                        {currentDeckList.length === 0 && <Droppable key={0}
-                            droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${0}]`}
-                            direction="horizontal"
-                            isDropDisabled={!isAllowDrop || !isVisible}
-                        >
-                            {dropProvided => {
-                                return <ModalRowContainer
-                                    ref={dropProvided.innerRef}
-                                    className="deck-result"
-                                    lastRowExtender={4}
-                                    {...dropProvided.droppableProps}
-                                />;
-                            }}
-                        </Droppable>}
-                        {currentDeckList.map((deckRow, rowIndex, arr) => {
-                            return <Droppable key={rowIndex}
-                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
+                    <DeckBeaconWrapper
+                        isVisible={isVisible}
+                        zIndex={currentZIndex}
+                    >
+                        <div className="deck-modal-beacon-list">
+                            {beaconList.map((beaconType, index) => {
+                                return <DeckBeacon key={beaconType}
+                                    ref={ref => {
+                                        if (ref) deckButtonBeaconListRef.current[index] = ref;
+                                    }}
+                                    {...beaconProps}
+                                    actionType={beaconType}
+                                >
+                                    {BeaconActionLabel[beaconType].label}
+                                </DeckBeacon>;
+                            })}
+                        </div>
+                        <div ref={deckCardListRef} className="deck-card-list" tabIndex={0}>
+                            {currentDeckList.length === 0 && <Droppable key={0}
+                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${0}]`}
                                 direction="horizontal"
                                 isDropDisabled={!isAllowDrop || !isVisible}
-                            // isDropDisabled={!isVisible || !isFocused}
                             >
                                 {dropProvided => {
                                     return <ModalRowContainer
                                         ref={dropProvided.innerRef}
                                         className="deck-result"
-                                        lastRowExtender={arr.length - 1 === rowIndex ? lastRowExtender : 1}
+                                        lastRowExtender={4}
                                         {...dropProvided.droppableProps}
-                                    >
-                                        <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
-                                        {deckRow.map(entry => {
-                                            const { card: deckCard, index } = entry;
-                                            const card = deckCard.get('card');
-                                            const _id = card.get('_id');
-                                            const cardId = `${deckId}-${_id}`;
-
-                                            return <Draggable key={cardId}
-                                                index={index}
-                                                draggableId={cardId}
-                                            >
-                                                {(dragProvided, snapshot) => {
-                                                    return <DraggableCard
-                                                        dragRef={dragProvided.innerRef}
-                                                        uniqueId={cardId}
-                                                        baseCard={card}
-                                                        origin={deckCard.get('origin')}
-                                                        phase={deckCard.get('phase')}
-                                                        isDragging={snapshot.isDragging}
-                                                        onFlip={() => {
-                                                            flipInList(deckId, [{ id: _id, phase: 'toggle' }]);
-                                                        }}
-                                                        onDelete={() => {
-                                                            deleteFromList(deckId, [_id], true);
-                                                        }}
-                                                        onDuplicate={() => {
-                                                            if (type !== 'permanent' && type !== 'none') duplicateInList(deckId, [deckCard]);
-                                                        }}
-                                                        {...dragProvided.dragHandleProps}
-                                                        {...dragProvided.draggableProps}
-                                                        className={getDraggingClass(dragProvided.draggableProps.style, snapshot, index)}
-                                                        style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
-                                                    />;
-                                                }}
-                                            </Draggable>;
-                                        })}
-                                    </ModalRowContainer>;
+                                    />;
                                 }}
-                            </Droppable>;
-                        })}
+                            </Droppable>}
+                            {currentDeckList.map((deckRow, rowIndex, arr) => {
+                                return <Droppable key={rowIndex}
+                                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
+                                    direction="horizontal"
+                                    isDropDisabled={!isAllowDrop || !isVisible}
+                                    // isDropDisabled={!isVisible || !isFocused}
+                                >
+                                    {dropProvided => {
+                                        return <ModalRowContainer
+                                            ref={dropProvided.innerRef}
+                                            className="deck-result"
+                                            lastRowExtender={arr.length - 1 === rowIndex ? lastRowExtender : 1}
+                                            {...dropProvided.droppableProps}
+                                        >
+                                            <div style={{ display: 'none' }}>{dropProvided.placeholder}</div>
+                                            {deckRow.map(entry => {
+                                                const { card: deckCard, index } = entry;
+                                                const card = deckCard.get('card');
+                                                const _id = card.get('_id');
+                                                const cardId = `${deckId}-${_id}`;
+
+                                                return <Draggable key={cardId}
+                                                    index={index}
+                                                    draggableId={cardId}
+                                                >
+                                                    {(dragProvided, snapshot) => {
+                                                        return <DraggableCard
+                                                            dragRef={dragProvided.innerRef}
+                                                            uniqueId={cardId}
+                                                            baseCard={card}
+                                                            origin={deckCard.get('origin')}
+                                                            phase={deckCard.get('phase')}
+                                                            isDragging={snapshot.isDragging}
+                                                            onFlip={() => {
+                                                                flipInList(deckId, [{ id: _id, phase: 'toggle' }]);
+                                                            }}
+                                                            onDelete={() => {
+                                                                deleteFromList(deckId, [_id], true);
+                                                            }}
+                                                            onDuplicate={() => {
+                                                                if (type !== 'permanent' && type !== 'none') duplicateInList(deckId, [deckCard]);
+                                                            }}
+                                                            {...dragProvided.dragHandleProps}
+                                                            {...dragProvided.draggableProps}
+                                                            className={getDraggingClass(dragProvided.draggableProps.style, snapshot, index)}
+                                                            style={getDraggingStyle(dragProvided.draggableProps.style, snapshot)}
+                                                        />;
+                                                    }}
+                                                </Draggable>;
+                                            })}
+                                        </ModalRowContainer>;
+                                    }}
+                                </Droppable>;
+                            })}
+                        </div>
+                    </DeckBeaconWrapper>
+                    <div className="deck-tool-bar">
+                        <div />
+                        <Button type="ghost" onClick={close}>Close</Button>
+                        <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
+                        <Button type="default" onClick={() => groupList(deckId)}>Group</Button>
+                        <Button type="primary" onClick={() => onOpenImporter(deckId, preset)}>Add</Button>
                     </div>
-                </DeckBeaconWrapper>
-                <div className="deck-tool-bar">
-                    <div />
-                    <Button type="ghost" onClick={close}>Close</Button>
-                    <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                    <Button type="primary" onClick={() => onOpenImporter(deckId, preset)}>Add</Button>
-                </div>
+                </DeckModalHotkeyController>
             </ModalContainer>
         </>,
         portal,

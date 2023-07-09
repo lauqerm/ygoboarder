@@ -21,11 +21,13 @@
   --br-sm: 2px;
   --br-antd: 2px;
   --br: 4px;
+  --br-lg: 6px;
   --br-max: 9999px;
 
   --color-ghost: rgba(0, 0, 0, 0.25);
   --color-extraFaint: rgba(40, 40, 40, 0.65);
   --color-faint: rgba(40, 40, 40, 0.85);
+  --color-subtle: rgba(40, 40, 40, 1);
   --color-contrast: #fff;
   --color: rgba(0, 0, 0, 0.85);
 
@@ -146,6 +148,7 @@ html {
 .app-wrapper {
   display: flex;
   min-height: 100vh;
+  position: relative;
   .card-preview {
     flex: 0 0 auto;
     width: 30%;
@@ -216,4 +219,15 @@ html {
 /** Hạn chế hành vi double click select text vì app vận hành bằng chuột rất nhiều **/
 .ant-tooltip-inner {
   user-select: none;
+}
+
+/** Global antd styling **/
+.ant-drawer-header {
+  padding: var(--spacing) var(--spacing-lg);
+  .ant-drawer-close {
+      padding: 0;
+  }
+}
+.ant-drawer-body {
+  background-color: var(--dim);
 }

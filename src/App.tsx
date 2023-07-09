@@ -19,7 +19,7 @@ import {
     DEFAULT_LP,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, CardBoard, CardPreviewer, ExportButton, ImportButton } from './component';
+import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import {
@@ -31,11 +31,13 @@ import {
     useDOMEntityState,
     useDroppableAvailableState,
     useLPState,
+    useYGOProFilter,
     useZIndexState,
 } from './state';
 import { isLieInside } from './util';
 import { AppMenuContainer } from './styled';
 import { useResizeDetector } from 'react-resize-detector';
+import { notification } from 'antd';
 import 'antd/dist/antd.less';
 
 function App() {
@@ -43,6 +45,7 @@ function App() {
         state => state.deckMap,
         (oldState, newState) => oldState.equals(newState),
     );
+    const initCardList = useYGOProFilter(state => state.init);
 
     const reorder = useDeckState(state => state.reorder);
     const deleteFromDeck = useDeckState(state => state.delete);
@@ -345,6 +348,29 @@ function App() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [hardResetCnt]);
 
+    useEffect(() => {
+        let relevant = true;
+
+        (async () => {
+            try {
+                await initCardList();
+            } catch (e) {
+                if (relevant) {
+                    notification.error({
+                        message: 'Could not load card data',
+                        description: 'Please refresh the page',
+                        placement: 'bottomRight',
+                    });
+                }
+            }
+        })();
+
+        return () => {
+            relevant = false;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     useLayoutEffect(() => {
         /**
          * Sau khi hard reset ta cũng mất thông tin của DOMEntity, vậy nên phải recalculate
@@ -354,63 +380,66 @@ function App() {
 
     const boardName = 'main-board';
     return (
-        <DragDropContext
-            onBeforeCapture={onBeforeCapture}
-            onBeforeDragStart={onBeforeDragStart}
-            onDragStart={onDragStart}
-            onDragUpdate={onDragUpdate}
-            onDragEnd={onDragEnd}
-        >
-            <div key={`board-${hardResetCnt}`} ref={ref}
-                className="app-wrapper"
-                style={{
-                    backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/debut-dark.png"), linear-gradient(180deg, #00000022, #00000044)`,
-                }}
+        <GlobalHotkeyController>
+            <DragDropContext
+                onBeforeCapture={onBeforeCapture}
+                onBeforeDragStart={onBeforeDragStart}
+                onDragStart={onDragStart}
+                onDragUpdate={onDragUpdate}
+                onDragEnd={onDragEnd}
             >
-                <CardPreviewer>
-                    <AppMenuContainer>
-                        <ExportButton />
-                        <ImportButton onImport={importedData => {
-                            resetDeck();
-                            resetBoard();
-                            resetLP();
-                            Object.entries(importedData.deckList).forEach(([
-                                deckName,
-                                { type, cardList, defaultPhase, phaseBehavior, preset },
-                            ]) => {
-                                const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
-                                registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
-                                addToDeck(
+                <div key={`board-${hardResetCnt}`} ref={ref}
+                    className="app-wrapper"
+                    style={{
+                        backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/debut-dark.png"), linear-gradient(180deg, #00000022, #00000044)`,
+                    }}
+                >
+                    <CardPreviewer>
+                        <AppMenuContainer>
+                            <Manual className="menu-button" />
+                            <ExportButton />
+                            <ImportButton onImport={importedData => {
+                                resetDeck();
+                                resetBoard();
+                                resetLP();
+                                Object.entries(importedData.deckList).forEach(([
                                     deckName,
-                                    validEntryList
-                                        .map(imageURL => ({
-                                            card: CardImageConverter({
-                                                _id: uuidv4(),
-                                                dataURL: imageURL,
-                                                type: 'external',
-                                                preset,
-                                                isOfficial: YGOProDomainRegex.test(imageURL),
-                                            }),
-                                        })),
-                                    undefined,
+                                    { type, cardList, defaultPhase, phaseBehavior, preset },
+                                ]) => {
+                                    const validEntryList = cardList.filter(entry => (entry ?? '').length > 0);
+                                    registerDeck(deckName, { type, defaultPhase, phaseBehavior, preset });
+                                    addToDeck(
+                                        deckName,
+                                        validEntryList
+                                            .map(imageURL => ({
+                                                card: CardImageConverter({
+                                                    _id: uuidv4(),
+                                                    dataURL: imageURL,
+                                                    type: 'external',
+                                                    preset,
+                                                    isOfficial: YGOProDomainRegex.test(imageURL),
+                                                }),
+                                            })),
+                                        undefined,
+                                        true,
+                                    );
+                                });
+                                addDescription(
+                                    Object.entries(importedData.descriptionMap).map(([url, description]) => ({ key: url, description })),
                                     true,
                                 );
-                            });
-                            addDescription(
-                                Object.entries(importedData.descriptionMap).map(([url, description]) => ({ key: url, description })),
-                                true,
-                            );
-                            setHardReset(cnt => cnt + 1);
-                        }} />
-                    </AppMenuContainer>
-                </CardPreviewer>
-                <div className="board-container">
-                    <Board boardName={boardName} />
+                                setHardReset(cnt => cnt + 1);
+                            }} />
+                        </AppMenuContainer>
+                    </CardPreviewer>
+                    <div className="board-container">
+                        <Board boardName={boardName} />
+                    </div>
+                    <div className="padding" />
                 </div>
-                <div className="padding" />
-            </div>
-            <CardBoard boardName={boardName} />
-        </DragDropContext>
+                <CardBoard boardName={boardName} />
+            </DragDropContext>
+        </GlobalHotkeyController>
     );
 }
 

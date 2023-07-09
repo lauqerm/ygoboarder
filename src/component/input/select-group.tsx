@@ -1,7 +1,7 @@
 import { Select, SelectProps } from 'antd';
 import { GroupPickerMode, PickerMode } from 'src/model';
 import styled from 'styled-components';
-import { ModePicker } from './mode-picker';
+import { ModePicker } from '../input';
 import { useState } from 'react';
 import { DefaultOptionType } from 'antd/lib/select';
 import { mergeClass } from 'src/util';

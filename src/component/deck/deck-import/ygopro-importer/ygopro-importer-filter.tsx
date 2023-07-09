@@ -1,6 +1,6 @@
 import { Button, Input, InputRef, Select } from 'antd';
 import { useEffect, useRef, useState } from 'react';
-import { CheckboxGroup, LinkMarkerPicker, SelectGroup } from 'src/component/atom';
+import { CheckboxGroup, LinkMarkerPicker, SelectGroup } from 'src/component/input';
 import {
     CardRaceToBitMap,
     CardType,
@@ -29,7 +29,6 @@ const YGOProFilterContainer = styled.div`
     display: flex;
     flex-direction: column;
     column-gap: var(--spacing);
-    padding-bottom: var(--spacing);
     .has-value {
         &.text-filter {
             .ant-input-affix-wrapper {

@@ -1,8 +1,8 @@
-import { PreviewState, useDescriptionState, usePreviewState } from 'src/state';
+import { PreviewState, useDescriptionState, useEventState, usePreviewState } from 'src/state';
 import styled from 'styled-components';
 import { DelayedImage } from './card-image';
 import { CardBack, Credit } from '../atom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import TextArea from 'antd/lib/input/TextArea';
 import { mergeClass } from 'src/util';
 import { Button } from 'antd';
@@ -120,7 +120,11 @@ export const CardPreviewer = ({
         },
     );
     const preview = usePreviewState(state => state.setCardPreview);
+
     const addDescription = useDescriptionState(state => state.set);
+
+    const globalEditDescriptionSignal = useEventState(state => state.editDescriptionSignal);
+
     const [lockedData, setLockedData] = useState<PreviewState['cardPreview'] | undefined>(undefined);
     const draftDescription = useRef('');
     const {
@@ -146,6 +150,14 @@ export const CardPreviewer = ({
         setLockedData(undefined);
     };
 
+    const currentEditDescriptionSignal = useRef(0);
+    useEffect(() => {
+        if (globalEditDescriptionSignal !== currentEditDescriptionSignal.current && !isOfficial && !noCard) {
+            currentEditDescriptionSignal.current = globalEditDescriptionSignal;
+            setLockedData(dynamicState);
+        }
+    }, [dynamicState, globalEditDescriptionSignal, isOfficial, noCard]);
+
     return <CardPreviewContainer className={mergeClass(
         'card-preview',
         lockedData ? 'card-preview-locked' : '',
@@ -164,7 +176,7 @@ export const CardPreviewer = ({
             </div>
         </div>
         <div className="card-preview-description">
-            {!noCard && <div className="official-status">{isOfficial ? 'Official' : 'Custom'}</div>}
+            {(!noCard && lockedData === undefined) && <div className="official-status">{isOfficial ? 'Official' : 'Custom'}</div>}
             {lockedData
                 ? <div className="card-preview-description-edit">
                     <TextArea

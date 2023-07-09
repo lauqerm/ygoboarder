@@ -70,7 +70,7 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
     }
     .deck-tool-bar {
         display: grid;
-        grid-template-columns: 1fr max-content max-content max-content;
+        grid-template-columns: 1fr max-content max-content max-content max-content;
         align-items: center;
         column-gap: var(--spacing);
         padding: var(--spacing);

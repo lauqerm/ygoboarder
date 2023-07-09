@@ -45,6 +45,7 @@ export type DeckState = {
     reorder: (deckId: string, changeList: { prevIndex: number, nextIndex: number }[]) => void,
     flip: (deckId: string, changeList: { id: string, phase: PhaseType | 'toggle' }[]) => void,
     shuffle: (deckId: string) => void,
+    group: (deckId: string) => void,
     reset: () => void,
 }
 export const useDeckState = create<DeckState>((set) => ({
@@ -157,7 +158,7 @@ export const useDeckState = create<DeckState>((set) => ({
         let newList = targetDeck.get('cardList');
         if (newList) {
             cardWithPositionList.forEach(({ card, position }) => {
-                newList = newList.splice(position, 0, card.set('origin', deckId));
+                newList = newList.splice(position, 0, card.set('origin', deckId).set('phase', targetDeck.get('defaultPhase')));
             });
         }
         const newDeck = targetDeck.set('cardList', newList);
@@ -261,6 +262,30 @@ export const useDeckState = create<DeckState>((set) => ({
 
         if (targetList) {
             const newDeck = state.deckMap.get(deckId, DeckListConverter()).set('cardList', shuffleDeck(targetList));
+            return {
+                ...state,
+                deckMap: state.deckMap.set(deckId, newDeck),
+            };
+        }
+        return state;
+    }),
+    /** Ta không thực sự có bất kỳ thông tin nào để sort card, nên ta chỉ có thể dựa vào string */
+    group: (deckId) => set(state => {
+        const targetList = state.deckMap.get(deckId, DeckListConverter()).get('cardList');
+
+        if (targetList) {
+            const newDeck = state.deckMap
+                .get(deckId, DeckListConverter())
+                .set('cardList', targetList.sort((l, r) => {
+                    const lCard = l.get('card');
+                    const rCard = r.get('card');
+                    
+                    if (!lCard.get('dataURL') || !rCard.get('dataURL')) {
+                        return lCard.get('data').localeCompare(rCard.get('data'));
+                    }
+                    return lCard.get('dataURL').localeCompare(rCard.get('dataURL'));
+                }));
+
             return {
                 ...state,
                 deckMap: state.deckMap.set(deckId, newDeck),

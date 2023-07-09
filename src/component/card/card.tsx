@@ -95,7 +95,7 @@ export const Card = ({
             `ygo-card-size-${size}`,
             `ygo-card-position-${position}`,
             isReversed ? 'ygo-card-reversed' : '',
-            (phase === 'down' && cornerBack) ? 'ygo-card-partial-down' : '',
+            (phase === 'down' && cornerBack) ? 'ygo-card-partial-down' : 'ygo-card-up',
             snippet ? 'ygo-card-snippet' : '',
         )}
     >
@@ -109,6 +109,7 @@ export const Card = ({
             : <DelayedImage type={type === 'external' ? 'URL' : 'Base64'} className="card-image" src={imgSource} />}
         {phase === 'down'
             ? <CardBack
+                className="card-corner-down"
                 cornerBack={cornerBack}
                 preset={preset}
                 flashing={flashing}
@@ -116,6 +117,7 @@ export const Card = ({
             />
             : cornerBack
                 ? <CardCornerFront
+                    className="card-corner-up"
                     onClick={onCornerClick}
                 >
                     <RollbackOutlined />

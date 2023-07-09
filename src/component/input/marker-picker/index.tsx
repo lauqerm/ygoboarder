@@ -4,7 +4,7 @@ import styled from 'styled-components';
 import { CloseCircleFilled } from '@ant-design/icons';
 import { mergeClass } from 'src/util';
 import { PickerMode } from 'src/model';
-import { ModePicker } from '../mode-picker';
+import { ModePicker } from '../../input';
 import './marker-picker.scss';
 
 const markerBoxSize = 24;
@@ -33,6 +33,9 @@ const LinkMarkerPickerContainer = styled.div`
         }
         &:hover {
             color: var(--sub-antd);
+            .title-content {
+                border-color: var(--main-antd);
+            }
             .link-marker-preview {
                 outline: var(--bdSize) solid var(--sub-antd);
             }

@@ -1,7 +1,7 @@
 import { Empty, Pagination, Radio, Select, notification } from 'antd';
 import { useEffect, useState } from 'react';
 import { CardBitToLabelMap, LocalstorageKeyMap, YGOProCard, ygoproCardToDescription } from 'src/model';
-import { AttributeText, CheckboxGroup, RestrictionText } from 'src/component/atom';
+import { AttributeText, RestrictionText } from 'src/component/atom';
 import { DelayedImage } from 'src/component';
 import styled from 'styled-components';
 import { OrderList, usePreviewState, useYGOProFilter } from 'src/state';
@@ -10,6 +10,7 @@ import { YGOImporterFilter } from './ygopro-importer-filter';
 import { LoadingOutlined, CaretLeftFilled, CaretRightFilled } from '@ant-design/icons';
 import { YGOProRequestor } from './ygopro-importer-requestor';
 import { Loading } from 'src/component/loading';
+import { CheckboxGroup } from 'src/component/input';
 import './ygopro-importer.scss';
 
 const YGOImporterContainer = styled.div`
@@ -220,37 +221,14 @@ export const YGOProImporter = ({
     const payload = useYGOProFilter(state => state.payloadMap[filterKey]);
     const activeCardList = useYGOProFilter(state => state.activeCardList[filterKey]);
     const cardListStatus = useYGOProFilter(state => state.status);
-    const initCardList = useYGOProFilter(state => state.init);
     const activeListKey = useYGOProFilter(state => state.activeCardListKey[filterKey]);
     const changeActiveList = useYGOProFilter(state => state.changeActiveCardList);
     const [cardPage, setCardPage] = useState(1);
     const [cardPageSize, setCardPageSize] = useState(20);
 
     useEffect(() => {
-        let relevant = true;
-
-        (async () => {
-            try {
-                await initCardList();
-
-                if (relevant) setReady(true);
-            } catch (e) {
-                if (relevant) {
-                    notification.error({
-                        message: 'Could not load card data',
-                        description: 'Please refresh the page',
-                        placement: 'bottomRight',
-                    });
-                    setReady(true);
-                }
-            }
-        })();
-
-        return () => {
-            relevant = false;
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (cardListStatus === 'loaded') setReady(true);
+    }, [cardListStatus]);
 
     useEffect(() => {
         changeActiveList(filterKey, 'level');
