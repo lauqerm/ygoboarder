@@ -366,7 +366,8 @@ export const MovableCard = ({
                 }}
                 onDrag={onDrag}
                 onDragEnd={() => {
-                    target!.style.zIndex = `${zIndex}`;
+                    /** Fake card là card ở top deck, trong mọi trường hợp zIndex của nó là 0 trừ khi đang drag */
+                    target!.style.zIndex = fake ? '0' : `${zIndex}`;
                     target!.classList.remove('card-is-dragging');
                 }}
 

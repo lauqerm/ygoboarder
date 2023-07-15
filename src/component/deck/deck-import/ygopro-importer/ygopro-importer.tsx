@@ -126,6 +126,7 @@ const YGOImporterContainer = styled.div`
             display: inline-block;
             cursor: not-allowed;
             color: var(--color-extraFaint);
+            width: 30px;
             &:not(:disabled) {
                 color: var(--main-antd);
                 border: 1px solid var(--main-antd);

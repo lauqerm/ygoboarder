@@ -1,7 +1,19 @@
 ## Backlog
 
+### Small features
 * Cảnh báo trong quá trình upload / Thông báo tất cả upload đã xong
-* Manual modal
+* Manual modal (complete)
+* Chuột phải để close tất cả modal
+* Activation indicator
+* ESC để close modal hiện tại
+
+### Large features
+* Hand zone
+* Action log
+* Note
+
+### Bugs
+* Issue khi modal tự tắt không rõ lý do?
 
 ## Drag-n-Drop when scrolling is a mess, should be an edge case though
 ## Multiple deck modal
