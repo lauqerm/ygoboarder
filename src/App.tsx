@@ -19,7 +19,7 @@ import {
     DEFAULT_LP,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual, MenuButton } from './component';
+import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import {

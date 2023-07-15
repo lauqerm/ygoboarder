@@ -141,8 +141,8 @@ const YGOImporterContainer = styled.div`
         --grid-card-width: 168px;
         display: inline-block;
         position: relative;
-        min-height: 10rem;
         width: calc(var(--grid-card-width) * 4 + var(--spacing) * 3);
+        min-height: 10rem;
         &.grid {
             display: inline-grid;
             grid-template-columns: repeat(auto-fill, var(--grid-card-width));
@@ -180,7 +180,8 @@ const YGOImporterContainer = styled.div`
         display: grid;
         grid-template-columns: 85px 1fr;
         column-gap: var(--spacing);
-        padding-top: var(--spacing);
+        padding: var(--spacing) 0;
+        border-bottom: var(--bd-faint);
         .card-list-pagination {
             text-align: right;
         }
@@ -196,6 +197,9 @@ const YGOImporterContainer = styled.div`
                 font-size: var(--fs);
             }
         }
+    }
+    .empty-result {
+        flex: 0 0 100%;
     }
 `;
 
@@ -349,97 +353,98 @@ export const YGOProImporter = ({
                 />
             </div>
         </YGOImporterFilter>
-        <div className="card-list-container">
-            <button
-                className="list-quick-navigate card-list-previous"
-                onClick={() => setCardPage(cur => cur - 1)}
-                disabled={cardPage <= 1}
-            >
-                <CaretLeftFilled />
-            </button>
-            <div className={mergeClass('ygopro-card-list', displayMode)}>
-                {ready === false && <Loading.FullView />}
-                {(ready && cardResponseList.length === 0) && <Empty description="No Result" />}
-                {cardResponseList
-                    .slice((cardPage - 1) * cardPageSize, cardPage * cardPageSize)
-                    .map(card => {
-                        const {
-                            id,
-                            card_images,
-                            name,
-                            desc,
-                            type,
-                            attribute,
-                            frameType,
-                            level,
-                            linkval,
-                            atk, def,
-                            race,
-                            banlist_info,
-                            pool_binary,
-                        } = card;
-                        const { ban_ocg, ban_tcg } = banlist_info ?? {};
-                        const { image_url } = card_images[0];
-                        const isMonster = type.toLowerCase().includes('monster')
+        {(ready && cardResponseList.length === 0)
+            ? <Empty className="empty-result" description="No Results" />
+            : <div className="card-list-container">
+                <button
+                    className="list-quick-navigate card-list-previous"
+                    onClick={() => setCardPage(cur => cur - 1)}
+                    disabled={cardPage <= 1}
+                >
+                    <CaretLeftFilled />
+                </button>
+                <div className={mergeClass('ygopro-card-list', displayMode)}>
+                    {ready === false && <Loading.FullView />}
+                    {cardResponseList
+                        .slice((cardPage - 1) * cardPageSize, cardPage * cardPageSize)
+                        .map(card => {
+                            const {
+                                id,
+                                card_images,
+                                name,
+                                desc,
+                                type,
+                                attribute,
+                                frameType,
+                                level,
+                                linkval,
+                                atk, def,
+                                race,
+                                banlist_info,
+                                pool_binary,
+                            } = card;
+                            const { ban_ocg, ban_tcg } = banlist_info ?? {};
+                            const { image_url } = card_images[0];
+                            const isMonster = type.toLowerCase().includes('monster')
                         || type.toLowerCase().includes('token');
-                        const isXyzMonster = frameType === 'xyz';
-                        const isLinkMonster = frameType === 'link';
+                            const isXyzMonster = frameType === 'xyz';
+                            const isLinkMonster = frameType === 'link';
 
-                        return <div key={id}
-                            className="ygopro-card-entry"
-                            onClick={() => onSelect(name, image_url, ygoproCardToDescription(card))}
-                            onMouseEnter={() => {
-                            // console.log(card);
-                                preview('external', image_url, true, ygoproCardToDescription(card));
-                            }}
-                        >
-                            <div className="card-entry-image">
-                                <div className="image-container">
-                                    <RestrictionText
-                                        prefix={CardBitToLabelMap[`${pool_binary}`]}
-                                        limitList={[
-                                            { format: 'ocg', limit: ban_ocg },
-                                            { format: 'tcg', limit: ban_tcg },
-                                        ].filter(entry => entry.format === banlist)}
-                                    />
-                                    {typeof image_url !== 'string'
-                                        ? null
-                                        : <DelayedImage key={id}
-                                            type="URL"
-                                            src={image_url}
-                                        />}
+                            return <div key={id}
+                                className="ygopro-card-entry"
+                                onClick={() => onSelect(name, image_url, ygoproCardToDescription(card))}
+                                onMouseEnter={() => {
+                                    // console.log(card);
+                                    preview('external', image_url, true, ygoproCardToDescription(card));
+                                }}
+                            >
+                                <div className="card-entry-image">
+                                    <div className="image-container">
+                                        <RestrictionText
+                                            prefix={CardBitToLabelMap[`${pool_binary}`]}
+                                            limitList={[
+                                                { format: 'ocg', limit: ban_ocg },
+                                                { format: 'tcg', limit: ban_tcg },
+                                            ].filter(entry => entry.format === banlist)}
+                                        />
+                                        {typeof image_url !== 'string'
+                                            ? null
+                                            : <DelayedImage key={id}
+                                                type="URL"
+                                                src={image_url}
+                                            />}
+                                    </div>
+                                    {(atk !== undefined || def !== undefined) && <div className="stat-list">
+                                        <div className="stat">{atk}</div>
+                                        <div className="stat">{def}</div>
+                                    </div>}
                                 </div>
-                                {(atk !== undefined || def !== undefined) && <div className="stat-list">
-                                    <div className="stat">{atk}</div>
-                                    <div className="stat">{def}</div>
-                                </div>}
-                            </div>
-                            <div className="card-statistic">
-                                <b>{name}</b>
-                                <br />
-                                <div className="main-statistic truncate">
-                                    {isXyzMonster
-                                        ? <div className="rate">RANK&nbsp;&nbsp;{level}</div>
-                                        : isLinkMonster
-                                            ? <div className="rate">LINK&nbsp;&nbsp;{linkval}</div>
-                                            : isMonster
-                                                ? <div className="rate">LEVEL&nbsp;{level}</div>
-                                                : null}
-                                    {isMonster && <AttributeText attribute={attribute} />}
-                                    <span className="truncate">{race} {type}</span>
+                                <div className="card-statistic">
+                                    <b>{name}</b>
+                                    <br />
+                                    <div className="main-statistic truncate">
+                                        {isXyzMonster
+                                            ? <div className="rate">RANK&nbsp;&nbsp;{level}</div>
+                                            : isLinkMonster
+                                                ? <div className="rate">LINK&nbsp;&nbsp;{linkval}</div>
+                                                : isMonster
+                                                    ? <div className="rate">LEVEL&nbsp;{level}</div>
+                                                    : null}
+                                        {isMonster && <AttributeText attribute={attribute} />}
+                                        <span className="truncate">{race} {type}</span>
+                                    </div>
+                                    <p>{desc}</p>
                                 </div>
-                                <p>{desc}</p>
-                            </div>
-                        </div>;
-                    })}
-            </div>
-            <button
-                className="list-quick-navigate card-list-next"
-                onClick={() => setCardPage(cur => cur + 1)}
-                disabled={cardPage >= Math.ceil(cardResponseList.length / cardPageSize)}
-            >
-                <CaretRightFilled />
-            </button>
-        </div>
+                            </div>;
+                        })}
+                </div>
+                <button
+                    className="list-quick-navigate card-list-next"
+                    onClick={() => setCardPage(cur => cur + 1)}
+                    disabled={cardPage >= Math.ceil(cardResponseList.length / cardPageSize)}
+                >
+                    <CaretRightFilled />
+                </button>
+            </div>}
     </YGOImporterContainer>;
 };

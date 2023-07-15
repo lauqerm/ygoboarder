@@ -14,7 +14,6 @@ const CardPreviewContainer = styled.div`
     background-color: var(--main-secondary);
     border: var(--bd);
     border-right: none;
-    height: 100%;
     overflow: hidden;
     max-width: 35rem;
     min-width: calc(var(--card-width-md) + 2 * var(--spacing-xl));

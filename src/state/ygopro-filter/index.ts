@@ -114,7 +114,9 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
             atk: [...sortedMonsterListByATK, ...sortedSTList],
             def: [...sortedMonsterListByDEF, ...sortedSTList],
             level: [
-                ...Object.values(monsterLevelCategory).flatMap(entry => entry.flat()),
+                ...Object
+                    .values(monsterLevelCategory)
+                    .flatMap(entry => entry.flat()),
                 ...sortedSTList,
             ],
         };

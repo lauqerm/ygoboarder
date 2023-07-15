@@ -17,7 +17,8 @@ export const normalizeYGOProCardResponse = (entry: YGOProCardResponse): YGOProCa
         level, linkval, frameType, linkmarkers, race, misc_info, banlist_info,
     } = entry;
     const { ban_ocg, ban_tcg } = banlist_info ?? {};
-    const { formats, question_atk, question_def } = (misc_info ?? [])[0];
+    const { formats, question_atk, question_def, has_effect } = (misc_info ?? [])[0];
+    const main_frame = frameType.replaceAll('_pendulum', '');
     const pendulumAnalyzeResult = /\[\s*pendulum\s*effect\s*\]([\w\W]*)\[\s*(?:monster\s*effect|flavor\s*text)\s*\]([\w\W]*)/gi.exec(desc);
     let cardEff = '', pendEff = '';
     if (pendulumAnalyzeResult) {
@@ -29,6 +30,7 @@ export const normalizeYGOProCardResponse = (entry: YGOProCardResponse): YGOProCa
     const link_binary = (linkmarkers ?? []).reduce((acc, markerName) => acc | (MarkerToBitMap[markerName] ?? 0), 0);
     const race_binary = race ? CardRaceToBitMap[race] : 0;
     const ability_binary = (frameType === 'effect' ? MonsterAbilitySubtypeToBitMap['Effect'] : 0)
+        | (main_frame !== 'normal' && has_effect === 1 ? MonsterAbilitySubtypeToBitMap['Effect'] : 0)
         | (cardEff.startsWith('Cannot be Normal Summoned/Set.') ? MonsterAbilitySubtypeToBitMap['Special Summon'] : 0)
         | (cardEff.includes('FLIP:') ? MonsterAbilitySubtypeToBitMap['Flip'] : 0)
         | (type ?? '')
@@ -45,7 +47,6 @@ export const normalizeYGOProCardResponse = (entry: YGOProCardResponse): YGOProCa
             (acc, abilityOrSubtype) => acc | (MonsterFrameToBitMap[abilityOrSubtype] ?? 0),
             0,
         );
-    const main_frame = frameType.replaceAll('_pendulum', '');
 
     const normalizedFormatList = formats ?? [];
     const pool_binary = normalizedFormatList.includes('OCG')
