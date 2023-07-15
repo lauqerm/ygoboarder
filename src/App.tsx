@@ -19,7 +19,7 @@ import {
     DEFAULT_LP,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual } from './component';
+import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual, MenuButton } from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import {
@@ -67,7 +67,7 @@ function App() {
     const updateModalStatus = useDroppableAvailableState(state => state.update);
     const recalculate = useDOMEntityState(state => state.recalculate);
     const resetLP = (value = `${DEFAULT_LP}`) => [Player.your, Player.opp].map(entry => setLP(entry, value));
-    const { ref } = useResizeDetector({
+    const { ref } = useResizeDetector<HTMLDivElement>({
         refreshMode: 'debounce',
         refreshRate: 500,
         onResize: () => {
@@ -339,6 +339,7 @@ function App() {
         setTimeout(() => {
             recalculate();
             resetLP();
+            ref.current?.focus();
         }, 500);
 
         return () => {
@@ -389,6 +390,7 @@ function App() {
                 onDragEnd={onDragEnd}
             >
                 <div key={`board-${hardResetCnt}`} ref={ref}
+                    tabIndex={-1}
                     className="app-wrapper"
                     style={{
                         backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/debut-dark.png"), linear-gradient(180deg, #00000022, #00000044)`,
@@ -396,7 +398,7 @@ function App() {
                 >
                     <CardPreviewer>
                         <AppMenuContainer>
-                            <Manual className="menu-button" />
+                            <Manual />
                             <ExportButton />
                             <ImportButton onImport={importedData => {
                                 resetDeck();

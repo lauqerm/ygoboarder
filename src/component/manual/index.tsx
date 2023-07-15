@@ -2,12 +2,9 @@ import { Drawer } from 'antd';
 import { useState } from 'react';
 import { mergeClass } from 'src/util';
 import styled from 'styled-components';
+import { MenuButton } from '../atom';
 import './manual.scss';
 
-const ManualButton = styled.div`
-    border: none;
-    text-align: left;
-`;
 const Section = styled.div`
     h2 {
         text-decoration: underline;
@@ -57,9 +54,9 @@ export const Manual = ({
     const [isOpen, setOpen] = useState(false);
 
     return <>
-        <ManualButton className={mergeClass('manual-button', className)} onClick={() => setOpen(true)}>
+        <MenuButton className={mergeClass('manual-button', className)} onClick={() => setOpen(true)}>
             {'Manual'}
-        </ManualButton>
+        </MenuButton>
         <Drawer
             title="Manual"
             open={isOpen}
@@ -80,7 +77,7 @@ export const Manual = ({
                         <Mouse $right>Right</Mouse> - Switch Attack / Defense position
                     </li>
                     <li>
-                        <Key>Ctrl</Key> + <Mouse $right>Right</Mouse> - Switch size
+                        <Key>Ctrl</Key> + <Mouse $right>Right</Mouse> - Switch side
                     </li>
                 </ul>
                 <h4>Card group</h4>
@@ -101,7 +98,7 @@ export const Manual = ({
                         <Mouse $right>Right</Mouse> - Decrease by 1
                     </li>
                     <li>
-                        <Key>Ctrl</Key> + <Mouse $left>Left</Mouse> - Change at will
+                        <Key>Ctrl</Key> + <Mouse $left>Left</Mouse> - Set amount
                     </li>
                 </ul>
                 <h3>Decklist modal</h3>
@@ -144,13 +141,13 @@ export const Manual = ({
                 Supported pattern:
                 <ul>
                     <li>
-                        <Text>*</Text> - Match all characters, for example <Text>odd-eyes * dragon</Text> <b>will not match</b> "Supreme King Dragon Odd-Eyes".
+                        <Text>*</Text> - Match all characters, for example <Text>odd-eyes * dragon</Text> <b>will match</b> "Odd-Eyes Rebellion Dragon" but <b>not</b> "Supreme King Dragon Odd-Eyes".
                     </li>
                     <li>
-                        <Text>|</Text> - Match whole word, for example <Text>chaos|</Text> <b>will not match</b> "Chaosrider Gustaph".
+                        <Text>|</Text> - Match whole word, for example <Text>chaos|</Text> <b>will match</b> "Chaos Ruler, the Chaotic Magical Dragon" but <b>not</b> "Chaosrider Gustaph".
                     </li>
                 </ul>
-                <h3>Stat search</h3>
+                <h3>Stat search (Level/Rank/Link, ATK, DEF, Pendulum Scale)</h3>
                 Supported pattern:
                 <ul>
                     <li>
@@ -176,7 +173,7 @@ export const Manual = ({
                         <Key>∈</Key> - Allow under-qualifying results, for example Link arrows Bottom-Left, Bottom-Right <b>will match</b> "Linguriboh".
                     </li>
                 </ul>
-                <h3>Numeric</h3>
+                <h3>Numeric (LP, amount of Counter)</h3>
                 Basic arithmetic expressions are supported:
                 <ul>
                     <li>

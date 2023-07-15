@@ -78,4 +78,5 @@ export * from './board-icon';
 export * from './card-back';
 export * from './counter-list';
 export * from './credit';
+export * from './menu-button';
 export * from './player-tag';

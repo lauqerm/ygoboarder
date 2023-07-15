@@ -4,6 +4,7 @@ import { CardPreset, DeckType, PhaseType } from 'src/model';
 import { PhaseBehavior, useBoardState, useDeckState, useDescriptionState } from 'src/state';
 import { exportAsJson } from 'src/util';
 import styled from 'styled-components';
+import { MenuButton, MenuLabel } from '../atom';
 
 const JSONUploadInput = styled.input`
     display: none;
@@ -14,8 +15,7 @@ export const ExportButton = () => {
     const allBoard = useBoardState(state => state.boardMap);
     const allDescription = useDescriptionState(state => state.descriptionMap);
 
-    return <div
-        className="menu-button"
+    return <MenuButton className="export-button"
         onClick={() => {
             const resultDeckList: TransferableData['deckList'] = {};
             const descriptionMap: Record<string, string> = {};
@@ -61,7 +61,7 @@ export const ExportButton = () => {
                     message: 'Export failed',
                 });
             }
-        }}>Export</div>;
+        }}>Export</MenuButton>;
 };
 
 type TransferableDeck = {
@@ -141,8 +141,8 @@ export const ImportButton = ({
     };
 
     return <>
-        <div
-            className="menu-button"
+        <MenuButton
+            className="import-button"
             onClick={() => {
                 const importedData = window.prompt('Paste imported data', JSON.stringify(value));
                 try {
@@ -158,8 +158,8 @@ export const ImportButton = ({
             }}
         >
             Text Import
-        </div>
-        <label className="menu-button" htmlFor="json-upload">File Import</label>
+        </MenuButton>
+        <MenuLabel className="menu-button" htmlFor="json-upload">File Import</MenuLabel>
         <JSONUploadInput id="json-upload" className="json-upload-input" type="file" onChange={e => {
             const reader = new FileReader();
             reader.onload = e => {
