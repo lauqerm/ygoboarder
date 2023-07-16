@@ -19,7 +19,17 @@ import {
     DEFAULT_LP,
 } from './model';
 import { v4 as uuidv4 } from 'uuid';
-import { Board, CardBoard, CardPreviewer, ExportButton, GlobalHotkeyController, ImportButton, Manual } from './component';
+import {
+    Board,
+    CardBoard,
+    CardPreviewer,
+    ExportButton,
+    BoardHotkeyController,
+    ImportButton,
+    Manual,
+    GlobalHotkeyController,
+    CardPreviewerModal,
+} from './component';
 import { BeforeCapture, DragDropContext, DragStart } from 'react-beautiful-dnd';
 import { ExtractProps } from './type';
 import {
@@ -381,7 +391,8 @@ function App() {
 
     const boardName = 'main-board';
     return (
-        <GlobalHotkeyController>
+        <BoardHotkeyController>
+            <GlobalHotkeyController />
             <DragDropContext
                 onBeforeCapture={onBeforeCapture}
                 onBeforeDragStart={onBeforeDragStart}
@@ -396,6 +407,7 @@ function App() {
                         backgroundImage: `url("${process.env.PUBLIC_URL}/asset/img/texture/debut-dark.png"), linear-gradient(180deg, #00000022, #00000044)`,
                     }}
                 >
+                    <CardPreviewerModal />
                     <CardPreviewer>
                         <AppMenuContainer>
                             <Manual />
@@ -441,7 +453,7 @@ function App() {
                 </div>
                 <CardBoard boardName={boardName} />
             </DragDropContext>
-        </GlobalHotkeyController>
+        </BoardHotkeyController>
     );
 }
 

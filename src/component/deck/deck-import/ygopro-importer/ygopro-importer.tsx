@@ -387,7 +387,7 @@ export const YGOProImporter = ({
                             const { ban_ocg, ban_tcg } = banlist_info ?? {};
                             const { image_url } = card_images[0];
                             const isMonster = type.toLowerCase().includes('monster')
-                        || type.toLowerCase().includes('token');
+                                || type.toLowerCase().includes('token');
                             const isXyzMonster = frameType === 'xyz';
                             const isLinkMonster = frameType === 'link';
 
@@ -396,7 +396,12 @@ export const YGOProImporter = ({
                                 onClick={() => onSelect(name, image_url, ygoproCardToDescription(card))}
                                 onMouseEnter={() => {
                                     // console.log(card);
-                                    preview('external', image_url, true, ygoproCardToDescription(card));
+                                    preview('side', 'external', image_url, true, ygoproCardToDescription(card));
+                                }}
+                                onContextMenu={e => {
+                                    e.preventDefault();
+                                    // console.log(card);
+                                    preview('modal', 'external', image_url, true, ygoproCardToDescription(card));
                                 }}
                             >
                                 <div className="card-entry-image">

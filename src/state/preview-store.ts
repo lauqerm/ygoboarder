@@ -1,6 +1,7 @@
 import create from 'zustand';
 
 export type PreviewState = {
+    isModalMode: boolean,
     cardPreview: {
         type: 'internal' | 'external',
         data: string,
@@ -8,9 +9,17 @@ export type PreviewState = {
         description: string,
         isOfficial: boolean,
     },
-    setCardPreview: (type: 'internal' | 'external', data: string, isOfficial: boolean, description?: string) => void,
+    setCardPreview: (
+        mode: 'side' | 'modal',
+        type: 'internal' | 'external',
+        data: string,
+        isOfficial: boolean,
+        description?: string,
+    ) => void,
+    setPreviewMode: (mode: 'side' | 'modal') => void,
 };
 export const usePreviewState = create<PreviewState>((set) => ({
+    isModalMode: false,
     cardPreview: {
         type: 'internal',
         data: '',
@@ -18,27 +27,32 @@ export const usePreviewState = create<PreviewState>((set) => ({
         description: '',
         isOfficial: false,
     },
-    setCardPreview: (type, data, isOfficial, description = '') => set(state => {
-        if ((data ?? '').length <= 0) return state;
-        if (type === 'external') return {
-            ...state,
-            cardPreview: {
-                dataURL: data,
-                data: '',
-                type: 'external',
-                description,
-                isOfficial,
-            },
-        };
+    setPreviewMode: mode => set(state => {
         return {
             ...state,
-            cardPreview: {
-                dataURL: '',
-                data,
-                type: 'internal',
-                description,
-                isOfficial,
-            },
+            isModalMode: mode === 'modal' ? true : false,
+        };
+    }),
+    setCardPreview: (mode, type, data, isOfficial, description = '') => set(state => {
+        if ((data ?? '').length <= 0) return state;
+        return {
+            ...state,
+            isModalMode: mode === 'modal' ? true : false,
+            cardPreview: type === 'external'
+                ? {
+                    dataURL: data,
+                    data: '',
+                    type: 'external',
+                    description,
+                    isOfficial,
+                }
+                : {
+                    dataURL: '',
+                    data,
+                    type: 'internal',
+                    description,
+                    isOfficial,
+                },
         };
     }),
 }));

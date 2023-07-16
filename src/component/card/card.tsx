@@ -70,13 +70,14 @@ export const Card = ({
         const openPreview = () => {
             if (baseCard.get('type') === 'external') {
                 preview(
+                    'side',
                     'external',
                     baseCard.get('dataURL'),
                     baseCard.get('isOfficial'),
                     useDescriptionState.getState().descriptionMap[baseCard.get('dataURL')],
                 );
             } else {
-                preview('internal', baseCard.get('data'), false);
+                preview('side', 'internal', baseCard.get('data'), false);
             }
         };
         if (target) target.addEventListener('mouseenter', openPreview);

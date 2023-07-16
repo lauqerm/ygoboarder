@@ -14,13 +14,14 @@ import {
     BoardComponentList,
     PROP_BOARD_NAME,
     NeutralFieldKey,
+    GlobalHotkeyMap,
 } from 'src/model';
 import { mergeClass } from 'src/util';
-import { DeckButton } from '../deck';
+import { DeckButton, DeckButtonRef, DeckImporterDrawer, DeckImporterDrawerRef } from '../deck';
 import { useEffect, useRef, useState } from 'react';
-import { useDOMEntityState } from 'src/state';
+import { useDOMEntityState, useEventState } from 'src/state';
 import './play-board.scss';
-import { DeckImporterDrawer, DeckImporterDrawerRef } from '../deck/deck-import';
+import { IgnoreKeys } from 'react-hotkeys';
 
 const BoardContainer = styled.div`
     background-color: var(--main-primaryLighter);
@@ -42,6 +43,7 @@ export const Board = ({
         [FieldKey.opponent]: {},
         [NeutralFieldKey.neutral]: {},
     });
+    const deckButtonRefMap = useRef<Record<string, DeckButtonRef | null>>({});
 
     /** [Register DOM Entity] */
     const boardDrawingRef = useRef<HTMLDivElement>(null);
@@ -51,13 +53,20 @@ export const Board = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const escapeEventSignal = useEventState(state => state.escapeModalSignal);
+    useEffect(() => {
+        if (!importerRef.current?.isOpen()) {
+            Object.values(deckButtonRefMap.current).forEach(ref => ref?.closeModal());
+        }
+    }, [escapeEventSignal]);
+
     return <BoardContainer ref={boardDrawingRef}
         onMouseOver={() => {
             if (!boardDrawingRef.current?.classList.contains(CLASS_BOARD_ACTIVE)) {
                 boardDrawingRef.current?.classList.add(CLASS_BOARD_ACTIVE);
             }
         }}
-        onMouseOut={e => {
+        onMouseOut={() => {
             boardDrawingRef.current?.classList.remove(CLASS_BOARD_ACTIVE);
         }}
         style={{ zIndex: BOARD_INDEX }}
@@ -79,22 +88,29 @@ export const Board = ({
             const { name } = deckButtonProps;
 
             if (top == null || left == null) return null;
-            return <DeckButton key={`${fieldKey}${fieldComponentKey}${top}${left}`}
+            return <DeckButton key={`${fieldKey}${fieldComponentKey}${top}${left}`} ref={ref => deckButtonRefMap.current[name] = ref}
                 {...deckButtonProps}
                 {...boardComponent}
                 owner={boardName}
                 /** Dịch 1px cho border */
                 offsetTop={top + 1}
                 offsetLeft={left + 1}
-                onOpenImporter={(deckId, preset) => importerRef.current?.open(deckId, preset)}
+                onOpenImporter={(deckName, preset) => importerRef.current?.open(deckName, preset)}
                 onClose={() => importerRef.current?.close()}
                 isAdding={addingDeckId === name}
             />;
         })}
-        <DeckImporterDrawer ref={importerRef} onVisibleChange={(isOpen, deckId) => {
-            if (isOpen && deckId) setAddingDeckId(deckId);
-            else setAddingDeckId(undefined);
-        }} />
+        <IgnoreKeys only={[GlobalHotkeyMap['ESCAPE']]}>
+            <DeckImporterDrawer ref={importerRef}
+                onVisibleChange={(isOpen, deckName) => {
+                    if (isOpen && deckName) setAddingDeckId(deckName);
+                    else {
+                        if (deckName) deckButtonRefMap.current[deckName]?.focus();
+                        setAddingDeckId(undefined);
+                    }
+                }}
+            />
+        </IgnoreKeys>
     </BoardContainer>;
 };
 

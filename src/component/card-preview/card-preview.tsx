@@ -1,6 +1,6 @@
 import { PreviewState, useDescriptionState, useEventState, usePreviewState } from 'src/state';
 import styled from 'styled-components';
-import { DelayedImage } from './card-image';
+import { DelayedImage } from '../card';
 import { CardBack, Credit } from '../atom';
 import { useEffect, useRef, useState } from 'react';
 import TextArea from 'antd/lib/input/TextArea';
@@ -143,7 +143,7 @@ export const CardPreviewer = ({
             } catch (error) {
             }
             addDescription([{ key: dataURL, description: processedDescription }], true);
-            if (dataURL === dynamicState.dataURL) preview('external', dataURL, isOfficial, draftDescription.current);
+            if (dataURL === dynamicState.dataURL) preview('side', 'external', dataURL, isOfficial, draftDescription.current);
             draftDescription.current = '';
         }
         setLockedData(undefined);
@@ -171,6 +171,10 @@ export const CardPreviewer = ({
                         className="card-preview-image"
                         type={type === 'external' ? 'URL' : 'Base64'}
                         src={type === 'external' ? dataURL : data}
+                        onContextMenu={e => {
+                            e.preventDefault();
+                            preview('modal', 'external', dataURL, isOfficial, description);
+                        }}
                     />}
             </div>
         </div>

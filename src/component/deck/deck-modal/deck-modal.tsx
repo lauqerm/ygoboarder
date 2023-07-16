@@ -66,10 +66,11 @@ const distributeDeckRow = (cardList: List<DeckCard>) => {
 
 export type DeckModalRef = {
     shuffle: () => void,
+    focusModal: () => void,
 };
 export type DeckModal = {
     className?: string,
-    deckId: string,
+    deckName: string,
     displayName: string,
     isVisible?: boolean,
     isAdding?: boolean,
@@ -78,12 +79,12 @@ export type DeckModal = {
     phaseBehavior: PhaseBehavior,
     preset: CardPreset,
     onClose?: () => void,
-    onOpenImporter: (deckId: string, preset: CardPreset) => void,
+    onOpenImporter: (deckName: string, preset: CardPreset) => void,
     beaconList?: BeaconAction[],
 };
 export const DeckModal = React.forwardRef(({
     className,
-    deckId,
+    deckName,
     displayName,
     isAdding = false,
     isVisible = false,
@@ -98,14 +99,14 @@ export const DeckModal = React.forwardRef(({
     const [target, setTarget] = useState<HTMLDivElement | null>(null);
     const [handle, setHandle] = useState<HTMLDivElement | null>(null);
     const deckData = useDeckState(
-        state => state.deckMap.get(deckId, DeckListConverter()),
+        state => state.deckMap.get(deckName, DeckListConverter()),
         (oldState, newState) => oldState.equals(newState),
     );
     const currentFullDeckList = deckData.get('cardList');
     const deckCardListRef = useRef<HTMLDivElement>(null);
-    const deckCount = useCountState(state => state.countMap[deckId]);
+    const deckCount = useCountState(state => state.countMap[deckName]);
     const recalculateDOMEntity = useDOMEntityState(state => state.recalculate);
-    const isAllowDrop = useDroppableAvailableState(state => state.statusMap[deckId]) ?? false;
+    const isAllowDrop = useDroppableAvailableState(state => state.statusMap[deckName]) ?? false;
 
     const {
         register,
@@ -131,7 +132,7 @@ export const DeckModal = React.forwardRef(({
         focus,
     } = useZIndexState(
         state => ({
-            modalInstance: state.categoryMap['modal'].queueMap.get(deckId, ZIndexInstanceConverter()),
+            modalInstance: state.categoryMap['modal'].queueMap.get(deckName, ZIndexInstanceConverter()),
             focus: state.toTop,
         }),
         (prev, next) => {
@@ -140,12 +141,6 @@ export const DeckModal = React.forwardRef(({
         },
     );
     const currentZIndex = modalInstance.get('zIndex');
-
-    useImperativeHandle(ref, () => ({
-        shuffle: () => {
-            shuffleList(deckId);
-        },
-    }));
 
     const onDrag = useCallback(({
         target: handleTarget,
@@ -186,13 +181,17 @@ export const DeckModal = React.forwardRef(({
     const portal = document.getElementById(MODAL_WRAPPER_ID);
 
     useEffect(() => {
-        register(deckId, { type, defaultPhase, phaseBehavior, preset });
+        register(deckName, { type, defaultPhase, phaseBehavior, preset });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const focusModal = () => {
+        if (isVisible) deckCardListRef.current?.focus();
+    };
     /** Focus tự động vào element bên trong hotkey để kích hoạt hotkey */
     useEffect(() => {
-        if (isVisible) deckCardListRef.current?.focus();
+        focusModal();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isVisible]);
 
     /** [Register DOM Entity] */
@@ -205,11 +204,15 @@ export const DeckModal = React.forwardRef(({
         }
     }, [addDOMEntity]);
 
+    useImperativeHandle(ref, () => ({
+        shuffle: () => {
+            shuffleList(deckName);
+        },
+        focusModal,
+    }));
+
     const deckImpoterRef = useRef<DeckImporterDrawerRef>(null);
 
-    const beaconProps = {
-        deckId,
-    };
     const close = () => {
         deckImpoterRef.current?.close();
         onClose?.();
@@ -227,7 +230,7 @@ export const DeckModal = React.forwardRef(({
                 )}
                 onMouseDown={e => {
                     e.stopPropagation();
-                    focus('modal', deckId);
+                    focus('modal', deckName);
                 }}
                 onMouseOver={e => e.stopPropagation()}
                 onMouseOut={e => e.stopPropagation()}
@@ -302,13 +305,13 @@ export const DeckModal = React.forwardRef(({
                 style={{ zIndex: currentZIndex }}
                 onMouseUp={e => {
                     e.stopPropagation();
-                    focus('modal', deckId);
+                    focus('modal', deckName);
                 }}
                 onMouseOver={e => e.stopPropagation()}
                 onMouseOut={e => e.stopPropagation()}
                 $beaconCount={beaconList?.length}
                 {...{
-                    [PROP_DOM_ENTITY_NAME]: deckId,
+                    [PROP_DOM_ENTITY_NAME]: deckName,
                     [PROP_DOM_ENTITY_TYPE]: DOMEntityType['deckModal'],
                     [PropDOMEntityVisible]: `${isVisible}`,
                 }}
@@ -317,9 +320,9 @@ export const DeckModal = React.forwardRef(({
                 <DeckModalHotkeyController
                     handlerMap={{
                         CLOSE: () => { console.log('close'); close() },
-                        SHUFFLE: () => shuffleList(deckId),
-                        GROUP: () => groupList(deckId),
-                        ADD_CARD: () => onOpenImporter(deckId, preset),
+                        SHUFFLE: () => shuffleList(deckName),
+                        GROUP: () => groupList(deckName),
+                        ADD_CARD: () => onOpenImporter(deckName, preset),
                     }}
                 >
                     <DeckBeaconWrapper
@@ -332,7 +335,7 @@ export const DeckModal = React.forwardRef(({
                                     ref={ref => {
                                         if (ref) deckButtonBeaconListRef.current[index] = ref;
                                     }}
-                                    {...beaconProps}
+                                    deckName={deckName}
                                     actionType={beaconType}
                                 >
                                     {BeaconActionLabel[beaconType].label}
@@ -341,7 +344,7 @@ export const DeckModal = React.forwardRef(({
                         </div>
                         <div ref={deckCardListRef} className="deck-card-list" tabIndex={0}>
                             {currentDeckList.length === 0 && <Droppable key={0}
-                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${0}]`}
+                                droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckName}]-[DECK-TYPE-${type}]-[ROW-${0}]`}
                                 direction="horizontal"
                                 isDropDisabled={!isAllowDrop || !isVisible}
                             >
@@ -356,7 +359,7 @@ export const DeckModal = React.forwardRef(({
                             </Droppable>}
                             {currentDeckList.map((deckRow, rowIndex, arr) => {
                                 return <Droppable key={rowIndex}
-                                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckId}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
+                                    droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckName}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
                                     direction="horizontal"
                                     isDropDisabled={!isAllowDrop || !isVisible}
                                     // isDropDisabled={!isVisible || !isFocused}
@@ -373,7 +376,7 @@ export const DeckModal = React.forwardRef(({
                                                 const { card: deckCard, index } = entry;
                                                 const card = deckCard.get('card');
                                                 const _id = card.get('_id');
-                                                const cardId = `${deckId}-${_id}`;
+                                                const cardId = `${deckName}-${_id}`;
 
                                                 return <Draggable key={cardId}
                                                     index={index}
@@ -388,13 +391,13 @@ export const DeckModal = React.forwardRef(({
                                                             phase={deckCard.get('phase')}
                                                             isDragging={snapshot.isDragging}
                                                             onFlip={() => {
-                                                                flipInList(deckId, [{ id: _id, phase: 'toggle' }]);
+                                                                flipInList(deckName, [{ id: _id, phase: 'toggle' }]);
                                                             }}
                                                             onDelete={() => {
-                                                                deleteFromList(deckId, [_id], true);
+                                                                deleteFromList(deckName, [_id], true);
                                                             }}
                                                             onDuplicate={() => {
-                                                                if (type !== 'permanent' && type !== 'none') duplicateInList(deckId, [deckCard]);
+                                                                if (type !== 'permanent' && type !== 'none') duplicateInList(deckName, [deckCard]);
                                                             }}
                                                             {...dragProvided.dragHandleProps}
                                                             {...dragProvided.draggableProps}
@@ -413,9 +416,9 @@ export const DeckModal = React.forwardRef(({
                     <div className="deck-tool-bar">
                         <div />
                         <Button type="ghost" onClick={close}>Close</Button>
-                        <Button type="default" onClick={() => shuffleList(deckId)}>Shuffle</Button>
-                        <Button type="default" onClick={() => groupList(deckId)}>Group</Button>
-                        <Button type="primary" onClick={() => onOpenImporter(deckId, preset)}>Add</Button>
+                        <Button type="default" onClick={() => shuffleList(deckName)}>Shuffle</Button>
+                        <Button type="default" onClick={() => groupList(deckName)}>Group</Button>
+                        <Button type="primary" onClick={() => onOpenImporter(deckName, preset)}>Add</Button>
                     </div>
                 </DeckModalHotkeyController>
             </ModalContainer>

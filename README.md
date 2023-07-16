@@ -11,6 +11,7 @@
 * Hand zone
 * Action log
 * Note
+* Separate name / type (spell monster trap) for import card (to sort)
 
 ### Bugs
 * Issue khi modal tự tắt không rõ lý do?

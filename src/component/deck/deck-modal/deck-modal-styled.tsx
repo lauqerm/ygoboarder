@@ -20,9 +20,18 @@ export const DeckModalHandleContainer = styled.div`
         display: flex;
         justify-content: space-between;
         .anticon.anticon-close {
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            padding: var(--spacing) var(--spacing-xl);
+            display: flex;
+            align-items: center;
             cursor: pointer;
+            border-radius: 0 var(--br) 0 0;
             &:hover {
-                color: var(--sub-danger);
+                color: var(--contrast-danger);
+                background-color: var(--sub-danger);
             }
         }
     }

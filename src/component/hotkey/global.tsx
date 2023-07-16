@@ -1,28 +1,23 @@
-import { HotKeys } from 'react-hotkeys';
+import { GlobalHotKeys } from 'react-hotkeys';
 import { GlobalHotkeyMap } from 'src/model';
 import { useEventState } from 'src/state';
 
-export type GlobalHotkeyController = {
-    children?: React.ReactNode,
-}
-export const GlobalHotkeyController = ({
-    children,
-}: GlobalHotkeyController) => {
+export const GlobalHotkeyController = () => {
     const {
-        editDescription,
+        escapeModal,
     } = useEventState(
         state => ({
-            editDescription: state.editDescription,
+            escapeModal: state.escapeModal,
         }),
         () => true,
     );
 
-    return <HotKeys
+    return <GlobalHotKeys
         keyMap={GlobalHotkeyMap}
         handlers={{
-            EDIT_DESCRIPTION: () => editDescription(),
-        } as Record<keyof typeof GlobalHotkeyMap, (keyEvent?: KeyboardEvent | undefined) => void>}
-    >
-        {children}
-    </HotKeys>;
+            ESCAPE: () => {
+                escapeModal();
+            },
+        } as Record<keyof typeof GlobalHotkeyMap, () => void>}
+    />;
 };

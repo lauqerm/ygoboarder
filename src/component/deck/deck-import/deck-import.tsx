@@ -12,6 +12,7 @@ export type DeckImporterDrawerRef = {
     getTargetDeckId: () => string | undefined,
     close: () => void,
     open: (deckId: string, preset: CardPreset) => void,
+    isOpen: () => boolean,
 }
 export type DeckImporterDrawer = {
     onVisibleChange?: (currentStatus: boolean, targetDeckId?: string) => void,
@@ -32,6 +33,7 @@ export const DeckImporterDrawer = forwardRef<DeckImporterDrawerRef, DeckImporter
 
     useImperativeHandle(ref, () => ({
         getTargetDeckId: () => deckId,
+        isOpen: () => isOpened,
         open: (deckId: string, preset: CardPreset) => {
             setPreset(preset);
             setDeckId(deckId);

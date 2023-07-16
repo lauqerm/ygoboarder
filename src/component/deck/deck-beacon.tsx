@@ -36,11 +36,11 @@ export const DeckBeaconWrapper = React.forwardRef(({
 });
 
 export type DeckBeacon = {
-    deckId: string,
+    deckName: string,
     actionType: BeaconAction,
 } & React.HTMLAttributes<HTMLDivElement>;
 export const DeckBeacon = React.forwardRef(({
-    deckId,
+    deckName,
     actionType,
     className,
     ...rest
@@ -53,8 +53,8 @@ export const DeckBeacon = React.forwardRef(({
         )}
         {...rest}
         {...{
-            [PROP_BEACON_INFO]: `[ID-${deckId}]-[ACTION-${actionType}]`,
-            [PROP_BEACON_DECK_ORIGIN]: deckId,
+            [PROP_BEACON_INFO]: `[ID-${deckName}]-[ACTION-${actionType}]`,
+            [PROP_BEACON_DECK_ORIGIN]: deckName,
             [PROP_BEACON_ACTION_TYPE]: actionType,
         }}
     />;

@@ -1,4 +1,4 @@
-import { Alert, Button, Input, Tooltip, Upload } from 'antd';
+import { Alert, Button, Input, Modal, Tooltip, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { CardImageConverter, CardPreset, ImgurResponse } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
@@ -58,6 +58,7 @@ const FileItemContainer = styled.div`
 `;
 type FileItem = {
     fileData: RcFile,
+    onStart: (name: string) => void,
     onFinish: (dataAsString: string, name: string) => void,
     onOfflineFinish: (dataAsString: string, name: string) => void,
     onCancel: (name: string) => void,
@@ -68,6 +69,7 @@ type FileItemRef = {
 }
 const FileItem = forwardRef<FileItemRef, FileItem>(({
     fileData,
+    onStart,
     onFinish,
     onOfflineFinish,
     onCancel,
@@ -97,6 +99,7 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
                 if (typeof result === 'string') {
                     setThumb(result);
                     setLoading(true);
+                    onStart?.(fileData.name);
                     /** Bật phần này khi cần test offline */
                     // if (!cancel.current) {
                     //     onOfflineFinish(result, fileData.name);
@@ -238,26 +241,38 @@ export const OfflineImporter = ({
 
     const addDescription = useDescriptionState(state => state.set);
     const submit = () => {
-        const finalFileList = fileList.filter(entry => entry.status === 'finished');
-        addToList(
-            deckId,
-            finalFileList.map(({ fileData, resultURL }) => ({
-                card: CardImageConverter({
-                    _id: uuidv4(),
-                    name: fileData.name,
-                    type: 'external',
-                    data: '',
-                    dataURL: resultURL,
-                    preset,
-                    isOfficial: false,
-                }),
-            })),
-        );
-        addDescription(finalFileList.map(({ fileData, resultURL }) => ({
-            key: resultURL,
-            description: refMap.current[fileData.uid]?.getDescription(),
-        })));
-        setFileList([]);
+        const finishedFileList = fileList.filter(entry => entry.status === 'finished');
+        const uploadingFileList = fileList.filter(entry => entry.status === 'loading');
+        const confirmSubmit = () => {
+            addToList(
+                deckId,
+                finishedFileList.map(({ fileData, resultURL }) => ({
+                    card: CardImageConverter({
+                        _id: uuidv4(),
+                        name: fileData.name,
+                        type: 'external',
+                        data: '',
+                        dataURL: resultURL,
+                        preset,
+                        isOfficial: false,
+                    }),
+                })),
+            );
+            addDescription(finishedFileList.map(({ fileData, resultURL }) => ({
+                key: resultURL,
+                description: refMap.current[fileData.uid]?.getDescription(),
+            })));
+            setFileList([]);
+        };
+        if (uploadingFileList.length > 0) {
+            Modal.confirm({
+                title: 'Files are still uploading',
+                content: 'Submit right now will make you lose all remaining progresses, continue?',
+                onOk: confirmSubmit,
+            });
+        } else {
+            confirmSubmit();
+        }
     };
 
     return <OfflineImporterContainer className="offline-importer">
@@ -298,6 +313,13 @@ export const OfflineImporter = ({
                 .map(({ fileData }) => {
                     return <FileItem key={fileData.uid} ref={ref => refMap.current[fileData.uid] = ref}
                         fileData={fileData}
+                        onStart={name => {
+                            setFileList(list => list.map(entry => {
+                                return entry.fileData.name === name
+                                    ? { ...entry, status: 'loading' }
+                                    : entry;
+                            }));
+                        }}
                         onRemove={() => {
                             setFileList(list => list.filter(entry => entry.fileData.uid !== fileData.uid));
                         }}

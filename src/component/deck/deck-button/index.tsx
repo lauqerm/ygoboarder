@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { DeckModal } from '..';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import {
@@ -166,6 +166,10 @@ const DeckButtonContainer = styled.div<{
         : ''}
 `;
 
+export type DeckButtonRef = {
+    focus: () => void,
+    closeModal: () => void,
+}
 export type DeckButton = {
     offsetTop?: number, offsetLeft?: number,
     /** Board name chứa deck button */
@@ -173,7 +177,7 @@ export type DeckButton = {
     buttonType?: DeckButtonType,
 } & Pick<DeckModal, 'beaconList' | 'onOpenImporter' | 'isAdding' | 'onClose'>
     & BoardComponent;
-export const DeckButton = ({
+export const DeckButton = forwardRef<DeckButtonRef, DeckButton>(({
     name,
     displayName = name,
     owner,
@@ -190,7 +194,7 @@ export const DeckButton = ({
     isAdding,
     onClose,
     onOpenImporter,
-}: DeckButton) => {
+}: DeckButton, ref) => {
     // const [isVisible, setVisible] = useState(false);
     const deckModalRef = useRef<DeckModalRef>(null);
     const beaconListRef = useRef<HTMLDivElement>(null);
@@ -233,6 +237,16 @@ export const DeckButton = ({
     }, []);
 
     const announcerRef = useRef<DeckButtonAnnouncerRef>(null);
+    const closeModal = () => {
+        hide('modal', name);
+        onClose?.();
+    };
+    useImperativeHandle(ref, () => ({
+        closeModal,
+        focus: () => {
+            deckModalRef.current?.focusModal();
+        },
+    }));
 
     const portal = document.getElementById(MODAL_WRAPPER_ID);
     const excavateCard = (card?: DeckCard, phase?: PhaseType) => {
@@ -363,7 +377,7 @@ export const DeckButton = ({
                             actionType={beaconAction}
                             className={CLASS_BEACON_DECK_BACK}
                             style={{ zIndex: 1 }}
-                            deckId={name}
+                            deckName={name}
                         >
                             {BeaconActionLabel[beaconAction].shortLabel}
                         </DeckBeacon>;
@@ -425,7 +439,7 @@ export const DeckButton = ({
             <DeckModal ref={deckModalRef}
                 isVisible={isVisible}
                 isAdding={isAdding}
-                deckId={name}
+                deckName={name}
                 displayName={displayName}
                 type={type}
                 defaultPhase={defaultPhase}
@@ -433,12 +447,9 @@ export const DeckButton = ({
                 preset={preset}
                 beaconList={beaconList}
                 onOpenImporter={onOpenImporter}
-                onClose={() => {
-                    hide('modal', name);
-                    onClose?.();
-                }}
+                onClose={closeModal}
             />
         </DeckButtonContainer>,
         portal,
     );
-};
+});
