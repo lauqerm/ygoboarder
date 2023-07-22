@@ -5,16 +5,16 @@
 * Manual modal (complete)
 * Chuột phải để close tất cả modal
 * Activation indicator
-* ESC để close modal hiện tại
 
 ### Large features
 * Hand zone
 * Action log
 * Note
 * Separate name / type (spell monster trap) for import card (to sort)
+* Side deck
 
 ### Bugs
-* Issue khi modal tự tắt không rõ lý do?
+* Issue khi modal tự tắt không rõ lý do? (khả năng do resize)
 
 ## Drag-n-Drop when scrolling is a mess, should be an edge case though
 ## Multiple deck modal

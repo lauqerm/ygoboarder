@@ -93,7 +93,7 @@ export const MovableCard = ({
                 && prev.zIndexInstance.get('zIndex') === next.zIndexInstance.get('zIndex');
         },
     );
-    const zIndex = zIndexInstance.get('zIndex');
+    const zIndex = fake ? 0 : zIndexInstance.get('zIndex');
 
     const currentCounterList = useCounterState(state => state.counterMap[uniqueId]);
     const activeCounter = useCounterState(state => state.activeCounter);
@@ -254,6 +254,7 @@ export const MovableCard = ({
         }
 
         return () => {
+            setCounter(uniqueId);
             document.removeEventListener('mousemove', highlightBeacon);
             if (target) {
                 target.removeEventListener('pointerdown', onPointerDown);
@@ -280,6 +281,7 @@ export const MovableCard = ({
                 `ygo-card-position-${position}`,
                 isReversed ? 'ygo-card-reversed' : '',
                 snippet ? 'ygo-card-snippet' : '',
+                fake ? 'ygo-card-fake' : '',
                 className,
             )}
             onClick={e => {

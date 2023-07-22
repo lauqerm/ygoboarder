@@ -19,21 +19,6 @@ export const DeckModalHandleContainer = styled.div`
     .deck-modal-content {
         display: flex;
         justify-content: space-between;
-        .anticon.anticon-close {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            padding: var(--spacing) var(--spacing-xl);
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            border-radius: 0 var(--br) 0 0;
-            &:hover {
-                color: var(--contrast-danger);
-                background-color: var(--sub-danger);
-            }
-        }
     }
     .deck-modal-title-content {
         display: flex;
@@ -46,19 +31,41 @@ export const DeckModalHandleContainer = styled.div`
     .moveable-control-box {
         visibility: hidden!important;
     }
+    .deck-tool-bar {
+        display: grid;
+        grid-template-columns: max-content max-content max-content max-content;
+        align-items: center;
+        column-gap: var(--spacing);
+        background: var(--dim);
+        margin: var(--spacing-neg-md) var(--spacing-neg-md) var(--spacing-neg-md) 0;
+        .anticon.anticon-close {
+            height: 100%;
+            padding: var(--spacing) var(--spacing-xl);
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 0 var(--br-sm) 0 0;
+            &:hover {
+                color: var(--contrast-danger);
+                background-color: var(--sub-danger);
+            }
+        }
+    }
     &:hover {
         cursor: grab;
     }
 `;
 
 export const ModalContainer = styled.div<{ $beaconCount: number }>`
-    --row-height: 135px;
-    --content-height: ${() => `calc(var(--row-height) * ${DECK_ROW_COUNT} + var(--spacing) * 2);`};
+    // 4px margin + 2px gap
+    --row-height: calc(var(--card-height-sm) + 4px + 2px);
+    --content-height: ${() => `calc(var(--row-height) * ${DECK_ROW_COUNT});`};
     width: ${DECK_MODAL_WIDTH}px;
     border: var(--bd);
     border-radius: var(--br);
     overflow: hidden;
     position: absolute;
+    box-shadow: var(--bs-large);
     .deck-modal-header-padding {
         height: 39px;
         pointer-events: none;
@@ -76,15 +83,6 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
         height: var(--content-height);
         overflow-y: auto;
         overflow-x: hidden;
-    }
-    .deck-tool-bar {
-        display: grid;
-        grid-template-columns: 1fr max-content max-content max-content max-content;
-        align-items: center;
-        column-gap: var(--spacing);
-        padding: var(--spacing);
-        background: var(--dim);
-        border-top: var(--bd);
     }
     .deck-modal-beacon-list {
         position: relative;

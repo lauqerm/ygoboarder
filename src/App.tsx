@@ -279,7 +279,7 @@ function App() {
                                 initialX: x - offsetX + window.scrollX,
                                 initialY: y - offsetY + window.scrollY,
                                 origin: deckID,
-                                phase: cardInDeck.get('phase'),
+                                phase: 'up', /** Ưu tiên UX, nếu đúng thì phase của card mới phải tuân theo original phase của nó (dùng cardInDeck.get('phase')) */
                             }]);
                         }
                     }

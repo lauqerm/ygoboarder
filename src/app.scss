@@ -10,6 +10,8 @@
   --spacing-3xl: 32px;
   --spacing-4xl: 40px;
 
+  --spacing-neg-md: -8px;
+
   --fs-xs: 0.75rem;
   --fs-sm: 0.875rem;
   --fs: 1rem;
@@ -93,6 +95,8 @@
   --bdColor-faint: #c8c8c8;
   --bd-faint: var(--bdSize) solid var(--bdColor-faint);
   --bd-contrast: var(--bdSize) solid var(--main-contrast);
+
+  --bs-large: 0 2px 4px -3px #0000001f, 0 4px 11px #00000014, 0 6px 21px 6px #0000000d;
 
   --deck-button-simple-width: 2.5rem;
   --deck-button-simple-height: 2.5rem;

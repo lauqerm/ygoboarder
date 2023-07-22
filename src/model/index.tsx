@@ -27,7 +27,7 @@ export const DROP_TYPE_DECK = 'DECK';
 export const DROP_TYPE_DECK_BEACON = 'DECK_BEACON';
 export const DROP_TYPE_DECK_BEACON_LIST = 'DECK_BEACON_LIST';
 export const DROP_TYPE_BOARD = 'BOARD';
-export const DECK_COL_COUNT = 10;
+export const DECK_COL_COUNT = 8;
 export const DECK_ROW_COUNT = 4;
 
 export const CLASS_BEACON_WRAPPER = 'js-deck-beacon-wrapper';
@@ -37,6 +37,7 @@ export const CLASS_BOARD = 'js-board';
 export const CLASS_CARD_MOVABLE = 'js-movable-card';
 export const CLASS_CARD_MOVABLE_ZONED = 'js-movable-card-zoned';
 export const CLASS_PREVENT_POINTER_EVENT = 'js-ignore-pointer-event';
+export const CLASS_PREVENT_DRAG_EVENT = 'js-ignore-drag-event';
 
 export const GetDropTypeRegex = /\[TYPE-(\w*)\]/m;
 export const GetDropIDRegex = /\[ID-([\w-]*)\]/m;

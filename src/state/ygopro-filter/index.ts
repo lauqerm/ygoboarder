@@ -91,15 +91,15 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
             else STCardList.push(card);
         });
         const sortedSTList = STCardList.sort((l, r) => l.race_binary - r.race_binary);
-        const sortedMonsterListByATK = [...monsterCardList].sort((l, r) => l.question_atk
+        const sortedMonsterByATKList = [...monsterCardList].sort((l, r) => l.question_atk
             ? (r.question_atk ? 0 : 1)
             : (r.question_atk ? -1 : (r.atk ?? -1) - (l.atk ?? -1)));
-        const sortedMonsterListByDEF = [...monsterCardList].sort((l, r) => l.question_def
+        const sortedMonsterByDEFList = [...monsterCardList].sort((l, r) => l.question_def
             ? (r.question_def ? 0 : 1)
             : (r.question_def ? -1 : (r.def ?? -1) - (l.def ?? -1)));
         /** Monster sort theo level sẽ được chia làm 3 lớp, sort frame => sort level => sort ATK */
         const monsterLevelCategory: YGOProCard[][][] = [];
-        sortedMonsterListByATK.forEach(entry => {
+        sortedMonsterByATKList.forEach(entry => {
             const { main_frame, step = -1 } = entry;
             /** Một mẹo nhỏ để sort level theo thứ tự giảm dần, ví dụ step là 12 sẽ xếp ở vị trí 20 - 12 = 8, step 10 sẽ xếp ở vị trí 20 - 10 = 10, max step hiện tại là 13 nhưng ta chừa 20 slot cho an toàn */
             const categoryIndex = 20 - step;
@@ -111,8 +111,8 @@ export const useYGOProFilter = create<YGOProFilterState>((set, get) => ({
 
         const sortedCardListMap: Record<OrderType, YGOProCard[]> = {
             name: processedCardList,
-            atk: [...sortedMonsterListByATK, ...sortedSTList],
-            def: [...sortedMonsterListByDEF, ...sortedSTList],
+            atk: [...sortedMonsterByATKList, ...sortedSTList],
+            def: [...sortedMonsterByDEFList, ...sortedSTList],
             level: [
                 ...Object
                     .values(monsterLevelCategory)

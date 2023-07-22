@@ -6,7 +6,7 @@ export const REMOVE_ALL_COUNTER = 'remove';
 export type CounterState = {
     activeCounter?: string,
     counterMap: Record<string, Record<string, number> | undefined>,
-    set: (cardId: string, counterName: string, expression?: string) => void,
+    set: (cardId: string, counterName?: string, expression?: string) => void,
     setCounterMode: (counterName?: string) => void,
 };
 export const useCounterState = create<CounterState>((set) => ({
@@ -15,9 +15,10 @@ export const useCounterState = create<CounterState>((set) => ({
     set: (cardId, counterName, expression) => set(state => {
         const nextMap = { ...state.counterMap };
         if (!nextMap[cardId]) nextMap[cardId] = {};
-        const cardCounterMap = { ...nextMap[cardId] };
 
-        if (cardCounterMap) {
+        if (counterName) {
+            const cardCounterMap = { ...nextMap[cardId] };
+
             if (expression === REMOVE_ALL_COUNTER) {
                 delete cardCounterMap[counterName];
             } else {
@@ -25,8 +26,11 @@ export const useCounterState = create<CounterState>((set) => ({
                     ? Parser.evaluate(expression)
                     : (cardCounterMap[counterName] ?? 0) + 1;
             }
+
+            nextMap[cardId] = cardCounterMap;
+        } else {
+            delete nextMap[cardId];
         }
-        nextMap[cardId] = cardCounterMap;
 
         return {
             ...state,

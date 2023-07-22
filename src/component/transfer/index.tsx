@@ -160,28 +160,34 @@ export const ImportButton = ({
             Text Import
         </MenuButton>
         <MenuLabel className="menu-button" htmlFor="json-upload">File Import</MenuLabel>
-        <JSONUploadInput id="json-upload" className="json-upload-input" type="file" onChange={e => {
-            const reader = new FileReader();
-            reader.onload = e => {
-                try {
-                    if (typeof e.target?.result === 'string') {
-                        onImport(JSON.parse(e.target.result));
-                    } else notification.error({
+        <JSONUploadInput
+            accept=".json"
+            id="json-upload"
+            className="json-upload-input"
+            type="file"
+            onChange={e => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    try {
+                        if (typeof e.target?.result === 'string') {
+                            onImport(JSON.parse(e.target.result));
+                        } else notification.error({
+                            message: 'Unreadable file',
+                        });
+                    } catch (e) {
+                        console.error(e);
+                        notification.error({
+                            message: 'Import failed',
+                        });
+                    }
+                };
+                if (e.target.files) reader.readAsText(e.target.files[0]);
+                else { 
+                    notification.error({
                         message: 'Unreadable file',
                     });
-                } catch (e) {
-                    console.error(e);
-                    notification.error({
-                        message: 'Import failed',
-                    });
                 }
-            };
-            if (e.target.files) reader.readAsText(e.target.files[0]);
-            else { 
-                notification.error({
-                    message: 'Unreadable file',
-                });
-            }
-        }} />
+            }}
+        />
     </>;
 };

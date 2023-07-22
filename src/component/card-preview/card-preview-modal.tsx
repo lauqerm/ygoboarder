@@ -160,7 +160,7 @@ export const CardPreviewerModal = (_: CardPreviewerModal) => {
 
     return <Modal
         title="Card Preview"
-        width={'60rem'}
+        width={'55rem'}
         wrapClassName="card-preview-modal"
         open={isModalMode}
         onCancel={() => setPreviewMode('side')}

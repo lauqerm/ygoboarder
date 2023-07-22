@@ -7,6 +7,7 @@ import './draggable-card.scss';
 const DraggableCardContainer = styled.div`
     position: relative;
     display: inline-block;
+    line-height: 0;
 `;
 
 export type DraggableCard = {

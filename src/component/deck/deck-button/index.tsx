@@ -408,7 +408,7 @@ export const DeckButton = forwardRef<DeckButtonRef, DeckButton>(({
                                         initialX: left - (buttonType === 'simple' ? (CardSize.sm.width - DeckButtonSize.simple.width) / 2 : 0),
                                         initialY: top - (buttonType === 'simple' ? (CardSize.sm.height - DeckButtonSize.simple.height) / 2 : 0),
                                         origin: name,
-                                        phase: cardInDeck.get('phase'),
+                                        phase: 'up', /** Ưu tiên UX, nếu đúng thì phase của card mới phải tuân theo original phase của nó (dùng targetCard.get('phase')) */
                                     }]);
                                     setRefreshCnt(cur => cur + 1);
                                 }

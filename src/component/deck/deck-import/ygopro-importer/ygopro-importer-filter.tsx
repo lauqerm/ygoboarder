@@ -123,6 +123,7 @@ const YGOProFilterContainer = styled.div`
     }
     .attribute-filter {
         .ant-tag {
+            flex: 0 0 26px;
             line-height: 0;
         }
         img {

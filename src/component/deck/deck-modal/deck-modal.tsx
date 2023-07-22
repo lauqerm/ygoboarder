@@ -20,6 +20,7 @@ import {
     MODAL_WRAPPER_ID,
     PhaseType,
     CardPreset,
+    CLASS_PREVENT_DRAG_EVENT,
 } from 'src/model';
 import { DeckBeacon, DeckBeaconWrapper } from '../deck-beacon';
 import {
@@ -143,14 +144,21 @@ export const DeckModal = React.forwardRef(({
     const currentZIndex = modalInstance.get('zIndex');
 
     const onDrag = useCallback(({
+        inputEvent,
+        stopDrag,
         target: handleTarget,
         left, top,
     }: Parameters<NonNullable<ExtractProps<typeof Moveable>['onDrag']>>[0]) => {
-        handleTarget!.style.left = `${left}px`;
-        handleTarget!.style.top = `${top}px`;
+        if (inputEvent.target?.classList.contains(CLASS_PREVENT_DRAG_EVENT)
+        || inputEvent.target.parentElement?.classList.contains(CLASS_PREVENT_DRAG_EVENT)) {
+            stopDrag();
+        } else {
+            handleTarget!.style.left = `${left}px`;
+            handleTarget!.style.top = `${top}px`;
 
-        target!.style.left = `${left}px`;
-        target!.style.top = `${top}px`;
+            target!.style.left = `${left}px`;
+            target!.style.top = `${top}px`;
+        }
     }, [target]);
 
     useEffect(() => {
@@ -191,7 +199,7 @@ export const DeckModal = React.forwardRef(({
     /** Focus tự động vào element bên trong hotkey để kích hoạt hotkey */
     useEffect(() => {
         focusModal();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isVisible]);
 
     /** [Register DOM Entity] */
@@ -237,9 +245,22 @@ export const DeckModal = React.forwardRef(({
             >
                 <div className="deck-modal-content">
                     <div className="deck-modal-title-content">
-                        <PlayerTag preset={preset} /> {displayName} {type !== 'none' && type !== 'permanent' ? `(${currentFullDeckList.size} / ${deckCount ?? 0})` : ''}
+                        <PlayerTag
+                            preset={preset}
+                        /> {displayName} {type !== 'none' && type !== 'permanent' ? `(${currentFullDeckList.size} / ${deckCount ?? 0})` : ''}
                     </div>
-                    <CloseOutlined onClick={close} />
+                    <div className="deck-tool-bar">
+                        <Button className={CLASS_PREVENT_DRAG_EVENT} size="small" type="default" onClick={() => shuffleList(deckName)}>
+                            {'Shuffle'}
+                        </Button>
+                        <Button className={CLASS_PREVENT_DRAG_EVENT} size="small" type="default" onClick={() => groupList(deckName)}>
+                            {'Group'}
+                        </Button>
+                        <Button className={CLASS_PREVENT_DRAG_EVENT} size="small" type="primary" onClick={() => onOpenImporter(deckName, preset)}>
+                            {'Add'}
+                        </Button>
+                        <CloseOutlined className={CLASS_PREVENT_DRAG_EVENT} onClick={close} />
+                    </div>
                 </div>
                 <Moveable
                     target={handle}
@@ -319,7 +340,7 @@ export const DeckModal = React.forwardRef(({
                 <div className="deck-modal-header-padding" />
                 <DeckModalHotkeyController
                     handlerMap={{
-                        CLOSE: () => { console.log('close'); close() },
+                        CLOSE: () => close(),
                         SHUFFLE: () => shuffleList(deckName),
                         GROUP: () => groupList(deckName),
                         ADD_CARD: () => onOpenImporter(deckName, preset),
@@ -362,7 +383,7 @@ export const DeckModal = React.forwardRef(({
                                     droppableId={`[TYPE-${DROP_TYPE_DECK}]-[ID-${deckName}]-[DECK-TYPE-${type}]-[ROW-${rowIndex}]`}
                                     direction="horizontal"
                                     isDropDisabled={!isAllowDrop || !isVisible}
-                                    // isDropDisabled={!isVisible || !isFocused}
+                                // isDropDisabled={!isVisible || !isFocused}
                                 >
                                     {dropProvided => {
                                         return <ModalRowContainer
@@ -413,13 +434,6 @@ export const DeckModal = React.forwardRef(({
                             })}
                         </div>
                     </DeckBeaconWrapper>
-                    <div className="deck-tool-bar">
-                        <div />
-                        <Button type="ghost" onClick={close}>Close</Button>
-                        <Button type="default" onClick={() => shuffleList(deckName)}>Shuffle</Button>
-                        <Button type="default" onClick={() => groupList(deckName)}>Group</Button>
-                        <Button type="primary" onClick={() => onOpenImporter(deckName, preset)}>Add</Button>
-                    </div>
                 </DeckModalHotkeyController>
             </ModalContainer>
         </>,
