@@ -28,7 +28,7 @@ export const DROP_TYPE_DECK_BEACON = 'DECK_BEACON';
 export const DROP_TYPE_DECK_BEACON_LIST = 'DECK_BEACON_LIST';
 export const DROP_TYPE_BOARD = 'BOARD';
 export const DECK_COL_COUNT = 8;
-export const DECK_ROW_COUNT = 4;
+export const DECK_ROW_COUNT = 3;
 
 export const CLASS_BEACON_WRAPPER = 'js-deck-beacon-wrapper';
 export const CLASS_BEACON_DECK_BACK = 'js-beacon-deck-back';
