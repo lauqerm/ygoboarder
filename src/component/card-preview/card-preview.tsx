@@ -143,7 +143,7 @@ export const CardPreviewer = ({
             } catch (error) {
             }
             addDescription([{ key: dataURL, description: processedDescription }], true);
-            if (dataURL === dynamicState.dataURL) preview('side', 'external', dataURL, isOfficial, draftDescription.current);
+            if (dataURL === dynamicState.dataURL) preview('side', 'external', dataURL, isOfficial, processedDescription);
             draftDescription.current = '';
         }
         setLockedData(undefined);
