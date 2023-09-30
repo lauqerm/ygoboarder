@@ -101,3 +101,4 @@ export const isJsonObjectEqual = (payload1: any, payload2: any) => {
 };
 
 export { createIndexQueue } from './index-queue';
+export { uploadToImgur } from './upload';

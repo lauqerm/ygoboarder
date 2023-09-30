@@ -1,5 +1,9 @@
 import { Record as ImmutableRecord } from 'immutable';
 import { CardPreset } from './deck';
+import { ExtractProps } from 'src/type';
+import { Upload } from 'antd';
+
+export type RcFile = Parameters<NonNullable<ExtractProps<typeof Upload>['beforeUpload']>>[0];
 
 type BaseCardRecord = {
     _id: string,

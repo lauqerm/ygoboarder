@@ -173,7 +173,7 @@ export const OnlineImporter = ({
             showIcon
             type="info"
             message={<>
-                If many descriptions are bound with the same image link, only the latest description will be saved.<br />
+                If many descriptions are bound with the same image link, <b>only the latest description will be saved</b>.<br />
                 Images from ygoprodeck will be ignored, please import them using the "From YGOPro" tab instead.
             </>}
         />

@@ -1,22 +1,23 @@
 import create from 'zustand';
 
+export type CardPreview = {
+    type: 'internal' | 'external',
+    data: string,
+    dataURL: string,
+    description: string,
+    isOfficial: boolean,
+};
 export type PreviewState = {
     isModalMode: boolean,
-    cardPreview: {
-        type: 'internal' | 'external',
-        data: string,
-        dataURL: string,
-        description: string,
-        isOfficial: boolean,
-    },
+    cardPreview: CardPreview,
     setCardPreview: (
-        mode: 'side' | 'modal',
+        layout: 'side' | 'modal' | 'keep',
         type: 'internal' | 'external',
         data: string,
         isOfficial: boolean,
         description?: string,
     ) => void,
-    setPreviewMode: (mode: 'side' | 'modal') => void,
+    setPreview: (layout: 'side' | 'modal') => void,
 };
 export const usePreviewState = create<PreviewState>((set) => ({
     isModalMode: false,
@@ -27,17 +28,20 @@ export const usePreviewState = create<PreviewState>((set) => ({
         description: '',
         isOfficial: false,
     },
-    setPreviewMode: mode => set(state => {
+    setPreview: layout => set(state => {
         return {
             ...state,
-            isModalMode: mode === 'modal' ? true : false,
+            isModalMode: layout === 'modal' ? true : false,
         };
     }),
-    setCardPreview: (mode, type, data, isOfficial, description = '') => set(state => {
+    setCardPreview: (layout, type, data, isOfficial, description = '') => set(state => {
         if ((data ?? '').length <= 0) return state;
+        const { isModalMode } = state;
         return {
             ...state,
-            isModalMode: mode === 'modal' ? true : false,
+            isModalMode: layout === 'keep'
+                ? isModalMode
+                : layout === 'modal' ? true : false,
             cardPreview: type === 'external'
                 ? {
                     dataURL: data,

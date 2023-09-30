@@ -19,6 +19,7 @@ const BoardIconContainer = styled.div<{ $size?: 'sm' | 'lg' | 'md' }>`
     svg {
         margin: auto;
         color: #fafafa;
+        height: 100%;
         width: 50%;
     }
 `;

@@ -77,7 +77,12 @@ export const Card = ({
                     useDescriptionState.getState().descriptionMap[baseCard.get('dataURL')],
                 );
             } else {
-                preview('side', 'internal', baseCard.get('data'), false);
+                preview(
+                    'side',
+                    'internal',
+                    baseCard.get('data'),
+                    false,
+                );
             }
         };
         if (target) target.addEventListener('mouseenter', openPreview);

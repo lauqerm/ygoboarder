@@ -10,6 +10,7 @@ import styled from 'styled-components';
 import axios from 'axios';
 import { CardBack } from 'src/component/atom';
 import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
+import { uploadToImgur } from 'src/util';
 
 const { Dragger } = Upload;
 type RcFile = Parameters<NonNullable<ExtractProps<typeof Dragger>['beforeUpload']>>[0];
@@ -90,14 +91,11 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
     }));
 
     useEffect(() => {
-        const reader = new FileReader();
-
-        reader.onload = async e => {
-            const { target } = e;
-            if (target) {
-                const { result } = target;
-                if (typeof result === 'string') {
-                    setThumb(result);
+        uploadToImgur(
+            fileData,
+            {
+                onBeforeStart: (readerResult, fileData) => {
+                    setThumb(readerResult);
                     setLoading(true);
                     onStart?.(fileData.name);
                     /** Bật phần này khi cần test offline */
@@ -106,34 +104,23 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
                     //     setFinish(true);
                     // }
                     // else onCancel(fileData.name);
-
-                    const imgurFormData = new FormData();
-                    imgurFormData.append('image', fileData);
-
-                    try {
-                        const response = await axios.post<ImgurResponse>(
-                            'https://api.imgur.com/3/image',
-                            imgurFormData,
-                            {
-                                headers: {
-                                    'Authorization': 'Client-ID f9bbe0da263580e',
-                                },
-                            },
-                        );
-                        if (!cancel.current) {
-                            onFinish(response.data.data.link, fileData.name);
-                            setFinish(true);
-                        }
-                        else onCancel(fileData.name);
-                    } catch (e: any) {
-                        setError(e.message);
-                        onCancel(fileData.name);
+                },
+                onError: (error, fileData) => {
+                    setError(error.message);
+                    onCancel(fileData.name);
+                },
+                onSuccess: (response, fileData) => {
+                    if (!cancel.current) {
+                        onFinish(response.data.data.link, fileData.name);
+                        setFinish(true);
                     }
+                    else onCancel(fileData.name);
+                },
+                onFinish: () => {
                     setLoading(false);
-                }
-            }
-        };
-        reader.readAsDataURL(fileData);
+                },
+            },
+        );
 
         return () => {
             setLoading(false);
@@ -283,7 +270,7 @@ export const OfflineImporter = ({
             message={<>
                 Offline images will be uploaded to <a target="_blank" href="https://www.imgur.com" rel="noreferrer">imgur.com</a> to store online.
                 <br />
-                Duplications of the same image will be treated as different images altogether, and descriptions will not be synced correctly.
+                Duplications of the same image will be treated as different cards altogether and may cause confusion.
             </>}
         />
         <Dragger

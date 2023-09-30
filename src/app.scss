@@ -41,6 +41,7 @@
 
   --main-secondaryDarker: #1a1a1a;
   --main-secondary: #2a2a2a;
+  --contrast-secondary: #fff;
   --main-secondaryLighter: #3a3a3a;
   --contrast-secondaryLighter: #fff;
 
@@ -146,7 +147,7 @@
   }
 }
 
-html {
+html, #root {
   overflow: hidden;
 }
 .app-wrapper {

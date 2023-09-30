@@ -3,8 +3,9 @@
 ### Small features
 * Cảnh báo trong quá trình upload / Thông báo tất cả upload đã xong
 * Manual modal (complete)
-* Chuột phải để close tất cả modal
 * Activation indicator
+* Remove counter when go face-down
+* Cancel / Retry in manager
 
 ### Large features
 * Hand zone
@@ -12,9 +13,18 @@
 * Note
 * Separate name / type (spell monster trap) for import card (to sort)
 * Side deck
+* Revamp interaction system:
+    * Allow point-moving instead of dragging
+    * Double click to activate
+    * Ctrl-click to change phase
+    * Transparent modal while select
+* Mass replace card image
+* Retire offline image
 
 ### Bugs
 * Issue khi modal tự tắt không rõ lý do? (khả năng do resize)
+* Could not add to board if drag card on to another card
+* Card face-down add vào banished zone hay extra deck vẫn face-up
 
 ## Drag-n-Drop when scrolling is a mess, should be an edge case though
 ## Multiple deck modal

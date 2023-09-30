@@ -194,7 +194,9 @@ export const DeckModal = React.forwardRef(({
     }, []);
 
     const focusModal = () => {
-        if (isVisible) deckCardListRef.current?.focus();
+        if (isVisible) deckCardListRef.current?.focus({
+            preventScroll: true,
+        });
     };
     /** Focus tự động vào element bên trong hotkey để kích hoạt hotkey */
     useEffect(() => {

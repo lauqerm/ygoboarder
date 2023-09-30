@@ -154,7 +154,7 @@ export const Manual = ({
                         <Text>{'>='}</Text>, <Text>{'>'}</Text>, <Text>{'<='}</Text>, <Text>{'<'}</Text> - Basic mathematical comparison symbols.
                     </li>
                     <li>
-                        <Text>-</Text> - Range search, for example <Text>1500-2000</Text> <b>will match</b> any monster with 1500 ATK, 1600 ATK or any number in between.
+                        <Text>-</Text> - Range search, for example <Text>1500-2000</Text> <b>will match</b> any monster with 1500 ATK, 2000 ATK or any number in between.
                     </li>
                     <li>
                         <Text>?</Text> - Search for undefined ATK / DEF are supported.

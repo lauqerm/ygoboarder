@@ -2,8 +2,8 @@ import { CardSize, DECK_COL_COUNT, DECK_ROW_COUNT } from 'src/model';
 import styled from 'styled-components';
 
 const DRAGGABLE_CARD_WIDTH = CardSize.sm.width + 2 * 2 + 1 * 2;
-/** Total card length + 2 border + possible scrollbar */
-export const DECK_MODAL_WIDTH = DRAGGABLE_CARD_WIDTH * DECK_COL_COUNT + 1 * 2 + 10;
+/** Total card length + 2 border + 2 padding + possible scrollbar */
+export const DECK_MODAL_WIDTH = DRAGGABLE_CARD_WIDTH * DECK_COL_COUNT + 1 * 2 + 8 * 2 + 10;
 export const DECK_MODAL_HEIGHT = 600;
 
 export const DeckModalHandleContainer = styled.div`
@@ -76,13 +76,15 @@ export const ModalContainer = styled.div<{ $beaconCount: number }>`
         background: var(--main-secondaryLighter);
     }
     .deck-result {
-        width: calc(${DECK_MODAL_WIDTH}px - 10px);
+        /** Trừ scroll + 2 padding */
+        width: calc(${DECK_MODAL_WIDTH}px - 10px - 2 * 8px);
         overflow: hidden;
     }
     .deck-card-list {
         height: var(--content-height);
         overflow-y: auto;
         overflow-x: hidden;
+        padding: var(--spacing);
     }
     .deck-modal-beacon-list {
         position: relative;

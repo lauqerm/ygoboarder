@@ -48,6 +48,7 @@ import { createPortal } from 'react-dom';
 import { BoardIcon } from '../../atom';
 import { DeckButtonAnnouncer, DeckButtonAnnouncerRef } from './deck-button-announce';
 import './deck-button.scss';
+import React from 'react';
 
 const DeckButtonToolbar = styled.div<{ $placement?: ActionListPlacement }>`
     display: block;
@@ -341,7 +342,8 @@ export const DeckButton = forwardRef<DeckButtonRef, DeckButton>(({
                         onClick={() => {
                             const faceUpDeckList = deckList
                                 .filter(entry => entry.get('phase') === 'up');
-                            if (!excavateCard(faceUpDeckList.get(Math.floor(faceUpDeckList.size)))) announcerRef.current?.trigger('No face-up cards');
+                            const targetIndex = Math.floor(faceUpDeckList.size * Math.random());
+                            if (!excavateCard(faceUpDeckList.get(targetIndex))) announcerRef.current?.trigger('No face-up cards');
                         }}
                     >
                         <CopyOutlined />
@@ -352,9 +354,11 @@ export const DeckButton = forwardRef<DeckButtonRef, DeckButton>(({
                     <div
                         className="deck-button-tool deck-button-tool-get-random-face-down"
                         onClick={() => {
-                            const faceUpDeckList = deckList
+                            const faceDownDeckList = deckList
                                 .filter(entry => entry.get('phase') === 'down');
-                            if (!excavateCard(faceUpDeckList.get(Math.floor(faceUpDeckList.size)))) announcerRef.current?.trigger('No face-down cards');
+                            const targetIndex = Math.floor(faceDownDeckList.size * Math.random());
+
+                            if (!excavateCard(faceDownDeckList.get(targetIndex))) announcerRef.current?.trigger('No face-down cards');
                         }}
                     >
                         <CopyFilled />

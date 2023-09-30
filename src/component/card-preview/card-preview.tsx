@@ -3,12 +3,14 @@ import styled from 'styled-components';
 import { DelayedImage } from '../card';
 import { CardBack, Credit } from '../atom';
 import { useEffect, useRef, useState } from 'react';
-import TextArea from 'antd/lib/input/TextArea';
 import { mergeClass } from 'src/util';
-import { Button } from 'antd';
+import { Button, Input, Tooltip } from 'antd';
 import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
+import { EditOutlined, FileImageOutlined } from '@ant-design/icons';
+import { ImageReplaceModal, ImageReplaceModalRef } from '../image-modal';
 
-const CardPreviewContainer = styled.div`
+const { TextArea } = Input;
+const CardPreviewContainer = styled.div<{ $layout?: 'horizontal' | 'vertical' }>`
     display: flex;
     flex-direction: column;
     background-color: var(--main-secondary);
@@ -25,17 +27,32 @@ const CardPreviewContainer = styled.div`
             }
         }
     }
-    .official-status {
+    .hanging-badge {
+        display: flex;
+        column-gap: var(--spacing);
         position: absolute;
         top: var(--spacing);
         right: var(--spacing-2xl);
-        background: var(--main-secondary);
-        color: white;
-        font-size: var(--fs-xs);
-        border: var(--bd);
-        border-radius: var(--br);
-        padding: 0 var(--spacing-sm);
-        line-height: 1.375;
+        > div, label {
+            font-size: var(--fs-xs);
+            border: var(--bd);
+            border-radius: var(--br);
+            padding: 0 var(--spacing-sm);
+            line-height: 1.375;
+        }
+        .preview-action {
+            display: inline-block;
+            background-color: var(--main-metal);
+            color: var(--contrast-secondary);
+            cursor: pointer;
+            &:hover {
+                background-color: var(--dim-metal);
+            }
+        }
+        .official-status {
+            background: var(--dim);
+            color: var(--main-metal);
+        }
     }
     .card-preview-header {
         position: relative;
@@ -51,6 +68,9 @@ const CardPreviewContainer = styled.div`
         justify-content: center;
         align-self: flex-end;
         margin-left: auto;
+        .card-preview-image {
+            cursor: pointer;
+        }
         > img {
             max-width: 100%;
             max-height: 100%;
@@ -103,9 +123,37 @@ const CardPreviewContainer = styled.div`
             border-bottom-left-radius: 0;
         }
     }
+    ${({ $layout }) => $layout === 'horizontal'
+        ? `
+            border: none;
+            max-width: unset;
+            flex-direction: row;
+            height: 100%;
+            min-height: 35rem;
+            max-height: 35rem;
+            .card-preview-header {
+                flex: 0 0 auto;
+                align-self: flex-start;
+                width: unset;
+            }
+            .card-preview-description {
+                flex: 1 1 auto;
+                border: none;
+            }
+            .card-preview-image-container {
+                margin: var(--spacing-xl);
+            }
+        `
+        : ''}
 `;
-export type CardPreviewer = React.PropsWithChildren<{}>;
+export type CardPreviewer = React.PropsWithChildren<{
+    defaultAction?: 'edit' | 'view',
+    layout?: 'horizontal' | 'vertical',
+    afterSubmitMode?: 'modal' | 'side',
+}>;
 export const CardPreviewer = ({
+    layout = 'vertical',
+    afterSubmitMode = 'side',
     children,
 }: CardPreviewer) => {
     const dynamicState = usePreviewState(
@@ -143,7 +191,15 @@ export const CardPreviewer = ({
             } catch (error) {
             }
             addDescription([{ key: dataURL, description: processedDescription }], true);
-            if (dataURL === dynamicState.dataURL) preview('side', 'external', dataURL, isOfficial, processedDescription);
+            if (dataURL === dynamicState.dataURL) {
+                preview(
+                    afterSubmitMode,
+                    'external',
+                    dataURL,
+                    isOfficial,
+                    processedDescription,
+                );
+            }
             draftDescription.current = '';
         }
         setLockedData(undefined);
@@ -157,7 +213,9 @@ export const CardPreviewer = ({
         }
     }, [dynamicState, globalEditDescriptionSignal, isOfficial, noCard]);
 
-    return <CardPreviewContainer className={mergeClass(
+    const imageReplaceModalRef = useRef<ImageReplaceModalRef>(null);
+
+    return <CardPreviewContainer $layout={layout} className={mergeClass(
         'card-preview',
         lockedData ? 'card-preview-locked' : '',
         isOfficial ? '' : 'card-preview-custom',
@@ -171,7 +229,7 @@ export const CardPreviewer = ({
                         className="card-preview-image"
                         type={type === 'external' ? 'URL' : 'Base64'}
                         src={type === 'external' ? dataURL : data}
-                        onContextMenu={e => {
+                        onClick={e => {
                             e.preventDefault();
                             preview('modal', 'external', dataURL, isOfficial, description);
                         }}
@@ -179,7 +237,19 @@ export const CardPreviewer = ({
             </div>
         </div>
         <div className="card-preview-description">
-            {(!noCard && lockedData === undefined) && <div className="official-status">{isOfficial ? 'Official' : 'Custom'}</div>}
+            {(!noCard && lockedData === undefined) && <div className="hanging-badge">
+                {!isOfficial && <Tooltip overlay="Replace image">
+                    <div className="preview-action replace-image" onClick={() => imageReplaceModalRef.current?.setTarget(dynamicState)}>
+                        <FileImageOutlined />
+                    </div>
+                </Tooltip>}
+                {!isOfficial && <Tooltip overlay="Replace text">
+                    <div className="preview-action replace-text" onClick={() => !isOfficial && setLockedData(dynamicState)}>
+                        <EditOutlined />
+                    </div>
+                </Tooltip>}
+                <div className="official-status">{isOfficial ? 'Official' : 'Custom'}</div>
+            </div>}
             {lockedData
                 ? <div className="card-preview-description-edit">
                     <TextArea
@@ -205,5 +275,6 @@ export const CardPreviewer = ({
                         {(dataURL.length > 0 && !noCard && (description ?? '').length === 0) && !isOfficial && <div>Add your description here</div>}
                     </div>}
         </div>
+        <ImageReplaceModal ref={imageReplaceModalRef} />
     </CardPreviewContainer>;
 };
