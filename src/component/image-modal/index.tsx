@@ -142,7 +142,6 @@ export const ImageReplaceModal = React.forwardRef<ImageReplaceModalRef>(({
                                 showUploadList={false}
                                 customRequest={async option => {
                                     const { file } = option;
-                                    console.log(option);
 
                                     if (typeof file === 'object' && (file as any)['uid']) {
                                         uploadToImgur(
@@ -162,7 +161,6 @@ export const ImageReplaceModal = React.forwardRef<ImageReplaceModalRef>(({
                                                     notification.error(error.message);
                                                 },
                                                 onSuccess: (response, fileData) => {
-                                                    console.log('🚀 ~ file: index.tsx:148 ~ {targetList.map ~ response:', response);
                                                     // addDescription([{ key: dataURL, description: processedDescription }], true);
                                                     // if (dataURL === currentPreview.dataURL) {
                                                     //     preview(

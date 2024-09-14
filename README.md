@@ -6,6 +6,8 @@
 * Activation indicator
 * Remove counter when go face-down
 * Cancel / Retry in manager
+* Remove all in deck (may need confirmation)
+* Keep uploaded card in online tab
 
 ### Large features
 * Hand zone
@@ -25,6 +27,10 @@
 * Issue khi modal tự tắt không rõ lý do? (khả năng do resize)
 * Could not add to board if drag card on to another card
 * Card face-down add vào banished zone hay extra deck vẫn face-up
+* Does not auto re-search if change text search type (name, effect, etc...)
+* Modal mở đẩy toàn bộ window đi lên
+* Search pendulum effect does not work?
+* Missing scale in description
 
 ## Drag-n-Drop when scrolling is a mess, should be an edge case though
 ## Multiple deck modal

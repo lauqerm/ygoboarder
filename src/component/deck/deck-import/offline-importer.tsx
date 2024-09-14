@@ -1,13 +1,12 @@
 import { Alert, Button, Input, Modal, Tooltip, Upload } from 'antd';
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
-import { CardImageConverter, CardPreset, ImgurResponse } from 'src/model';
+import { CardImageConverter, CardPreset } from 'src/model';
 import { v4 as uuidv4 } from 'uuid';
 import { useDeckState, useDescriptionState } from 'src/state';
 import { ExtractProps } from 'src/type';
 import { InboxOutlined, StopOutlined, WarningOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons';
 import { Loading } from '../../loading';
 import styled from 'styled-components';
-import axios from 'axios';
 import { CardBack } from 'src/component/atom';
 import { rebuildYGOCarderData, ygoCarderToDescription } from 'src/integrate';
 import { uploadToImgur } from 'src/util';
@@ -100,7 +99,7 @@ const FileItem = forwardRef<FileItemRef, FileItem>(({
                     onStart?.(fileData.name);
                     /** Bật phần này khi cần test offline */
                     // if (!cancel.current) {
-                    //     onOfflineFinish(result, fileData.name);
+                    //     onOfflineFinish(readerResult, fileData.name);
                     //     setFinish(true);
                     // }
                     // else onCancel(fileData.name);

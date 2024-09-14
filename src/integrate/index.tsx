@@ -1,5 +1,5 @@
 import { clone } from 'ramda';
-import { cardFieldShortenMap, defaultYGOCarderCard } from './ygocarder';
+import { cardFieldShortenMap, getDefaultCard, YGOCarderCard } from './ygocarder';
 import { JSONUncrush } from './json-uncrush';
 
 export const rebuildYGOCarderData = (
@@ -8,7 +8,14 @@ export const rebuildYGOCarderData = (
 ) => {
     let fullCard: Record<string, any>;
     if (isCondensed) {
-        fullCard = reverseCardDataCondenser(card);
+        try {
+            fullCard = reverseCardDataCondenser(card);
+        } catch (e) {
+            fullCard = typeof card === 'string'
+                ? reverseCardDataCondenser(JSON.parse(card))
+                : card;
+            console.error(e);
+        }
     } else {
         fullCard = typeof card === 'string'
             ? JSON.parse(card)
@@ -45,19 +52,41 @@ const reverseCardDataCondenser = (
     return fullCard;
 };
 
-// Try to match old version card data with newer model
-const migrateCardData = (card: Record<string, any>) => {
-    const migratedCard = clone(card);
+/** Migrate old version of card data into the new version without information loss */
+export const migrateCardData = (card: Record<string, any>, baseCard = getDefaultCard()): YGOCarderCard => {
+    const migratedCard = {
+        ...baseCard,
+        ...clone(card),
+    };
 
-    if (migratedCard.effectStyle === undefined) {
+    if (migratedCard.effectStyle == null) {
         migratedCard.effectStyle = {
-            ...defaultYGOCarderCard.effectStyle,
+            ...getDefaultCard().effectStyle,
         };
     }
 
-    if (migratedCard.version === undefined) {
-        migratedCard.version = 1;
-    }
+    if (migratedCard.version == null) migratedCard.version = 1;
+    if (migratedCard.format == null) migratedCard.format = 'tcg';
+    if (migratedCard.pendulumFrame == null) migratedCard.pendulumFrame = 'auto';
+    if (migratedCard.finish == null) migratedCard.finish = [];
+
+    if (migratedCard.artFinish == null) migratedCard.artFinish = 'normal';
+    if ((migratedCard as any).picture && !card.art) migratedCard.art = (migratedCard as any).picture;
+    delete (migratedCard as any).picture;
+
+    /** Seems like no image is fine for now. */
+    // if ((migratedCard.art ?? '') === '') migratedCard.art = 'https://i.imgur.com/jjtCuG5.png';
+    if ((migratedCard.art ?? '') === '') migratedCard.art = '';
+
+    if ((migratedCard as any).kanjiHelper && !card.furiganaHelper) migratedCard.furiganaHelper = (migratedCard as any).kanjiHelper;
+    delete (migratedCard as any).kanjiHelper;
+    if (migratedCard.furiganaHelper === undefined) migratedCard.furiganaHelper = true;
+
+    if ((migratedCard as any).passcode && !card.password) migratedCard.password = (migratedCard as any).passcode;
+    delete (migratedCard as any).passcode;
+
+    if (!migratedCard.starAlignment) migratedCard.starAlignment = 'auto';
+
     return migratedCard;
 };
 
