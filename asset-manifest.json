@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/ygoboarder/static/css/main.9cd188ac.css",
-    "main.js": "/ygoboarder/static/js/main.f35776d2.js",
+    "main.css": "/ygoboarder/static/css/main.ddc3d932.css",
+    "main.js": "/ygoboarder/static/js/main.4c8d742a.js",
     "static/js/787.3ce549be.chunk.js": "/ygoboarder/static/js/787.3ce549be.chunk.js",
     "index.html": "/ygoboarder/index.html",
     "static/media/antd.less": "/ygoboarder/static/media/antd.7affb7a1925b6ab47ea6.less",
-    "main.9cd188ac.css.map": "/ygoboarder/static/css/main.9cd188ac.css.map",
-    "main.f35776d2.js.map": "/ygoboarder/static/js/main.f35776d2.js.map",
+    "main.ddc3d932.css.map": "/ygoboarder/static/css/main.ddc3d932.css.map",
+    "main.4c8d742a.js.map": "/ygoboarder/static/js/main.4c8d742a.js.map",
     "787.3ce549be.chunk.js.map": "/ygoboarder/static/js/787.3ce549be.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.9cd188ac.css",
-    "static/js/main.f35776d2.js"
+    "static/css/main.ddc3d932.css",
+    "static/js/main.4c8d742a.js"
   ]
 }
